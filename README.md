@@ -4,10 +4,10 @@
 >>[0.1.89](Unfortunate Orge) Lua Editor
 >>![](https://github.com/ToxicTrigger/end-trigger/blob/Toxic/image/0.1.89.gif)
 
-Trigger Engine 은 imgui 와 DX12 를 결합한 게임 엔진 입니다.
+Trigger Engine 은 imgui 와 DX12 & Vulkan 을 결합한 게임 엔진 입니다.
+
 
 아래의 작업을 진행 중 입니다. 
-
 
 ## Work process?
 
@@ -60,6 +60,26 @@ Trigger Engine 은 imgui 와 DX12 를 결합한 게임 엔진 입니다.
 - [ ] Import Zinny & wget
 - [ ] make Plug-in API (lua)
 
+# Build?
+- Windows 10 + VS2017 + CMake + 64bit
+  1. `Clone Project`
+  2. `cd trigger`
+  3. `mkdir build`
+  4. `cd build`
+  5. `cmake -G "Visual Studio 15 2017 Win64" ..`
+  6. `cd .. `
+  7. `cmake --build build --config Release`
+  8. Check `trigger/build/Release/trigger.exe`
+  ---
+- Linux + c17 + CMake + VulkanSDK + 64bit
+  1. `Clone Project`
+  2. `cd trigger`
+  3. `mkdir build`
+  4. `cd build`
+  5. `cmake ..`
+  6. `cd .. `
+  7. `cmake --build build --config Release`
+  8. Check `trigger/build/Release/trigger`
 
 ## Version Name
 
