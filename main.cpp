@@ -1,24 +1,16 @@
 #include <iostream>
-#include "renderer/dx12.h"
-#include "renderer/vk.h"
-#include "core/game/actor.h"
+#include "core/game/mini_core.h"
 
 #ifdef _WIN64
-#define RENDERER "dx12"
+#define RENDERER dx12
+#include "renderer/dx12.h"
 #else
-#define RENDERER "vk"
+#define RENDERER vk
+#include "renderer/vk.h"
 #endif
 
-int main(int, char**) 
-{
-    trigger::abst::renderer *renderer;
-    if(RENDERER == "dx12")
-    {
-        renderer = new trigger::renderer::dx12();
-    }
-    else
-    {
-        renderer = new trigger::renderer::vk();
-    } 
 
-};
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, int showCmd)
+{
+    trigger::abst::renderer *renderer = new trigger::renderer::RENDERER(hInstance);  
+}
