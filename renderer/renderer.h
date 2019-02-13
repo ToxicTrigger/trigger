@@ -10,7 +10,7 @@ namespace trigger
         private:
             virtual void init() = 0;
             virtual void set_up() = 0;
-
+            
         public:
         };
     } ;// namespace abst
