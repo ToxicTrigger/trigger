@@ -49,14 +49,26 @@ namespace trigger
             static dx12 *app;
             HINSTANCE mhAppInst = nullptr;
             HWND      mhMainWnd = nullptr;
+            std::string title;
+
         private:
             virtual void init() override;
             virtual void set_up() override;
             virtual int rendering() override;
 
         public:
-            dx12(INSTANCE inst) : renderer(1280, 680)
+            dx12(INSTANCE inst, bool mode, std::string project_name) : renderer(1280, 680, mode)
             {
+                if(mode)
+                {
+                    this->mClientHeight = 900;
+                    this->mClientWidth = 980;
+                    this->title = "trigger-engine : dx12";
+                }
+                else
+                {
+                    this->title = project_name;
+                }
                 this->init();
                 this->mhAppInst = inst;
                 this->rendering();

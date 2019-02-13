@@ -23,11 +23,13 @@ namespace trigger
             virtual int rendering() = 0;
 
         public:
-            renderer(int width, int height) : mClientWidth(width), mClientHeight(height)
+            renderer(int width, int height, bool edit_mode) : 
+            mClientWidth(width), mClientHeight(height), edit_mode(edit_mode)
             {};
 
             virtual ~renderer() {}
             int mClientWidth, mClientHeight;
+            bool edit_mode;
         };
     } ;// namespace abst
 } ;// namespace trigger

@@ -63,7 +63,7 @@ void dx12::init()
 	int width = R.right - R.left;
 	int height = R.bottom - R.top;
 
-	this->mhMainWnd = CreateWindow("MainWnd", std::string("trigger-engine : dx12").c_str() , WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, width, height, 0, 0, this->mhAppInst, 0);
+	this->mhMainWnd = CreateWindow("MainWnd", this->title.c_str() , WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, width, height, 0, 0, this->mhAppInst, 0);
 
 	if (!mhMainWnd)
 	{
