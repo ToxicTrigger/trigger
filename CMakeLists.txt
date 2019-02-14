@@ -29,6 +29,7 @@ if(WIN32) # Check if we are on Windows
 		set_target_properties(trigger PROPERTIES
 			WIN32_EXECUTABLE YES
 		)
+		target_link_libraries(trigger "d3d12.lib" "d3dcompiler.lib" "dxgi.lib")
 	elseif(CMAKE_COMPILER_IS_GNUCXX)
 			# SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mwindows") # Not tested
 	else()
