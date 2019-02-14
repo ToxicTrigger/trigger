@@ -96,8 +96,16 @@ namespace trigger
             virtual void init() override;
             virtual void set_up() override;
             virtual int rendering() override;
+            virtual void resize() override;
+            void CreateCommandObjects();
+            void CreateSwapChain();
+            void CreateRtvAndDsvDescriptorHeaps();
+            D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView() const;
+            void FlushCommandQueue();
+            ID3D12Resource* CurrentBackBuffer() const;
+            D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView() const;
 
-        public:
+          public:
             dx12(INSTANCE inst, bool mode, std::string project_name) : renderer(1280, 680, mode)
             {
                 if(mode)
@@ -114,7 +122,8 @@ namespace trigger
 
                 this->init();
                 this->set_up();
-
+                this->resize();
+                
                 this->rendering();
             }
 
