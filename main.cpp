@@ -6,6 +6,9 @@
 #include "renderer/dx12.h"
 #else
 #define RENDERER vk
+#include <iostream>
+#include <string>
+#include <vector>
 #include "renderer/vk.h"
 #endif
 
@@ -18,10 +21,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
     trigger::abst::renderer *renderer = new trigger::renderer::RENDERER(hInstance, enable_editor, "unlucky");  
 }
 #else
-int main()
+int main(int in, char **argv)
 {
-    if(strcmp(cmdLine, "-exec") == 0) enable_editor = false;
-    trigger::abst::renderer *renderer = new trigger::renderer::RENDERER(hInstance, enable_editor, "unlucky");  
-    return 0; 
+    std::string cur_exec_name = argv[0];
+    std::string first_arg;
+    std::vector<std::string> all_args;
+
+    if(in <= 1)
+    {
+        first_arg = argv[1];
+        all_args.assign(argv + 1, argv + in);
+
+    }
+    else
+    {
+        
+    }
 }
 #endif
