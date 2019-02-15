@@ -34,8 +34,8 @@ namespace trigger
 		class link
 		{
 		private:
-			std::unique_ptr<state> cur;
-			std::unique_ptr<state> next;
+			state *cur;
+			state *next;
 			int ops;
 
 		public:
@@ -48,17 +48,18 @@ namespace trigger
 
 			explicit inline link(const state *current, const state *next) : link()
 			{
-				this->cur._Myptr() = const_cast<state*>(current);
-				this->next._Myptr() = const_cast<state*>(next);
+				this->cur = const_cast<state*>(current);
+				//this->cur._Myptr() = const_cast<state*>(current);
+				this->next = const_cast<state*>(next);
 			}
 
 			inline const state* get_current_state() const noexcept
 			{
-				return this->cur.get();
+				return this->cur;
 			};
 			inline const state* get_next_state() const noexcept
 			{
-				return this->next.get();
+				return this->next;
 			};
 			inline constexpr const int& get_ops() const noexcept
 			{
@@ -73,7 +74,7 @@ namespace trigger
 		class map : public component
 		{
 		private:
-			std::unique_ptr<state> now_state;
+			state *now_state;
 			std::list<state*> states;
 			std::list<link*> links;
 			std::string cur_name, now_name;
@@ -91,7 +92,7 @@ namespace trigger
 						{
 							i->set_ops(i->get_ops() + 1);
 							now_state->end_state();
-							now_state._Myptr() = const_cast<state*>(i->get_next_state());
+							now_state = const_cast<state*>(i->get_next_state());
 							now_state->begin_state();
 							now_name = now_state->get_name();
 							return;
@@ -108,7 +109,7 @@ namespace trigger
 
 				auto idle = new state("idle");
 				add_state(idle);
-				now_state = std::make_unique<state>(idle->get_name());
+				now_state = new state(idle->get_name());
 				now_name = now_state->get_name();
 			}
 
@@ -116,7 +117,7 @@ namespace trigger
 			{
 				// inited state idle
 				add_state(def_state);
-				link *def = new link(now_state.get(), def_state);
+				link *def = new link(now_state, def_state);
 				def->set_ops(0);
 				links.push_back(def);
 				now_name = now_state->get_name();
@@ -256,7 +257,7 @@ namespace trigger
 			{
 				if(now_state != nullptr)
 				{
-					now_state.release();
+					delete now_state;
 				}
 
 				states.clear();

@@ -1,3 +1,4 @@
+#ifdef _WIN64
 #include "dx12.h"
 
 using namespace trigger::renderer;
@@ -123,6 +124,7 @@ int dx12::rendering()
     }
     return (int)msg.wParam;
 }
+#endif
 
 void dx12::CreateCommandObjects()
 {
