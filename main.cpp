@@ -1,16 +1,6 @@
 #include <iostream>
 #include "core/game/mini_core.h"
 
-#ifdef _WIN64
-#define RENDERER dx12
-#include "renderer/dx12.h"
-#else
-#define RENDERER vk
-#include <iostream>
-#include <string>
-#include <vector>
-#include "renderer/vk.h"
-#endif
 
 static bool enable_editor = true;
 
@@ -40,6 +30,7 @@ int main(int in, char **argv)
     {
         
     }
+    auto engine = new trigger::core::engine();
     auto vk = new trigger::renderer::vk(800,600,enable_editor);
 }
 #endif

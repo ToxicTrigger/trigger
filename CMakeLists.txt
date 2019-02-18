@@ -16,29 +16,34 @@ set(DX12 lib/dx12/d3dx12.h )
 set(LUA_HEADER lib/lua/include/lua.h lib/lua/include/lua.hpp lib/lua/include/luaconf.h lib/lua/include/lualib.h lib/lua/include/lauxlib.h )
 set(TOOLS tools/macros.h )
 
+set(IMGUI imgui/imgui.h imgui/imgui.cpp imgui/imconfig.h imgui/imgui_demo.cpp imgui/imgui_draw.cpp imgui/imgui_internal.h imgui/imgui_widgets.cpp)
+set(IMGUI_VK imgui/examples/imgui_impl_glfw.h imgui/examples/imgui_impl_glfw.cpp imgui/examples/imgui_impl_vulkan.h imgui/examples/imgui_impl_vulkan.cpp)
+set(IMGUI_DX imgui/examples/imgui_impl_dx12.h imgui/examples/imgui_impl_dx12.cpp)
+
 set(REND_HEADER renderer/renderer.h renderer/renderer.cpp)
 set(DX_HEADER renderer/dx12.h renderer/dx12.cpp)
 set(VK_HEADER 
 lib/vk/include/vulkan/vulkan.h
 lib/vk/include/vulkan/vulkan.hpp
-lib/vk/include/vulkan/vulkan_core.h
 lib/vk/glfw-3.2.1.WIN64/include/GLFW/glfw3.h
 renderer/vk.h 
 renderer/vk.cpp
 )
 
-set(CORE_HEADER core/game/actor.h core/game/component.h core/game/component_world.h core/game/fsm.h core/game/trigger_tools.h core/game/vec.h core/game/vec.cpp )
-set(MINI_CORE_HEADER core/game/mini_core.h )
+set(CORE_HEADER core/game/actor.h core/game/component.h core/game/component_world.h core/game/fsm.h core/game/trigger_tools.h core/game/vec.h core/game/vec.cpp core/game/engine.h)
+set(MINI_CORE_HEADER core/game/mini_core.h core/game/engine.h core/game/engine.cpp)
 
-INCLUDE_DIRECTORIES(${LUA_HEADER} ${DX12} ${REND_HEADER} ${TOOLS} ${MINI_CORE_HEADER} ${CORE_HEADER})
+INCLUDE_DIRECTORIES(${LUA_HEADER} ${DX12} ${REND_HEADER} ${TOOLS} ${MINI_CORE_HEADER} ${CORE_HEADER} ${IMGUI} ${IMGUI_VK} ${IMGUI_DX})
 
 if(WIN32)
-	add_executable(trigger main.cpp ${TOOLS} ${REND_HEADER} ${DX_HEADER} )
+	add_executable(trigger main.cpp ${TOOLS} ${REND_HEADER} ${DX_HEADER} ${IMGUI} ${IMGUI_DX})
 else()
 	add_executable(trigger main.cpp 
 	${TOOLS} 
 	${REND_HEADER} 
 	${VK_HEADER} 
+	${IMGUI}
+	${IMGUI_VK}
 	)
 endif()
 
