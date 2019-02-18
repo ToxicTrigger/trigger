@@ -1,16 +1,6 @@
 #include <iostream>
 #include "core/game/mini_core.h"
 
-#ifdef _WIN64
-#define RENDERER dx12
-#include "renderer/dx12.h"
-#else
-#define RENDERER vk
-#include <iostream>
-#include <string>
-#include <vector>
-#include "renderer/vk.h"
-#endif
 
 static bool enable_editor = true;
 
@@ -27,15 +17,20 @@ int main(int in, char **argv)
     std::string first_arg;
     std::vector<std::string> all_args;
 
-    if(in <= 1)
+    if(in == 2)
     {
         first_arg = argv[1];
         all_args.assign(argv + 1, argv + in);
-
+        if(all_args[0] == "-exec")
+        {
+            enable_editor = false;
+        }
     }
     else
     {
         
     }
+    auto engine = new trigger::core::engine();
+    auto vk = new trigger::renderer::vk(800,600,enable_editor);
 }
 #endif

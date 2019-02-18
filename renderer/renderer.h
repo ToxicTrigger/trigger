@@ -18,7 +18,7 @@ namespace trigger
         class renderer
         {
         private:
-            virtual void init() = 0;
+            virtual int init() = 0;
             virtual void set_up() = 0;
             virtual int rendering() = 0;
             virtual void resize() = 0;
