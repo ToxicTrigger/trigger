@@ -32,7 +32,6 @@
 #include <WindowsX.h>
 
 using Microsoft::WRL::ComPtr;
-using namespace std;
 using namespace DirectX;
 
 #pragma comment(lib, "d3dcompiler.lib")

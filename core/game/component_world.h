@@ -1,4 +1,6 @@
-#pragma once
+#ifndef COMPONENT_WORLD_H
+#define COMPONENT_WORLD_H
+
 #include <list>
 #include <memory>
 #include <chrono>
@@ -8,22 +10,21 @@
 
 #include "actor.h"
 
-using namespace std;
 
 namespace trigger
 {
 	class component_world : public trigger::component
 	{
-		typedef chrono::high_resolution_clock time;
-		typedef chrono::time_point<chrono::steady_clock> Time;
+		typedef std::chrono::high_resolution_clock time;
+		typedef std::chrono::time_point<std::chrono::steady_clock> Time;
 
 	private:
-		list<component*> components;
+		std::list<component*> components;
 		Time start_time;
-		chrono::duration<float> delta_time;
-		chrono::duration<float> run_time;
-		thread main_thread;
-		mutex lock;
+		std::chrono::duration<float> delta_time;
+		std::chrono::duration<float> run_time;
+		std::thread main_thread;
+		std::mutex lock;
 
 	public:
 		float gravity = -9.8f;
@@ -33,26 +34,26 @@ namespace trigger
 		//Build a new World
 		explicit inline component_world(bool UseThread)
 		{
-			components = list<component*>();
+			components = std::list<component*>();
 			start_time = time::now();
 
 			use_thread = UseThread;
 			if (UseThread)
 			{
-				main_thread = thread(&component_world::update, this, delta_time.count());
+				main_thread = std::thread(&component_world::update, this, delta_time.count());
 			}
 		}
 
-		explicit inline component_world(bool UseThread, string name)
+		explicit inline component_world(bool UseThread, std::string name)
 		{
-			components = list<component*>();
+			components = std::list<component*>();
 			start_time = time::now();
 			set_name(name);
 
 			use_thread = UseThread;
 			if (UseThread)
 			{
-				main_thread = thread(&component_world::update, this, delta_time.count());
+				main_thread = std::thread(&component_world::update, this, delta_time.count());
 			}
 		}
 
@@ -61,11 +62,11 @@ namespace trigger
 			return delta_time.count();
 		}
 
-		inline void set_name(const string name)
+		inline void set_name(const std::string name)
 		{
 			this->name = name;
 		}
-		inline const string& get_name()
+		inline const std::string& get_name()
 		{
 			return this->name;
 		}
@@ -84,15 +85,15 @@ namespace trigger
 			return nullptr;
 		};
 
-		inline list<component*> get_all() const
+		inline std::list<component*> get_all() const
 		{
 			return this->components;
 		}
 
 		template<typename T>
-		inline constexpr list<T*> get_components()
+		inline constexpr std::list<T*> get_components()
 		{
-			list<T*> tmp = list<T*>();
+			std::list<T*> tmp = std::list<T*>();
 			for (auto i : components)
 			{
 				auto t = dynamic_cast<T*>(i);
@@ -167,7 +168,7 @@ namespace trigger
 		{
 			if (components.size() != 0)
 			{
-				run_time = chrono::duration_cast<chrono::duration<float>>(time::now() - start_time);
+				run_time = std::chrono::duration_cast<std::chrono::duration<float>>(time::now() - start_time);
 				auto t = time::now();
 				lock.lock();
 				for (auto i : components)
@@ -181,18 +182,18 @@ namespace trigger
 					}
 				}
 				lock.unlock();
-				delta_time = chrono::duration_cast<chrono::duration<float>>(time::now() - t);
+				delta_time = std::chrono::duration_cast<std::chrono::duration<float>>(time::now() - t);
 			}
 		}
 
 		//TODO
-		static bool save_world(string p, string n, component_world *w)
+		static bool save_world(std::string p, std::string n, component_world *w)
 		{
 			auto map = cpptoml::make_table();
 			auto set = cpptoml::make_table();
 			auto actors = cpptoml::make_table();
 
-			ofstream o(p + "/" + n);
+			std::ofstream o(p + "/" + n);
 			if (!o.is_open()) return false;
 			auto ac = w->get_components<actor>();
 
@@ -215,7 +216,7 @@ namespace trigger
 		}
 
 		//TODO
-		static inline component_world* load_world(string path)
+		static inline component_world* load_world(std::string path)
 		{
 			auto map = cpptoml::parse_file(path);
 			auto set = cpptoml::make_table();
@@ -243,7 +244,7 @@ namespace trigger
 				auto ac = new trigger::actor();
 				ac->name = i.first;
 				//TODO nn 
-				// ¾ÆÁ÷ ÀÌ¸§¸¸ ¹ÞÀ½ ¤Ì 
+				// ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ 
 				count++;
 				world->add(ac);
 			}
@@ -258,3 +259,5 @@ namespace trigger
 		}
 	};
 }
+
+#endif
