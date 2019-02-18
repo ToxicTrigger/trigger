@@ -40,6 +40,6 @@ int main(int in, char **argv)
     {
         
     }
-    std::cout << enable_editor << std::endl;
+    auto vk = new trigger::renderer::vk(800,600,enable_editor);
 }
 #endif

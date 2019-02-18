@@ -18,17 +18,28 @@ set(TOOLS tools/macros.h )
 
 set(REND_HEADER renderer/renderer.h renderer/renderer.cpp)
 set(DX_HEADER renderer/dx12.h renderer/dx12.cpp)
-set(VK_HEADER renderer/vk.h )
+set(VK_HEADER 
+lib/vk/include/vulkan/vulkan.h
+lib/vk/include/vulkan/vulkan.hpp
+lib/vk/include/vulkan/vulkan_core.h
+lib/vk/glfw-3.2.1.WIN64/include/GLFW/glfw3.h
+renderer/vk.h 
+renderer/vk.cpp
+)
 
 set(CORE_HEADER core/game/actor.h core/game/component.h core/game/component_world.h core/game/fsm.h core/game/trigger_tools.h core/game/vec.h core/game/vec.cpp )
 set(MINI_CORE_HEADER core/game/mini_core.h )
 
-INCLUDE_DIRECTORIES(${LUA_HEADER} ${DX12} ${REND_HEADER} ${TOOLS} ${MINI_CORE_HEADER} ${CORE_HEADER} )
+INCLUDE_DIRECTORIES(${LUA_HEADER} ${DX12} ${REND_HEADER} ${TOOLS} ${MINI_CORE_HEADER} ${CORE_HEADER})
 
 if(WIN32)
 	add_executable(trigger main.cpp ${TOOLS} ${REND_HEADER} ${DX_HEADER} )
 else()
-	add_executable(trigger main.cpp ${TOOLS} ${REND_HEADER} ${VK_HEADER} )
+	add_executable(trigger main.cpp 
+	${TOOLS} 
+	${REND_HEADER} 
+	${VK_HEADER} 
+	)
 endif()
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
@@ -52,7 +63,7 @@ elseif(APPLE)
 			MACOSX_BUNDLE YES
 	)
 	LINK_LIBRARIES( lua glfw3 glm )
-	target_link_libraries(trigger "${CMAKE_SOURCE_DIR}/lib/lua/lua53.lib")
+	target_link_libraries(trigger "${CMAKE_SOURCE_DIR}/lib/lua/lua53.lib" "${CMAKE_SOURCE_DIR}/lib/vk/libglfw.3.3.dylib" "${CMAKE_SOURCE_DIR}/lib/vk/libvulkan.1.1.97.dylib")
 elseif(UNIX)
 	set_target_properties(trigger PROPERTIES
 	
