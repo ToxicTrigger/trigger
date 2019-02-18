@@ -27,15 +27,19 @@ int main(int in, char **argv)
     std::string first_arg;
     std::vector<std::string> all_args;
 
-    if(in <= 1)
+    if(in == 2)
     {
         first_arg = argv[1];
         all_args.assign(argv + 1, argv + in);
-
+        if(all_args[0] == "-exec")
+        {
+            enable_editor = false;
+        }
     }
     else
     {
         
     }
+    std::cout << enable_editor << std::endl;
 }
 #endif
