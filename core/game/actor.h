@@ -7,7 +7,7 @@ namespace trigger
 {
 	struct transform
 	{
-		vec position, rotation, scale;
+		trigger::vec position, rotation, scale;
 	};
 
 	class actor : public trigger::component

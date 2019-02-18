@@ -7,8 +7,10 @@ static bool enable_editor = true;
 #ifdef _WIN64
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, int showCmd)
 {
-    if(strcmp(cmdLine, "-exec") == 0) enable_editor = false;
-    trigger::abst::renderer *renderer = new trigger::renderer::RENDERER(hInstance, enable_editor, "unlucky");  
+    if(strcmp(cmdLine, "-exec") == 0) enable_editor = false; 
+    auto engine = new trigger::core::engine();
+    auto dx = new trigger::renderer::dx12(hInstance, enable_editor, "lol");
+    engine->renderer = dx;
 }
 #else
 int main(int in, char **argv)

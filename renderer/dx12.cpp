@@ -34,7 +34,7 @@ LRESULT trigger::renderer::dx12::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 }
 
 
-void dx12::init()
+int dx12::init()
 {
     std::cout << "init dx12  ... " << std::endl;
 
@@ -55,7 +55,7 @@ void dx12::init()
 	if (!RegisterClass(&wc))
 	{
 		MessageBoxW(0, L"RegisterClass Failed.", 0, 0);
-		return ;
+		return 1;
 	}
 
 	// Compute window rectangle dimensions based on requested client area dimensions.
@@ -69,13 +69,13 @@ void dx12::init()
 	if (!mhMainWnd)
 	{
 		MessageBoxW(0, L"CreateWindow Failed.", 0, 0);
-		return ;
+		return 1;
 	}
 
 	ShowWindow(mhMainWnd, SW_SHOW);
 	UpdateWindow(mhMainWnd);
 
-	return;
+	return 0;
 }
 
 void dx12::set_up()

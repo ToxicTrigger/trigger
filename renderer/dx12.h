@@ -92,7 +92,7 @@ namespace trigger
             DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
           private:
-            virtual void init() override;
+            virtual int init() override;
             virtual void set_up() override;
             virtual int rendering() override;
             virtual void resize() override;

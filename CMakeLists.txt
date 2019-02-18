@@ -21,7 +21,11 @@ set(IMGUI_VK imgui/examples/imgui_impl_glfw.h imgui/examples/imgui_impl_glfw.cpp
 set(IMGUI_DX imgui/examples/imgui_impl_dx12.h imgui/examples/imgui_impl_dx12.cpp)
 
 set(REND_HEADER renderer/renderer.h renderer/renderer.cpp)
-set(DX_HEADER renderer/dx12.h renderer/dx12.cpp)
+set(DX_HEADER 
+renderer/dx12.h
+renderer/dx12.cpp
+)
+
 set(VK_HEADER 
 lib/vk/include/vulkan/vulkan.h
 lib/vk/include/vulkan/vulkan.hpp

@@ -15,6 +15,7 @@ namespace trigger
     {   
         class engine
         {
+        public:
             trigger::renderer::REND *renderer;
 
         public:
