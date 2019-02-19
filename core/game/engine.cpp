@@ -17,19 +17,18 @@ bool trigger::core::engine::init(int w, int h, bool edit_mod)
 #else
 bool trigger::core::engine::init(INSTANCE hInst, int w, int h, bool edit_mod)
 {
-    this->renderer = new trigger::rend::REND(hInst, edit_mod, "lol", this);
-
     this->editors = new trigger::component_world(true);
     this->editors->add(new trigger::edit::main_editor());
-    
-    run();
+
+    this->renderer = new trigger::rend::REND(hInst, edit_mod, "lol", this);
+
     return true;
 }
 #endif
 
 int trigger::core::engine::run()
 {
-    this->renderer->rendering();
+
     return 0;
 }
 

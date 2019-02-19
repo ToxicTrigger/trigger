@@ -36,10 +36,34 @@
 
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
-
+using namespace DirectX::PackedVector;
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "D3D12.lib")
 #pragma comment(lib, "dxgi.lib")
+struct FrameContext
+{
+    ID3D12CommandAllocator* CommandAllocator;
+    UINT64                  FenceValue;
+};
+
+// Data
+static int const                    NUM_FRAMES_IN_FLIGHT = 3;
+static FrameContext                 g_frameContext[NUM_FRAMES_IN_FLIGHT] = {};
+static UINT                         g_frameIndex = 0;
+
+static int const                    NUM_BACK_BUFFERS = 3;
+static ID3D12Device*                g_pd3dDevice = NULL;
+static ID3D12DescriptorHeap*        g_pd3dRtvDescHeap = NULL;
+static ID3D12DescriptorHeap*        g_pd3dSrvDescHeap = NULL;
+static ID3D12CommandQueue*          g_pd3dCommandQueue = NULL;
+static ID3D12GraphicsCommandList*   g_pd3dCommandList = NULL;
+static ID3D12Fence*                 g_fence = NULL;
+static HANDLE                       g_fenceEvent = NULL;
+static UINT64                       g_fenceLastSignaledValue = 0;
+static IDXGISwapChain3*             g_pSwapChain = NULL;
+static HANDLE                       g_hSwapChainWaitableObject = NULL;
+static ID3D12Resource*              g_mainRenderTargetResource[NUM_BACK_BUFFERS] = {};
+static D3D12_CPU_DESCRIPTOR_HANDLE  g_mainRenderTargetDescriptor[NUM_BACK_BUFFERS] = {};
 
 namespace trigger 
 {
@@ -98,6 +122,7 @@ namespace trigger
             DXGI_FORMAT mBackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
             DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
             
+            const int gNumFrameResources = 3;
 
           private:
             virtual int init() override;
@@ -112,6 +137,7 @@ namespace trigger
             ID3D12Resource* CurrentBackBuffer() const;
             D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView() const;
             void draw_editors();
+            void draw_dx12();
 
           public:
             dx12(INSTANCE inst, bool mode, std::string project_name, trigger::core::engine* engine) : renderer(1280, 680, mode, engine)
@@ -130,7 +156,8 @@ namespace trigger
 
                 this->init();
                 this->set_up();
-                this->resize();
+                //this->resize();
+                this->rendering();
             }
 
             static dx12* get_renderer();
