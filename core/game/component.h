@@ -58,7 +58,6 @@ namespace trigger
 			return _params;
 		}
 
-
 		virtual void update(float delta) noexcept
 		{};
 	};

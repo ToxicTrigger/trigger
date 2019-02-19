@@ -1,6 +1,7 @@
+#ifndef _WIN64
 #include "vk.h"
 
-using namespace trigger::renderer;
+using namespace trigger::rend;
 
 int vk::init()
 {
@@ -200,3 +201,5 @@ int vk::rendering()
 {
     return 0;
 }
+
+#endif

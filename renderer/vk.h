@@ -19,6 +19,7 @@
 #include "../imgui/examples/imgui_impl_vulkan.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <list>
 
 // [Win32] Our example includes a copy of glfw3.lib pre-compiled with VS2010 to maximize ease of testing and compatibility with old VS compilers.
 // To link with VS2010-era libraries, VS2015+ requires linking with legacy_stdio_definitions.lib, which we do using this pragma.
@@ -332,7 +333,7 @@ namespace trigger
 {
     namespace renderer
     {
-        class vk : public trigger::abst::renderer
+        class vk : public trigger::rend::renderer
         {
         public:
 
@@ -343,7 +344,7 @@ namespace trigger
             virtual int rendering() override;
 
         public:
-            vk(int w, int h, bool edit) : renderer(w,h,edit)
+            vk(int w, int h, bool edit, trigger::core::engine* engine) : renderer(w,h,edit, engine)
             {
                 this->init();
                 this->set_up();

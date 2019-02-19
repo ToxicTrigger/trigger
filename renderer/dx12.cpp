@@ -1,29 +1,39 @@
 #ifdef _WIN64
 #include "dx12.h"
 
-using namespace trigger::renderer;
+using namespace trigger::rend;
 
 LRESULT CALLBACK
 MainWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 {
-    return trigger::renderer::dx12::get_renderer()->MsgProc(hwnd, msg, wp, lp);
+    return trigger::rend::dx12::get_renderer()->MsgProc(hwnd, msg, wp, lp);
 };
 
-trigger::renderer::dx12* trigger::renderer::dx12::app = nullptr;
-trigger::renderer::dx12* trigger::renderer::dx12::get_renderer()
+trigger::rend::dx12* trigger::rend::dx12::app = nullptr;
+trigger::rend::dx12* trigger::rend::dx12::get_renderer()
 {
     return app;
 }
 
-LRESULT trigger::renderer::dx12::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+LRESULT trigger::rend::dx12::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	if(ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam))
+	{
+		return true;
+	}
+
     switch (msg)
 	{
     case WM_ACTIVATE:
         if(LOWORD(wParam) == WA_INACTIVE)
         {
-
+			this->mAppPaused = true;
         }
+		else
+		{
+			this->mAppPaused = false;
+		}
         return 0;
 
     case WM_DESTROY:
@@ -106,6 +116,15 @@ void dx12::set_up()
 	CreateRtvAndDsvDescriptorHeaps();
 }
 
+#include "../core/editor/impl_editor.h"
+void dx12::draw_editors()
+{
+	for(auto e : this->engine->editors->get_components<trigger::edit::impl_editor>())
+	{
+		e->draw();
+	}
+}
+
 int dx12::rendering()
 {
     MSG msg = {0};
@@ -120,11 +139,17 @@ int dx12::rendering()
         else
         {
             //Game Time
+			draw_editors();
         }
     }
+
+	ImGui_ImplDX12_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
+	
     return (int)msg.wParam;
 }
-#endif
+
 
 void dx12::CreateCommandObjects()
 {
@@ -338,3 +363,4 @@ D3D12_CPU_DESCRIPTOR_HANDLE dx12::CurrentBackBufferView() const
 		this->mRtvDescriptorSize
 	);
 }
+#endif

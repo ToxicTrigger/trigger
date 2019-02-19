@@ -1,7 +1,13 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(trigger VERSION 0.1.0)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++17")
+
+if(WIN32)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+else()
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+endif()
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -18,7 +24,10 @@ set(TOOLS tools/macros.h )
 
 set(IMGUI imgui/imgui.h imgui/imgui.cpp imgui/imconfig.h imgui/imgui_demo.cpp imgui/imgui_draw.cpp imgui/imgui_internal.h imgui/imgui_widgets.cpp)
 set(IMGUI_VK imgui/examples/imgui_impl_glfw.h imgui/examples/imgui_impl_glfw.cpp imgui/examples/imgui_impl_vulkan.h imgui/examples/imgui_impl_vulkan.cpp)
-set(IMGUI_DX imgui/examples/imgui_impl_dx12.h imgui/examples/imgui_impl_dx12.cpp)
+set(IMGUI_DX 
+imgui/examples/imgui_impl_dx12.h imgui/examples/imgui_impl_dx12.cpp
+imgui/examples/imgui_impl_win32.h imgui/examples/imgui_impl_win32.cpp
+)
 
 set(REND_HEADER renderer/renderer.h renderer/renderer.cpp)
 set(DX_HEADER 
@@ -33,14 +42,32 @@ lib/vk/glfw-3.2.1.WIN64/include/GLFW/glfw3.h
 renderer/vk.h 
 renderer/vk.cpp
 )
+set(CORE_HEADER 
+core/game/actor.h 
+core/game/component.h 
+core/game/component_world.h 
+core/game/fsm.h 
+core/game/trigger_tools.h 
+core/game/vec.h core/game/vec.cpp 
+core/game/engine.h core/game/engine.cpp
 
-set(CORE_HEADER core/game/actor.h core/game/component.h core/game/component_world.h core/game/fsm.h core/game/trigger_tools.h core/game/vec.h core/game/vec.cpp core/game/engine.h)
-set(MINI_CORE_HEADER core/game/mini_core.h core/game/engine.h core/game/engine.cpp)
+core/editor/impl_editor.h
+core/editor/main_editor.h core/editor/main_editor.cpp
+)
 
-INCLUDE_DIRECTORIES(${LUA_HEADER} ${DX12} ${REND_HEADER} ${TOOLS} ${MINI_CORE_HEADER} ${CORE_HEADER} ${IMGUI} ${IMGUI_VK} ${IMGUI_DX})
+
+
+INCLUDE_DIRECTORIES(${LUA_HEADER} ${DX12} ${REND_HEADER} ${TOOLS} ${CORE_HEADER} ${IMGUI} ${IMGUI_VK} ${IMGUI_DX})
 
 if(WIN32)
-	add_executable(trigger main.cpp ${TOOLS} ${REND_HEADER} ${DX_HEADER} ${IMGUI} ${IMGUI_DX})
+	add_executable(trigger main.cpp 
+	${TOOLS} 
+	${REND_HEADER} 
+	${DX_HEADER} 
+	${IMGUI} 
+	${IMGUI_DX}
+	${CORE_HEADER}
+	)
 else()
 	add_executable(trigger main.cpp 
 	${TOOLS} 
@@ -48,6 +75,7 @@ else()
 	${VK_HEADER} 
 	${IMGUI}
 	${IMGUI_VK}
+	${CORE_HEADER}
 	)
 endif()
 

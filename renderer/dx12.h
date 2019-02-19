@@ -30,6 +30,9 @@
 #include <limits>
 #include <iostream>
 #include <WindowsX.h>
+#include "../imgui/imgui.h"
+#include "../imgui/examples/imgui_impl_dx12.h"
+#include "../imgui/examples/imgui_impl_win32.h"
 
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
@@ -40,9 +43,13 @@ using namespace DirectX;
 
 namespace trigger 
 {
-    namespace renderer
+    namespace core
     {
-        class dx12 : public trigger::abst::renderer
+        class engine;
+    }
+    namespace rend
+    {
+        class dx12 : public trigger::rend::renderer
         {
         private:
             static dx12 *app;
@@ -90,6 +97,7 @@ namespace trigger
             D3D_DRIVER_TYPE md3dDriverType = D3D_DRIVER_TYPE_HARDWARE;
             DXGI_FORMAT mBackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
             DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+            
 
           private:
             virtual int init() override;
@@ -103,9 +111,10 @@ namespace trigger
             void FlushCommandQueue();
             ID3D12Resource* CurrentBackBuffer() const;
             D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView() const;
+            void draw_editors();
 
           public:
-            dx12(INSTANCE inst, bool mode, std::string project_name) : renderer(1280, 680, mode)
+            dx12(INSTANCE inst, bool mode, std::string project_name, trigger::core::engine* engine) : renderer(1280, 680, mode, engine)
             {
                 if(mode)
                 {
@@ -122,8 +131,6 @@ namespace trigger
                 this->init();
                 this->set_up();
                 this->resize();
-                
-                this->rendering();
             }
 
             static dx12* get_renderer();

@@ -1,25 +1,42 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
+#include "../../renderer/renderer.h"
+#include "component_world.h"
+
 #ifdef _WIN64
-#define RENDERER dx12
-#include "../../renderer/dx12.h"
-#else
-#define RENDERER vk
-#include "../../renderer/vk.h"
+#include <windows.h>
 #endif
 
 namespace trigger
 {
+    namespace rend
+    {
+        class renderer;
+    }
+
     namespace core
     {   
         class engine
         {
         public:
-            trigger::renderer::REND *renderer;
+            trigger::rend::renderer *renderer;
+            trigger::component_world *editors;
 
         public:
-            bool init();
+#ifdef _WIN64
+            engine(INSTANCE hInst, int w, int h, bool edit_mod)
+            {
+                this->init(hInst, w, h, edit_mod);
+            }
+            bool init(INSTANCE hInst, int w, int h, bool edit_mod);
+#else
+            engine(int w, int h, bool edit_mod)
+            {
+                this->init(w, h, edit_mod);
+            }
+            bool init(int w, int h, bool edit_mod);
+#endif
             int run();
             ~engine();
         };
