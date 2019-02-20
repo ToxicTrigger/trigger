@@ -28,6 +28,7 @@ namespace trigger
             engine(INSTANCE hInst, int w, int h, bool edit_mod)
             {
                 this->init(hInst, w, h, edit_mod);
+                this->run();
             }
             bool init(INSTANCE hInst, int w, int h, bool edit_mod);
 #else

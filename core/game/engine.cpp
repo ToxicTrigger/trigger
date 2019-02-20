@@ -28,7 +28,7 @@ bool trigger::core::engine::init(INSTANCE hInst, int w, int h, bool edit_mod)
 
 int trigger::core::engine::run()
 {
-
+    
     return 0;
 }
 

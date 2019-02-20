@@ -416,6 +416,7 @@ int dx12::rendering()
             //Game Time
 			draw_editors();
 			draw_dx12();
+			this->engine->editors->update_all();
         }
     }
 
