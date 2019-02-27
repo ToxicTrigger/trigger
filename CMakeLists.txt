@@ -19,7 +19,14 @@ enable_testing()
 LINK_DIRECTORIES( lib/lua lib/dx12 )
 
 set(DX12 lib/dx12/d3dx12.h )
-set(LUA_HEADER lib/lua/include/lua.h lib/lua/include/lua.hpp lib/lua/include/luaconf.h lib/lua/include/lualib.h lib/lua/include/lauxlib.h )
+set(LUA_HEADER 
+lib/lua/include/lua.h 
+lib/lua/include/lua.hpp 
+lib/lua/include/luaconf.h 
+lib/lua/include/lualib.h 
+lib/lua/include/lauxlib.h 
+)
+
 set(TOOLS tools/macros.h )
 
 set(IMGUI imgui/imgui.h imgui/imgui.cpp imgui/imconfig.h imgui/imgui_demo.cpp imgui/imgui_draw.cpp imgui/imgui_internal.h imgui/imgui_widgets.cpp)
@@ -50,9 +57,14 @@ core/game/fsm.h
 core/game/trigger_tools.h 
 core/game/vec.h core/game/vec.cpp 
 core/game/engine.h core/game/engine.cpp
+core/game/file.h
+
+renderer/material.h
 
 core/editor/impl_editor.h
 core/editor/main_editor.h core/editor/main_editor.cpp
+
+ImGuiColorTextEdit/TextEditor.h ImGuiColorTextEdit/TextEditor.cpp
 )
 
 

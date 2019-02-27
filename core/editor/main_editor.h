@@ -2,19 +2,28 @@
 #define MAIN_EDITOR_H
 
 #include "impl_editor.h"
+#include "../../ImGuiColorTextEdit/TextEditor.h"
+#include <string>
 
-namespace trigger
+static TextEditor lua_editor;
+namespace trigger::edit
 {
-    namespace edit
+    class main_editor : public impl_editor
     {
-        class impl_editor;
-        class main_editor : public impl_editor
-        {
-            public:
+        public:
+            TextEditor::LanguageDefinition lang;
+            std::string TEST;
+
+        public:
+            explicit main_editor()
+            {
+                lang = TextEditor::LanguageDefinition::Lua();
+                lua_editor.SetLanguageDefinition(lang);
+                lua_editor.SetText(this->TEST);
+            }
             virtual bool draw() const noexcept override;
             virtual void update(float delta) noexcept override;
-        };
-    }
+    };
 }
 
 

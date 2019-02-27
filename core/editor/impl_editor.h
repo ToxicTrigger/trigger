@@ -5,21 +5,18 @@
 
 #include "../game/component.h"
 
-namespace trigger
+namespace trigger::edit
 {
-	namespace edit
+	class impl_editor : public trigger::component
 	{
-		class impl_editor : public trigger::component
-		{
-		public:
-			// Using imgui Draw module.
-			// engine->editors
-			virtual bool draw() const noexcept = 0;
+	public:
+		// Using imgui Draw module.
+		// engine->editors
+		virtual bool draw() const noexcept = 0;
 
-			// Update editor vals
-			virtual void update(float delta) noexcept = 0;
-		};
-	} // namespace core
-} // namespace trigger
+		// Update editor vals
+		virtual void update(float delta) noexcept = 0;
+	};
+} // namespace trigger::edit
 
 #endif

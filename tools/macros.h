@@ -7,7 +7,6 @@
 #else
 #define slash "/"
 
-
 #endif
 
 #ifdef _WIN64
