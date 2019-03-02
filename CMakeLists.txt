@@ -29,11 +29,16 @@ lib/lua/include/lauxlib.h
 
 set(TOOLS tools/macros.h )
 
-set(IMGUI imgui/imgui.h imgui/imgui.cpp imgui/imconfig.h imgui/imgui_demo.cpp imgui/imgui_draw.cpp imgui/imgui_internal.h imgui/imgui_widgets.cpp)
-set(IMGUI_VK imgui/examples/imgui_impl_glfw.h imgui/examples/imgui_impl_glfw.cpp imgui/examples/imgui_impl_vulkan.h imgui/examples/imgui_impl_vulkan.cpp)
+set(IMGUI imgui/ imgui/imgui.h imgui/imgui.cpp imgui/imconfig.h imgui/imgui_demo.cpp imgui/imgui_draw.cpp imgui/imgui_internal.h imgui/imgui_widgets.cpp)
+
+set(IMGUI_VK 
+core/imgui/imgui_impl_glfw.h  core/imgui/imgui_impl_glfw.cpp 
+core/imgui/imgui_impl_vulkan.h  core/imgui/imgui_impl_vulkan.cpp
+)
+
 set(IMGUI_DX 
-imgui/examples/imgui_impl_dx12.h imgui/examples/imgui_impl_dx12.cpp
-imgui/examples/imgui_impl_win32.h imgui/examples/imgui_impl_win32.cpp
+core/imgui/imgui_impl_dx12.h core/imgui/imgui_impl_dx12.cpp
+core/imgui/imgui_impl_win32.h core/imgui/imgui_impl_win32.cpp
 )
 
 set(REND_HEADER renderer/renderer.h renderer/renderer.cpp)
@@ -115,13 +120,18 @@ if(WIN32) # Check if we are on Windows
 		message(SEND_ERROR "You are using an unsupported Windows compiler! (Not MSVC or GCC)")
 	endif(MSVC)
 elseif(APPLE)
+	set(VK_ICD_FILENAMES "${CMAKE_SOURCE_DIR}/lib/vk/icd.d/MoltenVK_icd.json")
+	set(VK_LAYER_PATH "${CMAKE_SOURCE_DIR}/lib/vk/explicit_layer.d")
 	set_target_properties(trigger PROPERTIES
 			MACOSX_BUNDLE YES)
 	find_library(lua NAMES lua53.lib HINTS lib/ REQUIRED)
 	find_library(glfw3 NAMES glfw3.lib REQUIRED)
 	find_library(glm REQUIRED)
 	LINK_LIBRARIES( ${lua} ${glfw3} ${glm} )
-	target_link_libraries(trigger "${CMAKE_SOURCE_DIR}/lib/lua/lua53.lib" "${CMAKE_SOURCE_DIR}/lib/vk/glfw-3.2.1.WIN64/lib-vc2015/glfw3.lib" "${CMAKE_SOURCE_DIR}/lib/vk/libvulkan.1.1.97.dylib")
+	target_link_libraries(trigger "${CMAKE_SOURCE_DIR}/lib/lua/lua53.lib" 
+	"/usr/local/lib/libglfw.3.3.dylib" 
+	"${CMAKE_SOURCE_DIR}/lib/vk/libvulkan.1.dylib"
+	"${CMAKE_SOURCE_DIR}/lib/vk/libvulkan.1.1.97.dylib")
 elseif(UNIX)
 	set_target_properties(trigger PROPERTIES
 	

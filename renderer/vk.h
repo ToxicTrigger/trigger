@@ -8,16 +8,16 @@
 #define GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_VULKAN
 #define VULKAN
-#include "../lib/vk/glfw-3.2.1.WIN64/include/GLFW/glfw3.h"
+#include <GLFW/glfw3.h>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
 #include "../lib/vk/include/vulkan/vulkan.h"
-#include "../imgui/imgui.h"
-#include "../imgui/examples/imgui_impl_glfw.h"
-#include "../imgui/examples/imgui_impl_vulkan.h"
+#include <imgui.h>
+#include "../core/imgui/imgui_impl_glfw.h"
+#include "../core/imgui/imgui_impl_vulkan.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <list>
@@ -343,6 +343,7 @@ namespace trigger
             virtual void set_up() override;
             virtual void resize() override;
             virtual int rendering() override;
+            void draw_editors();
 
         public:
             vk(int w, int h, bool edit, trigger::core::engine* engine) : renderer(w,h,edit, engine)

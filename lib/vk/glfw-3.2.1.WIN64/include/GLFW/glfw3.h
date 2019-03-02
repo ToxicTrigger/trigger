@@ -4094,6 +4094,7 @@ GLFWAPI const char** glfwGetRequiredInstanceExtensions(uint32_t* count);
 
 
 #ifndef _WIN64
+
 #define VK_VERSION_1_0 1
 #include "../../../include/vulkan/vulkan.h"
 #endif

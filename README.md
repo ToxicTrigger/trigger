@@ -52,9 +52,9 @@ Trigger Engine 은 imgui 와 DX12 & Vulkan 을 결합한 게임 엔진 입니다
 - [ ] Make it Buildable
 - [ ] Dynamic Lighting like Day->Night 
 - [ ] FSM , Animation  node Editor -> like BluePrint
-- [ ] Use new Imgui Dock
-- [ ] Implement Vulkan API 
-- [ ] Implement DirectX 12 API
+- [ ] Use Imgui Dock
+- [x] Implement Vulkan API 
+- [x] Implement DirectX 12 API
 - [ ] Shader Converter (hlsl <-> glsl <-> spri-v)
 - [ ] Enable Mode
 - [ ] Import Zinny & wget
@@ -71,6 +71,7 @@ Trigger Engine 은 imgui 와 DX12 & Vulkan 을 결합한 게임 엔진 입니다
   7. `cmake --build build --config Release`
   8. Check `trigger/build/Release/trigger.exe`
   ---
+
 - Linux + c17 + CMake + VulkanSDK + 64bit
   1. `Clone Project`
   2. `cd trigger`
@@ -80,6 +81,18 @@ Trigger Engine 은 imgui 와 DX12 & Vulkan 을 결합한 게임 엔진 입니다
   6. `cd .. `
   7. `cmake --build build --config Release`
   8. Check `trigger/build/Release/trigger`
+
+  ---
+
+- MacOS
+
+  1. Install Vulkan + GLFW3 + glm
+  2. Follow [Command Line](https://vulkan.lunarg.com/doc/sdk/1.1.92.1/mac/getting_started.html) setup!
+  3. `clone project `
+  4. `cd trigger`
+  5. `cmake .`
+  6. `cmake —build build —config Release`
+  7. Check `build/trigger.app `
 
 ## Version Name
 

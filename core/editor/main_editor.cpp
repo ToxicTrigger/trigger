@@ -3,7 +3,7 @@
 bool trigger::edit::main_editor::draw() const noexcept
 {
     ImGui::Begin("Finally!");
-    ImGui::Text("Dx12 + new trigger engine");
+    ImGui::Text("Vulkan + new trigger engine");
 
     ImGui::BeginTabBar("Test");
     if(ImGui::BeginTabItem("Editor View"))
