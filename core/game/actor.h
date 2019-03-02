@@ -23,6 +23,7 @@ namespace trigger
 		
 		virtual void update( float delta ) noexcept override
 		{
+			
 			fsm.update( delta );
 		}
 

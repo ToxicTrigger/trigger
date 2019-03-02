@@ -72,7 +72,7 @@ namespace trigger
 		}
 
 		template<typename T>
-		inline constexpr T* get() const
+		inline T* get() const
 		{
 			for (auto i : components)
 			{
@@ -91,7 +91,7 @@ namespace trigger
 		}
 
 		template<typename T>
-		inline constexpr std::list<T*> get_components()
+		inline std::list<T*> get_components()
 		{
 			std::list<T*> tmp = std::list<T*>();
 			for (auto i : components)
@@ -222,7 +222,7 @@ namespace trigger
 			auto set = cpptoml::make_table();
 			set = map->get_table("setting");
 			auto type = set->get_as<std::string>("type").value_or("unknown");
-			if (!type._Equal("map")) return nullptr;
+			//if (!type._Equal("map")) return nullptr;
 
 			auto com = set->get_table("trigger::component_world");
 			auto actors = cpptoml::make_table();
@@ -243,8 +243,7 @@ namespace trigger
 				auto comp = t->get_table("trigger::component");
 				auto ac = new trigger::actor();
 				ac->name = i.first;
-				//TODO nn 
-				// ���� �̸��� ���� �� 
+				//TODO
 				count++;
 				world->add(ac);
 			}

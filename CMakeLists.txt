@@ -43,8 +43,12 @@ renderer/dx12.cpp
 )
 
 set(VK_HEADER 
+lib/vk/
+lib/vk/include/
 lib/vk/include/vulkan/vulkan.h
 lib/vk/include/vulkan/vulkan.hpp
+lib/vk/include/vulkan/vulkan_core.h
+lib/vk/glfw-3.2.1.WIN64/include/
 lib/vk/glfw-3.2.1.WIN64/include/GLFW/glfw3.h
 renderer/vk.h 
 renderer/vk.cpp
@@ -65,11 +69,14 @@ core/editor/impl_editor.h
 core/editor/main_editor.h core/editor/main_editor.cpp
 
 ImGuiColorTextEdit/TextEditor.h ImGuiColorTextEdit/TextEditor.cpp
+
+lib/vk/
+lib/vk/glm/glm.hpp
 )
 
 
 
-INCLUDE_DIRECTORIES(${LUA_HEADER} ${DX12} ${REND_HEADER} ${TOOLS} ${CORE_HEADER} ${IMGUI} ${IMGUI_VK} ${IMGUI_DX})
+INCLUDE_DIRECTORIES(${LUA_HEADER} ${DX12} ${VK_HEADER} ${REND_HEADER} ${TOOLS} ${CORE_HEADER} ${IMGUI} ${IMGUI_VK} ${IMGUI_DX})
 
 if(WIN32)
 	add_executable(trigger main.cpp 
@@ -109,10 +116,12 @@ if(WIN32) # Check if we are on Windows
 	endif(MSVC)
 elseif(APPLE)
 	set_target_properties(trigger PROPERTIES
-			MACOSX_BUNDLE YES
-	)
-	LINK_LIBRARIES( lua glfw3 glm )
-	target_link_libraries(trigger "${CMAKE_SOURCE_DIR}/lib/lua/lua53.lib" "${CMAKE_SOURCE_DIR}/lib/vk/libglfw.3.3.dylib" "${CMAKE_SOURCE_DIR}/lib/vk/libvulkan.1.1.97.dylib")
+			MACOSX_BUNDLE YES)
+	find_library(lua NAMES lua53.lib HINTS lib/ REQUIRED)
+	find_library(glfw3 NAMES glfw3.lib REQUIRED)
+	find_library(glm REQUIRED)
+	LINK_LIBRARIES( ${lua} ${glfw3} ${glm} )
+	target_link_libraries(trigger "${CMAKE_SOURCE_DIR}/lib/lua/lua53.lib" "${CMAKE_SOURCE_DIR}/lib/vk/glfw-3.2.1.WIN64/lib-vc2015/glfw3.lib" "${CMAKE_SOURCE_DIR}/lib/vk/libvulkan.1.1.97.dylib")
 elseif(UNIX)
 	set_target_properties(trigger PROPERTIES
 	

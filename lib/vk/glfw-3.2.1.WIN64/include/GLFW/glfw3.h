@@ -166,7 +166,7 @@ extern "C" {
    #include <GLES2/gl2ext.h>
   #endif
  #elif defined(GLFW_INCLUDE_VULKAN)
-#include "../../include/vulkan/vulkan.h"
+#include <vulkan/vulkan.h>
  #elif !defined(GLFW_INCLUDE_NONE)
   #include <GL/gl.h>
   #if defined(GLFW_INCLUDE_GLEXT)
@@ -4092,6 +4092,11 @@ GLFWAPI int glfwVulkanSupported(void);
  */
 GLFWAPI const char** glfwGetRequiredInstanceExtensions(uint32_t* count);
 
+
+#ifndef _WIN64
+#define VK_VERSION_1_0 1
+#include "../../../include/vulkan/vulkan.h"
+#endif
 #if defined(VK_VERSION_1_0)
 
 /*! @brief Returns the address of the specified Vulkan instance function.

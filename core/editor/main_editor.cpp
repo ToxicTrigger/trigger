@@ -20,7 +20,6 @@ bool trigger::edit::main_editor::draw() const noexcept
     if(ImGui::BeginTabItem("Lua View"))
     {
         lua_editor.Render("TEST");
-        
 
         ImGui::EndTabItem();
     }

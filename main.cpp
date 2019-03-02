@@ -11,6 +11,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
     auto engine = new trigger::core::engine(hInstance, 800, 600, enable_editor);
 }
 #else
+#define VK_VERSION_1_0 1
+
 int main(int in, char **argv)
 {
     std::string cur_exec_name = argv[0];
@@ -30,7 +32,6 @@ int main(int in, char **argv)
     {
         
     }
-    auto engine = new trigger::core::engine();
-    auto vk = new trigger::renderer::vk(800,600,enable_editor);
+    auto engine = new trigger::core::engine(800, 600, enable_editor);
 }
 #endif

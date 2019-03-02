@@ -7,6 +7,7 @@
 #include <iostream>
 #define GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_VULKAN
+#define VULKAN
 #include "../lib/vk/glfw-3.2.1.WIN64/include/GLFW/glfw3.h"
 
 #define GLM_FORCE_RADIANS
@@ -331,7 +332,7 @@ static void glfw_resize_callback(GLFWwindow*, int w, int h)
 
 namespace trigger 
 {
-    namespace renderer
+    namespace rend
     {
         class vk : public trigger::rend::renderer
         {
