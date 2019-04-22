@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(trigger VERSION 0.1.0)
 
-
 if(WIN32)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 else()
@@ -41,7 +40,14 @@ core/imgui/imgui_impl_dx12.h core/imgui/imgui_impl_dx12.cpp
 core/imgui/imgui_impl_win32.h core/imgui/imgui_impl_win32.cpp
 )
 
-set(REND_HEADER renderer/renderer.h renderer/renderer.cpp)
+set(REND_HEADER 
+renderer/renderer.h 
+renderer/renderer.cpp
+
+renderer/material.h
+)
+
+
 set(DX_HEADER 
 renderer/dx12.h
 renderer/dx12.cpp
@@ -57,7 +63,9 @@ lib/vk/glfw-3.2.1.WIN64/include/
 lib/vk/glfw-3.2.1.WIN64/include/GLFW/glfw3.h
 renderer/vk.h 
 renderer/vk.cpp
+lib/vk/glm/glm.hpp
 )
+
 set(CORE_HEADER 
 core/game/actor.h 
 core/game/component.h 
@@ -67,21 +75,16 @@ core/game/trigger_tools.h
 core/game/vec.h core/game/vec.cpp 
 core/game/engine.h core/game/engine.cpp
 core/game/file.h
+)
 
-renderer/material.h
-
+set(EDITOR_MAIN
 core/editor/impl_editor.h
 core/editor/main_editor.h core/editor/main_editor.cpp
 
 ImGuiColorTextEdit/TextEditor.h ImGuiColorTextEdit/TextEditor.cpp
-
-lib/vk/
-lib/vk/glm/glm.hpp
 )
 
-
-
-INCLUDE_DIRECTORIES(${LUA_HEADER} ${DX12} ${VK_HEADER} ${REND_HEADER} ${TOOLS} ${CORE_HEADER} ${IMGUI} ${IMGUI_VK} ${IMGUI_DX})
+INCLUDE_DIRECTORIES(${LUA_HEADER} ${DX12} ${VK_HEADER} ${REND_HEADER} ${TOOLS} ${CORE_HEADER} ${IMGUI} ${IMGUI_VK} ${IMGUI_DX} ${EDITOR_MAIN})
 
 if(WIN32)
 	add_executable(trigger main.cpp 
@@ -91,6 +94,7 @@ if(WIN32)
 	${IMGUI} 
 	${IMGUI_DX}
 	${CORE_HEADER}
+	${EDITOR_MAIN}
 	)
 else()
 	add_executable(trigger main.cpp 
@@ -100,12 +104,16 @@ else()
 	${IMGUI}
 	${IMGUI_VK}
 	${CORE_HEADER}
+	${EDITOR_MAIN}
 	)
 endif()
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
+
+# make shared library
+ADD_LIBRARY(-trigger.plugin SHARED renderer/renderer.cpp)
 
 if(WIN32) # Check if we are on Windows
 	if(MSVC) # Check if we are using the Visual Studio compiler

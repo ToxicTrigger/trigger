@@ -65,3 +65,5 @@ _deps
 
 build/*
 .vscode/*
+.DS_Store
+imgui.ini
