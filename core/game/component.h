@@ -38,6 +38,7 @@ namespace trigger
 	protected:
 		std::shared_ptr<cpptoml::table> _params;
 		std::shared_ptr<cpptoml::table> _tmp;
+		
 	public:
 		float time_scale = 1.0f;
 		bool active = true;

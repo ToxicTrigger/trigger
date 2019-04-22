@@ -8,6 +8,7 @@ bool trigger::edit::main_editor::draw() const noexcept
     ImGui::BeginTabBar("Test");
     if(ImGui::BeginTabItem("Editor View"))
     {
+        
         ImGui::EndTabItem();
     }
     static bool hello;

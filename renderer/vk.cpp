@@ -136,6 +136,16 @@ int vk::init()
 		{
 			e->draw();
 		}	
+
+        ImGui::Begin("Test");
+		ImVec2 pos = ImGui::GetCursorScreenPos();
+		ImGui::GetWindowDrawList()->AddImage(
+			(void *)wd->Frames[wd->FrameIndex].CommandBuffer,
+			ImVec2(ImGui::GetCursorScreenPos()), ImVec2(pos.x + ImGui::GetWindowWidth(), pos.y + ImGui::GetWindowHeight()),
+			ImVec2(0, 1),
+			ImVec2(1, 0));
+		ImGui::End();
+
         // Rendering
         ImGui::Render();
         memcpy(&wd->ClearValue.color.float32[0], &clear_color, 4 * sizeof(float));

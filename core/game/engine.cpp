@@ -20,9 +20,7 @@ bool trigger::core::engine::init(INSTANCE hInst, int w, int h, bool edit_mod)
 {
     this->editors = new trigger::component_world(true);
     this->editors->add(new trigger::edit::main_editor());
-
     this->renderer = new trigger::rend::REND(hInst, edit_mod, "lol", this);
-
     return true;
 }
 #endif
