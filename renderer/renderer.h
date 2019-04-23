@@ -13,8 +13,18 @@ namespace trigger
 
     namespace rend
     {
+        enum window_state
+        {
+            Minimized,
+            Maximized,
+            Resizeing,
+        };
+
         class renderer
         {
+        protected:
+            window_state window_mode;
+            
         public:
             virtual int init() = 0;
             virtual void set_up() = 0;

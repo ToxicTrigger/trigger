@@ -10,7 +10,7 @@
 #endif
 
 #ifdef _WIN64
-#define REND dx12
+#define REND dx11
 #define INSTANCE HINSTANCE
 #define WH HWND
 #else

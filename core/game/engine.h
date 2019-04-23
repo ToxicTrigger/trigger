@@ -17,8 +17,27 @@ namespace trigger
 
     namespace core
     {   
+        enum engine_state
+        {
+            not_inited,
+            initing,
+            inited,
+            
+            awake,
+            start,
+            run,
+            paused,
+
+            stop,
+            clean_up,
+            shut_down
+        };
+
         class engine
         {
+        protected:
+            trigger::core::engine_state state;
+
         public:
             trigger::rend::renderer *renderer;
             trigger::component_world *editors;
@@ -28,6 +47,7 @@ namespace trigger
             engine(INSTANCE hInst, int w, int h, bool edit_mod)
             {
                 this->init(hInst, w, h, edit_mod);
+                this->state = engine_state::inited;
                 this->run();
             }
             bool init(INSTANCE hInst, int w, int h, bool edit_mod);
@@ -39,6 +59,11 @@ namespace trigger
             bool init(int w, int h, bool edit_mod);
 #endif
             int run();
+            engine_state get_state() const
+            {
+                return this->state;
+            }
+
             ~engine();
         };
     } // namespace core

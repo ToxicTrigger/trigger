@@ -51,6 +51,8 @@ renderer/material.h
 set(DX_HEADER 
 renderer/dx12.h
 renderer/dx12.cpp
+renderer/dx11.h
+renderer/dx11.cpp
 )
 
 set(VK_HEADER 
@@ -113,15 +115,17 @@ set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
 
 # make shared library
-ADD_LIBRARY(-trigger.plugin SHARED renderer/renderer.cpp)
+ADD_LIBRARY(trigger.plugin SHARED 
+renderer/renderer.cpp
+)
 
 if(WIN32) # Check if we are on Windows
 	if(MSVC) # Check if we are using the Visual Studio compiler
 		set_target_properties(trigger PROPERTIES
 			WIN32_EXECUTABLE YES
 		)
-		LINK_LIBRARIES( lua53 d3d12 d3dcompiler dxgi )
-		target_link_libraries(trigger "d3d12.lib" "d3dcompiler.lib" "dxgi.lib" "lua53.lib")
+		LINK_LIBRARIES( lua53 d3d11 d3dcompiler dxgi )
+		target_link_libraries(trigger "d3d11.lib" "d3dcompiler.lib" "dxgi.lib" "lua53.lib")
 	elseif(CMAKE_COMPILER_IS_GNUCXX)
 			# SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mwindows") # Not tested
 	else()
