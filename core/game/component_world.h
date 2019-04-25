@@ -10,7 +10,6 @@
 
 #include "actor.h"
 
-
 namespace trigger
 {
 	class component_world : public trigger::component

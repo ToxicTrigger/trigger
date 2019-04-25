@@ -1,7 +1,6 @@
 #include <iostream>
 #include "core/game/mini_core.h"
 
-
 static bool enable_editor = true;
 
 #ifdef _WIN64

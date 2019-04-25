@@ -1,5 +1,6 @@
 #include "engine.h"
 #include "../editor/main_editor.h"
+#include "mini_core.h"
 
 #ifdef _WIN64
 #include "../../renderer/dx11.h"

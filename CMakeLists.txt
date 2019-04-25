@@ -77,6 +77,7 @@ core/game/trigger_tools.h
 core/game/vec.h core/game/vec.cpp 
 core/game/engine.h core/game/engine.cpp
 core/game/file.h
+core/game/mini_core.h
 )
 
 set(EDITOR_MAIN
