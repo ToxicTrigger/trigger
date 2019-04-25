@@ -3,9 +3,20 @@
 #include "dx11.h"
 using namespace trigger::rend;
 
+namespace
+{
+    dx11* app = 0;
+}
+
+LRESULT CALLBACK
+MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    return app->MsgProc(hwnd, msg, wParam, lParam);
+}
+
 int dx11::init()
 {
-
+    
     return 0;
 }
 
@@ -106,6 +117,11 @@ HWND dx11::get_HWND() const
 float dx11::get_aspect_ratio() const
 {
     return static_cast<float>(this->mClientWidth / this->mClientHeight);
+}
+
+LRESULT dx11::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
 dx11::~dx11()
