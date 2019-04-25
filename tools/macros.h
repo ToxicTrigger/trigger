@@ -3,10 +3,16 @@
 
 #ifdef _WIN64
 #define slash "\\"
-
 #else
 #define slash "/"
+#endif
 
+#ifdef _WIN64
+    #define TRIGGER_API __declspec(dllexport)
+    #define API_IMPORT __declspec(dllimport)
+#else
+    #define TRIGGER_API __attribute__((visibility("default")))
+    #define API_IMPORT
 #endif
 
 #ifdef _WIN64
