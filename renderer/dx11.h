@@ -43,6 +43,7 @@ namespace trigger
             virtual void set_up()   override;
             virtual int rendering() override;
             virtual void resize()   override;
+            virtual void draw()     override;
             virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 			virtual ~dx11();
 
@@ -52,8 +53,10 @@ namespace trigger
                 this->app_instance = inst;
 				this->title = "Trigger Engine Dx11";
 				this->driver_type = D3D_DRIVER_TYPE_HARDWARE;
-                app = this;
 				ZeroMemory(&this->screen_viewport , sizeof(D3D11_VIEWPORT));
+                this->init();
+                this->set_up();
+                this->rendering();
             }
 
 			INSTANCE 	get_instance()const;

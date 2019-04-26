@@ -15,9 +15,8 @@ set(CMAKE_BUILD_TYPE Debug)
 include(CTest)
 enable_testing()
 
-LINK_DIRECTORIES( lib/lua lib/dx12 )
+LINK_DIRECTORIES( lib/lua )
 
-set(DX12 lib/dx12/d3dx12.h )
 set(LUA_HEADER 
 lib/lua/include/lua.h 
 lib/lua/include/lua.hpp 
@@ -36,8 +35,7 @@ core/imgui/imgui_impl_vulkan.h  core/imgui/imgui_impl_vulkan.cpp
 )
 
 set(IMGUI_DX 
-core/imgui/imgui_impl_dx12.h core/imgui/imgui_impl_dx12.cpp
-core/imgui/imgui_impl_win32.h core/imgui/imgui_impl_win32.cpp
+
 )
 
 set(REND_HEADER 
@@ -49,8 +47,6 @@ renderer/material.h
 
 
 set(DX_HEADER 
-renderer/dx12.h
-renderer/dx12.cpp
 renderer/dx11.h
 renderer/dx11.cpp
 )
@@ -87,7 +83,7 @@ core/editor/main_editor.h core/editor/main_editor.cpp
 ImGuiColorTextEdit/TextEditor.h ImGuiColorTextEdit/TextEditor.cpp
 )
 
-INCLUDE_DIRECTORIES(${LUA_HEADER} ${DX12} ${VK_HEADER} ${REND_HEADER} ${TOOLS} ${CORE_HEADER} ${IMGUI} ${IMGUI_VK} ${IMGUI_DX} ${EDITOR_MAIN})
+INCLUDE_DIRECTORIES(${LUA_HEADER} ${VK_HEADER} ${REND_HEADER} ${TOOLS} ${CORE_HEADER} ${IMGUI} ${IMGUI_VK} ${IMGUI_DX} ${EDITOR_MAIN})
 
 if(WIN32)
 	add_executable(trigger main.cpp 
