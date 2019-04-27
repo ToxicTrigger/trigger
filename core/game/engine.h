@@ -3,6 +3,7 @@
 
 #include "../../renderer/renderer.h"
 #include "component_world.h"
+#include "mini_core.h"
 
 #ifdef _WIN64
 #include <windows.h>

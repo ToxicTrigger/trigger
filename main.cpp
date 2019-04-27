@@ -8,6 +8,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
 {
     if(strcmp(cmdLine, "-exec") == 0) enable_editor = false; 
     auto engine = new trigger::core::engine(hInstance, 800, 600, enable_editor);
+	return engine->renderer->rendering();
 }
 #else
 #define VK_VERSION_1_0 1

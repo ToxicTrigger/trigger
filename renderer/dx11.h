@@ -56,7 +56,6 @@ namespace trigger
 				ZeroMemory(&this->screen_viewport , sizeof(D3D11_VIEWPORT));
                 this->init();
                 this->set_up();
-                this->rendering();
             }
 
 			INSTANCE 	get_instance()const;

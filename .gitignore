@@ -67,3 +67,17 @@ build/*
 .vscode/*
 .DS_Store
 imgui.ini
+
+# vs
+*.vcxproj.filters
+*.VC
+*.sln
+*.vcxproj
+*.vcxproj.user
+*.pdb
+*.log
+*.tlog
+*.ilk
+*.cmake
+*.tcl
+.vs/

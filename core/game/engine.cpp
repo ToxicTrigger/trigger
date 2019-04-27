@@ -31,7 +31,7 @@ bool trigger::core::engine::init(INSTANCE hInst, int w, int h, bool edit_mod)
 
 int trigger::core::engine::run()
 {
-    return this->renderer->rendering();
+	return 0;
 }
 
 trigger::core::engine::~engine()

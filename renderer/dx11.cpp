@@ -125,9 +125,10 @@ void dx11::set_up()
     this->resize();
 }
 
+
 void dx11::draw()
 {
-    this->immediate_context->ClearRenderTargetView(this->render_target_view, reinterpret_cast<const float*>(new float[4]{0, 1.0f, 0, 0}));
+    this->immediate_context->ClearRenderTargetView(this->render_target_view, reinterpret_cast<const float*>(&trigger::colors::White));
     this->immediate_context->ClearDepthStencilView(this->depth_stencil_view, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
     this->immediate_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
