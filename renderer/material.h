@@ -6,16 +6,19 @@
 #include <vector>
 #include <tuple>
 #include <memory>
+#include <string>
 
 #ifdef _WIN64
+#pragma comment(lib, "d3dx11.lib")
 #include <windows.h>
-#include <d3d12.h>
+#include <d3d11.h>
+#include "../lib/dx11/D3DX11.h"
+#include "../lib/dx11/D3DX11Effect.h"
+#include <dxgi.h>
 #include <d3dcompiler.h>
-using namespace Microsoft::WRL;
 #else
 
 #endif
-
 
 namespace trigger::rend
 {
@@ -28,58 +31,42 @@ namespace trigger::rend
     class shader
     {
     private:
-        bool is_init; 
-    
-    #ifdef _WIN64
-    #define DATA ComPtr<ID3DBlob>
-    #else
-    #define DATA    
-    #endif
+        bool is_init = false; 
 
     public:
         std::unique_ptr<trigger::core::file> path;
-        DATA shader_data;
         shader_type type;
 
-        shader(std::string shader_path, shader_type Type)
+        shader(std::string shader_path, shader_type Type, DEVICE d3d_device, EFFECT fxs)
         {
             this->path = std::make_unique<trigger::core::file>(shader_path);
             this->type = Type;
             if(this->path->get_type() == trigger::core::file::type::hlsl)
             {
-                this->is_init = load_shader();
+                this->is_init = load_shader(d3d_device, fxs);
             }
         };
 
-        bool load_shader()
+        bool load_shader(DEVICE d3d_device, EFFECT fxs)
         {
-            bool done = true;
+            
 #ifdef _WIN64
-            UINT flag = 0;
-            HRESULT hr = S_OK;
-            DATA byte = nullptr;
-            DATA error;
-            if(this->type == shader_type::vert)
-            {
-                WCHAR buf[512];
-                MultiByteToWideChar(CP_ACP, 0, this->path->get_path().c_str(), -1, buf, 512);
-                std::wstring w_path(buf);
-
-                hr = D3DCompileFromFile(w_path.c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "VS", "vs_5_0", flag, 0, &byte, &error);
-                if(error != nullptr) done = false;
-                if(byte == nullptr) done = false;
-                this->shader_data = byte;
-            }
-            else
-            {
-                hr = D3DCompileFromFile((LPCWSTR)this->path->get_path().c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "PS", "ps_5_0", flag, 0, &byte, &error);
-                if(error != nullptr) return false;
-                this->shader_data = byte;
-            }
+			DWORD shader_flag = 0;
+			ID3D10Blob* compiled_shader = 0;
+			ID3D10Blob* compilation_msg = 0;
+			HRESULT hr = D3DX11CompileFromFile((LPCSTR)this->path->get_path().c_str(), 0, 0, 0, "fx_5_0", shader_flag, 0, 0, &compiled_shader, &compilation_msg, 0);
+			if (compilation_msg != 0)
+			{
+				MessageBoxA(0, (char*)compilation_msg->GetBufferPointer(), 0, 0);
+				
+			}
+			D3DX11CreateEffectFromMemory(compiled_shader->GetBufferPointer(), compiled_shader->GetBufferSize(), 0, d3d_device, &fxs);
+			ReleaseCOM(compiled_shader);
+			fxs->GetTechniqueByName("ColorTech");
 #else
 
 #endif
-            return done;
+            return false;
         }
 
         bool const is_usable()
@@ -91,28 +78,27 @@ namespace trigger::rend
     class material
     {
     public:
-        std::vector<shader> shaders;
-
+        std::vector<shader*> shaders;
         std::tuple<float, float, float, float> albedo;
         std::tuple<float, float, float> fresnel;
         float roughness;
+
     public:
         material()
         {
-            this->shaders = std::vector<shader>();
+            this->shaders = std::vector<shader*>();
             this->albedo = std::make_tuple(1.0f, 1.0f, 1.0f, 1.0f);
             this->fresnel = std::make_tuple(0.1f, 0.1f, 0.1f);
             roughness = 1.0f;
-            
-            this->shaders.push_back
-            (
-                trigger::rend::shader
-                (
-                    trigger::core::get_path("Assets/Shaders/trigger/Default.hlsl"), 
-                    shader_type::vert
-                )
-            );
         }
+
+		bool add_shader(std::string path, shader_type type, DEVICE d3d_device, EFFECT fxs)
+		{
+			shader* s = new shader(trigger::core::get_real_path(path), type, d3d_device, fxs);
+			if (s == nullptr) return false;
+			this->shaders.push_back(s);
+			return true;
+		}
     };
 }
 

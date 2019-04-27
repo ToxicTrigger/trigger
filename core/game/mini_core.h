@@ -46,25 +46,4 @@ namespace trigger::colors
 	const vec4 LightSteelBlue = { 0.69f, 0.77f, 0.87f, 1.0f };
 }
 
-namespace trigger::core
-{
-    static std::string get_path(std::string path)
-    {
-        
-        std::string real = path;
-        char from;
-        char to;
-    #ifdef _WIN64
-        from = '/';
-        to = '\\';
-        std::replace( real.begin(), real.end(), from , to );
-    #else
-        from = '\\';
-        to = '/';
-        std::replace( real.begin(), real.end(), from , to );
-    #endif
-        return real;
-    }
-}
-
 #endif

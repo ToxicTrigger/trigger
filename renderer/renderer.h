@@ -3,6 +3,7 @@
 
 #include "../tools/macros.h"
 #include "../core/game/engine.h"
+#include "material.h"
 
 namespace trigger
 {

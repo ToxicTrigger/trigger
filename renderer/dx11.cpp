@@ -122,13 +122,19 @@ void dx11::set_up()
 	ReleaseCOM(dxgiDevice);
 	ReleaseCOM(dxgiAdapter);
 	ReleaseCOM(dxgiFactory);
+
+	//resource init
+
+
+	trigger::rend::material* mat = new trigger::rend::material();
+	mat->add_shader("Assets/Shaders/Default.hlsl", shader_type::frag, this->device, this->fxs);
     this->resize();
 }
 
 
 void dx11::draw()
 {
-    this->immediate_context->ClearRenderTargetView(this->render_target_view, reinterpret_cast<const float*>(&trigger::colors::White));
+    this->immediate_context->ClearRenderTargetView(this->render_target_view, reinterpret_cast<const float*>(&trigger::colors::LightSteelBlue));
     this->immediate_context->ClearDepthStencilView(this->depth_stencil_view, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
     this->immediate_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -208,10 +214,6 @@ void dx11::resize()
     this->screen_viewport.MaxDepth = 1.0f;
     
     this->immediate_context->RSSetViewports(1, &this->screen_viewport);
-        // Release old stuff.
-    ReleaseCOM(this->render_target_view);
-    ReleaseCOM(this->depth_stencil_view);
-    ReleaseCOM(this->depth_stencil_buffer);
 }
 
 INSTANCE dx11::get_instance() const
@@ -246,9 +248,9 @@ LRESULT dx11::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         case WM_SIZE:
                 this->mClientWidth = LOWORD(lParam);
                 this->mClientWidth = HIWORD(lParam);
-                if(this->device)
+                if(this->device && this->engine->get_state() != trigger::core::engine_state::not_inited)
                 {
-                    //this->resize();
+                    this->resize();
                 }
             return 0;
         case WM_DESTROY:

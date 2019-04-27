@@ -15,7 +15,7 @@ set(CMAKE_BUILD_TYPE Debug)
 include(CTest)
 enable_testing()
 
-LINK_DIRECTORIES( lib/lua )
+LINK_DIRECTORIES( lib/lua lib/dx11 )
 
 set(LUA_HEADER 
 lib/lua/include/lua.h 
@@ -47,6 +47,8 @@ renderer/material.h
 
 
 set(DX_HEADER 
+lib/dx11/D3DX11.h
+lib/dx11/D3DX11Effect.h
 renderer/dx11.h
 renderer/dx11.cpp
 )
@@ -83,7 +85,7 @@ core/editor/main_editor.h core/editor/main_editor.cpp
 ImGuiColorTextEdit/TextEditor.h ImGuiColorTextEdit/TextEditor.cpp
 )
 
-INCLUDE_DIRECTORIES(${LUA_HEADER} ${VK_HEADER} ${REND_HEADER} ${TOOLS} ${CORE_HEADER} ${IMGUI} ${IMGUI_VK} ${IMGUI_DX} ${EDITOR_MAIN})
+INCLUDE_DIRECTORIES(${LUA_HEADER} ${DX_HEADER} ${VK_HEADER} ${REND_HEADER} ${TOOLS} ${CORE_HEADER} ${IMGUI} ${IMGUI_VK} ${IMGUI_DX} ${EDITOR_MAIN})
 
 if(WIN32)
 	add_executable(trigger main.cpp 
@@ -122,7 +124,7 @@ if(WIN32) # Check if we are on Windows
 			WIN32_EXECUTABLE YES
 		)
 		LINK_LIBRARIES( lua53 d3d11 d3dcompiler dxgi )
-		target_link_libraries(trigger "d3d11.lib" "d3dcompiler.lib" "dxgi.lib" "lua53.lib")
+		target_link_libraries(trigger "d3d11.lib" "d3dx11.lib" "d3dcompiler.lib" "dxgi.lib" "lua53.lib" "Effects11d.lib")
 	elseif(CMAKE_COMPILER_IS_GNUCXX)
 			# SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mwindows") # Not tested
 	else()

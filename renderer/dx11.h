@@ -3,6 +3,7 @@
 #define DX11_HEADER
 
 #include "renderer.h"
+#include "../../lib/dx11/D3DX11Effect.h"
 #include <d3d11.h>
 #include <dxgi.h>
 #include <cassert>
@@ -12,8 +13,6 @@
 #include <vector>
 #include <memory>
 
-#define ReleaseCOM(x) { if(x){ x->Release(); x = 0; } }
-#define SafeDelete(x) { delete x; x = 0; }
 
 namespace trigger
 {
@@ -33,6 +32,8 @@ namespace trigger
 			ID3D11RenderTargetView* render_target_view;
 			ID3D11DepthStencilView* depth_stencil_view;
 			D3D11_VIEWPORT			screen_viewport;
+
+			EFFECT					fxs;
 
 			std::string title;
 			D3D_DRIVER_TYPE driver_type;
