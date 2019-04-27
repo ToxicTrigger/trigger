@@ -36,6 +36,7 @@ namespace trigger::rend
     public:
         std::unique_ptr<trigger::core::file> path;
         shader_type type;
+		EFFECT fx;
 
         shader(std::string shader_path, shader_type Type, DEVICE d3d_device, EFFECT fxs)
         {
@@ -49,7 +50,6 @@ namespace trigger::rend
 
         bool load_shader(DEVICE d3d_device, EFFECT fxs)
         {
-            
 #ifdef _WIN64
 			DWORD shader_flag = 0;
 			ID3D10Blob* compiled_shader = 0;
@@ -58,15 +58,21 @@ namespace trigger::rend
 			if (compilation_msg != 0)
 			{
 				MessageBoxA(0, (char*)compilation_msg->GetBufferPointer(), 0, 0);
-				
+				return false;
 			}
+			if (hr != S_OK)
+			{
+				MessageBoxA(0, "Can't Find File!", 0, 0);
+				return false;
+			}
+
 			D3DX11CreateEffectFromMemory(compiled_shader->GetBufferPointer(), compiled_shader->GetBufferSize(), 0, d3d_device, &fxs);
+			fx = fxs;
 			ReleaseCOM(compiled_shader);
-			fxs->GetTechniqueByName("ColorTech");
 #else
 
 #endif
-            return false;
+            return true;
         }
 
         bool const is_usable()

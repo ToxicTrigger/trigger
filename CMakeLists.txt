@@ -15,7 +15,7 @@ set(CMAKE_BUILD_TYPE Debug)
 include(CTest)
 enable_testing()
 
-LINK_DIRECTORIES( lib/lua lib/dx11 )
+LINK_DIRECTORIES( lib/lua lib/dx11 lib/vk/glm lib/vk/glm/ext)
 
 set(LUA_HEADER 
 lib/lua/include/lua.h 
@@ -63,10 +63,11 @@ lib/vk/glfw-3.2.1.WIN64/include/
 lib/vk/glfw-3.2.1.WIN64/include/GLFW/glfw3.h
 renderer/vk.h 
 renderer/vk.cpp
-lib/vk/glm/glm.hpp
 )
 
 set(CORE_HEADER 
+lib/vk/glm/glm.hpp
+lib/vk/glm/ext/matrix_clip_space.hpp
 core/game/actor.h 
 core/game/component.h 
 core/game/component_world.h 

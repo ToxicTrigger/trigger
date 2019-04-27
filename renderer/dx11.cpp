@@ -122,23 +122,118 @@ void dx11::set_up()
 	ReleaseCOM(dxgiDevice);
 	ReleaseCOM(dxgiAdapter);
 	ReleaseCOM(dxgiFactory);
+	
+	this->build_draw_object();
 
-	//resource init
-
-
-	trigger::rend::material* mat = new trigger::rend::material();
-	mat->add_shader("Assets/Shaders/Default.hlsl", shader_type::frag, this->device, this->fxs);
     this->resize();
 }
 
-
+float tick = 0;
 void dx11::draw()
 {
+	{
+		vec3 pos(0.0f,3.0f, -5.0f);
+		vec3 target(0.0f, 0.0f, 0.0f);
+		vec3 up(0.0f, 1.0f, 0.0f);
+		this->view = glm::lookAtLH(pos, target, up);
+		//this->world = glm::rotate(world, 0.0001f, up);
+		this->world = glm::translate(world, glm::vec3(0.0001f, 0.0f, 0.0f));
+		tick += 0.001f;
+	}
+
     this->immediate_context->ClearRenderTargetView(this->render_target_view, reinterpret_cast<const float*>(&trigger::colors::LightSteelBlue));
     this->immediate_context->ClearDepthStencilView(this->depth_stencil_view, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-    this->immediate_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	this->immediate_context->IASetInputLayout(this->input_layout);
+	this->immediate_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	UINT stride = sizeof(trigger::math::vertex);
+	UINT offset = 0;
+	this->immediate_context->IASetVertexBuffers(0, 1, &this->vb_box, &stride, &offset);
+	this->immediate_context->IASetIndexBuffer(this->ib_box, DXGI_FORMAT_R32_UINT, 0);
+	
+	glm::mat4 wvp =  proj *view * world;
+	this->mfxWorldViewProj->SetMatrix(reinterpret_cast<float*>(&wvp));
+
+	D3DX11_TECHNIQUE_DESC techDesc;
+	this->tech->GetDesc(&techDesc);
+	for (UINT i = 0; i < techDesc.Passes; ++i)
+	{
+		this->tech->GetPassByIndex(i)->Apply(0, this->immediate_context);
+		//box indices
+		//TODO :: how i got my indices..
+		D3D11_BUFFER_DESC indices;
+		this->ib_box->GetDesc(&indices);
+		this->immediate_context->DrawIndexed(indices.ByteWidth, 0, 0);
+	}
 
     this->swap_chain->Present(0,0);
+}
+
+void trigger::rend::dx11::build_vertex_layout()
+{
+	// Create the vertex input layout.
+	D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
+	{
+		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}
+	};
+
+	D3DX11_PASS_DESC passDesc;
+	this->tech->GetPassByIndex(0)->GetDesc(&passDesc);
+	this->device->CreateInputLayout(vertexDesc, 2, passDesc.pIAInputSignature, passDesc.IAInputSignatureSize, &this->input_layout);
+}
+
+void trigger::rend::dx11::build_effects()
+{
+	trigger::rend::material* mat = new trigger::rend::material();
+	mat->add_shader("Assets/Shaders/color.hlsl", shader_type::frag, this->device, this->fxs);
+	this->tech = mat->shaders[0]->fx->GetTechniqueByName("ColorTech");
+	this->mfxWorldViewProj = mat->shaders[0]->fx->GetVariableByName("gWorldViewProj")->AsMatrix();
+	this->build_vertex_layout();
+}
+
+void trigger::rend::dx11::build_draw_object()
+{
+	this->proj = glm::mat4(1.0f);
+	this->world = glm::mat4(1.0f);
+	this->view = glm::mat4(1.0f);
+
+	// Create vertex buffer
+	trigger::math::vertex vertices[] =
+	{
+		{vec3(-1.0f, -1.0f, 0.0f), vec4(1.0f, 0.0f, 0.0f, 1.0f), vec2(0.0f, 0.0f)},
+		{vec3(0.0f, 1.0f, 0.0f), vec4(0.0f, 1.0f, 0.0f, 1.0f), vec2(0.0f, 0.0f)},
+		{vec3(1.0f, -1.0f, 0.0f), vec4(0.0f, 0.0f, 1.0f, 1.0f), vec2(0.0f, 0.0f)},
+	};
+
+	D3D11_BUFFER_DESC vbd;
+	vbd.Usage = D3D11_USAGE_IMMUTABLE;
+	vbd.ByteWidth = sizeof(trigger::math::vertex) * ARRAYSIZE(vertices);
+	vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vbd.CPUAccessFlags = 0;
+	vbd.MiscFlags = 0;
+	vbd.StructureByteStride = 0;
+	D3D11_SUBRESOURCE_DATA vinitData;
+	vinitData.pSysMem = vertices;
+	this->device->CreateBuffer(&vbd, &vinitData, &this->vb_box);
+
+	UINT indices[] = {
+		// front face
+		0, 1, 2,
+	};
+
+	D3D11_BUFFER_DESC ibd;
+	ibd.Usage = D3D11_USAGE_IMMUTABLE;
+	ibd.ByteWidth = sizeof(UINT) * ARRAYSIZE(indices);
+	ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	ibd.CPUAccessFlags = 0;
+	ibd.MiscFlags = 0;
+	ibd.StructureByteStride = 0;
+	D3D11_SUBRESOURCE_DATA iinitData;
+	iinitData.pSysMem = indices;
+	(this->device->CreateBuffer(&ibd, &iinitData, &this->ib_box));
+
+	this->build_effects();
 }
 
 int dx11::rendering()
@@ -214,6 +309,11 @@ void dx11::resize()
     this->screen_viewport.MaxDepth = 1.0f;
     
     this->immediate_context->RSSetViewports(1, &this->screen_viewport);
+
+	//TEST
+	this->proj = glm::perspectiveFovLH(20.0f, static_cast<float>(mClientWidth), static_cast<float>(mClientHeight), 0.0f, 1000.0f);
+	//this->proj = glm::perspective(glm::radians(60.0f), this->get_aspect_ratio(), 0.1f, 100.0f);
+	//this->proj = glm::perspectiveFov(60.0f, (float)mClientWidth, (float)mClientHeight, 0.1f, 100.0f);
 }
 
 INSTANCE dx11::get_instance() const
@@ -228,7 +328,7 @@ HWND dx11::get_HWND() const
 
 float dx11::get_aspect_ratio() const
 {
-    return static_cast<float>(this->mClientWidth / this->mClientHeight);
+    return static_cast<float>(this->mClientWidth) / static_cast<float>(this->mClientHeight);
 }
 
 LRESULT dx11::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -247,7 +347,7 @@ LRESULT dx11::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             return 0;
         case WM_SIZE:
                 this->mClientWidth = LOWORD(lParam);
-                this->mClientWidth = HIWORD(lParam);
+                this->mClientHeight = HIWORD(lParam);
                 if(this->device && this->engine->get_state() != trigger::core::engine_state::not_inited)
                 {
                     this->resize();

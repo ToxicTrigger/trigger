@@ -4,6 +4,8 @@
 
 #include "renderer.h"
 #include "../../lib/dx11/D3DX11Effect.h"
+#include <glm/ext/matrix_clip_space.hpp>
+#include <glm/ext/matrix_transform.hpp>
 #include <d3d11.h>
 #include <dxgi.h>
 #include <cassert>
@@ -34,6 +36,14 @@ namespace trigger
 			D3D11_VIEWPORT			screen_viewport;
 
 			EFFECT					fxs;
+			ID3DX11EffectTechnique*	tech;
+			ID3D11InputLayout*		input_layout;
+			ID3D11Buffer*			vb_box;
+			ID3D11Buffer*			ib_box;
+			ID3DX11EffectMatrixVariable* mfxWorldViewProj;
+			glm::mat4				proj;
+			glm::mat4				view;
+			glm::mat4				world;
 
 			std::string title;
 			D3D_DRIVER_TYPE driver_type;
@@ -45,6 +55,11 @@ namespace trigger
             virtual int rendering() override;
             virtual void resize()   override;
             virtual void draw()     override;
+
+            void build_vertex_layout();
+            void build_effects();
+            void build_draw_object();
+            
             virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 			virtual ~dx11();
 
