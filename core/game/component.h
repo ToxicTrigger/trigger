@@ -40,7 +40,6 @@ namespace trigger
 		std::shared_ptr<cpptoml::table> _tmp;
 		
 	public:
-		float time_scale = 1.0f;
 		bool active = true;
 
 		component()
@@ -48,7 +47,6 @@ namespace trigger
 			_tmp = cpptoml::make_table();
 			_params = cpptoml::make_table();
 			
-			SAVE_VAR(float , time_scale);
 			SAVE_VAR(bool, active);
 
 			_params->insert(T_CLASS, _tmp);
@@ -59,8 +57,7 @@ namespace trigger
 			return _params;
 		}
 
-		virtual void update(float delta) noexcept
-		{};
+		virtual void update(float delta) noexcept = 0;
 	};
 }
 

@@ -15,7 +15,7 @@ set(CMAKE_BUILD_TYPE Debug)
 include(CTest)
 enable_testing()
 
-LINK_DIRECTORIES( lib/lua lib/dx11 lib/vk/glm lib/vk/glm/ext)
+LINK_DIRECTORIES( lib/lua lib/dx11 lib/vk/glm lib/vk/glm/ext core)
 
 set(LUA_HEADER 
 lib/lua/include/lua.h 
@@ -35,7 +35,8 @@ core/imgui/imgui_impl_vulkan.h  core/imgui/imgui_impl_vulkan.cpp
 )
 
 set(IMGUI_DX 
-
+core/imgui/imgui_impl_win32.h  core/imgui/imgui_impl_win32.cpp 
+core/imgui/imgui_impl_dx11.h  core/imgui/imgui_impl_dx11.cpp
 )
 
 set(REND_HEADER 
@@ -68,15 +69,17 @@ renderer/vk.cpp
 set(CORE_HEADER 
 lib/vk/glm/glm.hpp
 lib/vk/glm/ext/matrix_clip_space.hpp
-core/game/actor.h 
 core/game/component.h 
-core/game/component_world.h 
+core/game/world.h 
 core/game/fsm.h 
 core/game/trigger_tools.h 
 core/game/vec.h core/game/vec.cpp 
 core/game/engine.h core/game/engine.cpp
 core/game/file.h
 core/game/mini_core.h
+
+core/game/object_renderer.h
+core/game/transform.h core/game/transform.cpp
 )
 
 set(EDITOR_MAIN

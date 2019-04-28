@@ -2,14 +2,12 @@
 #define MINI_CORE_H
 #define _CRT_SECURE_NO_WARNINGS
 
+#include <vector>
 #include <algorithm>
-#include "component_world.h"
 #include "engine.h"
 #include "../../tools/macros.h"
 
 #include <glm/glm.hpp>
-#include "vec.h"
-
 typedef glm::fvec2 vec2;
 typedef glm::fvec3 vec3;
 typedef glm::fvec4 vec4;

@@ -2,8 +2,9 @@
 #define ENGINE_H
 
 #include "../../renderer/renderer.h"
-#include "component_world.h"
+#include "world.h"
 #include "mini_core.h"
+#include "../core/editor/main_editor.h"
 
 #ifdef _WIN64
 #include <windows.h>
@@ -41,7 +42,9 @@ namespace trigger
 
         public:
             trigger::rend::renderer *renderer;
-            trigger::component_world *editors;
+            trigger::world *editors;
+			trigger::world *object;
+			trigger::edit::main_editor *main_editor;
 
         public:
 #ifdef _WIN64

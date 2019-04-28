@@ -6,6 +6,9 @@
 #include "../../lib/dx11/D3DX11Effect.h"
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
+#include <imgui.h>
+#include "../core/imgui/imgui_impl_dx11.h"
+#include "../core/imgui/imgui_impl_win32.h"
 #include <d3d11.h>
 #include <dxgi.h>
 #include <cassert>
@@ -14,6 +17,7 @@
 #include <algorithm>
 #include <vector>
 #include <memory>
+#include "../core/game/object_renderer.h"
 
 
 namespace trigger
@@ -31,8 +35,8 @@ namespace trigger
 			ID3D11DeviceContext* 	immediate_context;
 			IDXGISwapChain*			swap_chain;
 			ID3D11Texture2D* 		depth_stencil_buffer;
-			ID3D11RenderTargetView* render_target_view;
-			ID3D11DepthStencilView* depth_stencil_view;
+			ID3D11RenderTargetView* render_target_view = nullptr;
+			ID3D11DepthStencilView* depth_stencil_view = nullptr;
 			D3D11_VIEWPORT			screen_viewport;
 
 			EFFECT					fxs;

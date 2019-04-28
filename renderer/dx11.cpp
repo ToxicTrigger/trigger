@@ -118,6 +118,23 @@ void dx11::set_up()
 	dxgiAdapter->GetParent(__uuidof(IDXGIFactory), (void**)&dxgiFactory);
 
 	dxgiFactory->CreateSwapChain(this->device, &sd, &this->swap_chain);
+
+	//ImGui INiT
+	{
+		// Setup Dear ImGui context
+		IMGUI_CHECKVERSION();
+		ImGui::CreateContext();
+		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+
+		// Setup Dear ImGui style
+		ImGui::StyleColorsDark();
+		//ImGui::StyleColorsClassic();
+
+		// Setup Platform/Renderer bindings
+		ImGui_ImplWin32_Init(this->app_hwnd);
+		ImGui_ImplDX11_Init(this->device, this->immediate_context);
+	}
 	
 	ReleaseCOM(dxgiDevice);
 	ReleaseCOM(dxgiAdapter);
@@ -128,22 +145,46 @@ void dx11::set_up()
     this->resize();
 }
 
+#include "../core/editor/impl_editor.h"
+static ID3D11ShaderResourceView* texture_view = nullptr;
 float tick = 0;
 void dx11::draw()
 {
 	{
-		vec3 pos(0.0f,3.0f, -5.0f);
+		vec3 pos(0.0f,3.0f, -10.0f);
 		vec3 target(0.0f, 0.0f, 0.0f);
 		vec3 up(0.0f, 1.0f, 0.0f);
 		this->view = glm::lookAtLH(pos, target, up);
-		//this->world = glm::rotate(world, 0.0001f, up);
-		this->world = glm::translate(world, glm::vec3(0.0001f, 0.0f, 0.0f));
+		auto n = glm::normalize(this->engine->main_editor->get_window_position());
+		auto t = glm::translate(world, n);
 		tick += 0.001f;
 	}
 
-    this->immediate_context->ClearRenderTargetView(this->render_target_view, reinterpret_cast<const float*>(&trigger::colors::LightSteelBlue));
-    this->immediate_context->ClearDepthStencilView(this->depth_stencil_view, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	{
+		// Start the Dear ImGui frame
+		ImGui_ImplDX11_NewFrame();
+		ImGui_ImplWin32_NewFrame();
+		ImGui::NewFrame();
+	}
+
+	auto editors = this->engine->editors->get_objects<trigger::edit::impl_editor>();
+	for (auto e : editors)
+	{
+		e->draw();
+	}
+	
+	auto objs = this->engine->object->get_objects < trigger::transform>();
+	for (auto i : objs)
+	{
+		ImGui::Begin(i->name.c_str());
+		ImGui::Text("%f", i->get_component<trigger::comp::object_renderer>()->time);
+		ImGui::End();
+	}
+
+	this->immediate_context->ClearRenderTargetView(this->render_target_view, reinterpret_cast<const float*>(&trigger::colors::LightSteelBlue));
+	this->immediate_context->ClearDepthStencilView(this->depth_stencil_view, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	this->immediate_context->IASetInputLayout(this->input_layout);
+	// TODO :: modify
 	this->immediate_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	UINT stride = sizeof(trigger::math::vertex);
@@ -166,7 +207,10 @@ void dx11::draw()
 		this->immediate_context->DrawIndexed(indices.ByteWidth, 0, 0);
 	}
 
-    this->swap_chain->Present(0,0);
+	ImGui::Render();
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
+    this->swap_chain->Present(1,0);
 }
 
 void trigger::rend::dx11::build_vertex_layout()
@@ -197,6 +241,11 @@ void trigger::rend::dx11::build_draw_object()
 	this->proj = glm::mat4(1.0f);
 	this->world = glm::mat4(1.0f);
 	this->view = glm::mat4(1.0f);
+
+	auto tmp = new transform();
+	auto rend = new trigger::comp::object_renderer();
+	tmp->add_component(rend);
+	this->engine->object->add(tmp);
 
 	// Create vertex buffer
 	trigger::math::vertex vertices[] =
@@ -270,6 +319,9 @@ void dx11::resize()
     assert(this->device);
     assert(this->swap_chain);
 
+	ReleaseCOM(this->render_target_view);
+	ReleaseCOM(this->depth_stencil_view);
+
     (this->swap_chain->ResizeBuffers(1, this->mClientWidth, this->mClientHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 0)); 
     //importent
     ID3D11Texture2D* back_buffer;
@@ -297,7 +349,6 @@ void dx11::resize()
 
     this->device->CreateTexture2D(&depth_desc, 0, &this->depth_stencil_buffer);
     this->device->CreateDepthStencilView(this->depth_stencil_buffer, 0, &this->depth_stencil_view);
-    
     this->immediate_context->OMSetRenderTargets(1, &this->render_target_view, this->depth_stencil_view);
 
     this->screen_viewport.TopLeftX = 0;
@@ -331,8 +382,12 @@ float dx11::get_aspect_ratio() const
     return static_cast<float>(this->mClientWidth) / static_cast<float>(this->mClientHeight);
 }
 
+extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT dx11::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam))
+		return true;
+
     switch(msg)
     {
         case WM_ACTIVATE:
@@ -363,6 +418,9 @@ LRESULT dx11::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 dx11::~dx11()
 {
+	ImGui_ImplDX11_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
     ReleaseCOM(this->render_target_view);
     ReleaseCOM(this->depth_stencil_view);
     ReleaseCOM(this->swap_chain);
@@ -373,6 +431,7 @@ dx11::~dx11()
     }
     ReleaseCOM(this->immediate_context);
     ReleaseCOM(this->device);
+
 }
 
 #endif

@@ -21,8 +21,10 @@ bool trigger::core::engine::init(INSTANCE hInst, int w, int h, bool edit_mod)
 {
     this->state = engine_state::not_inited;
 
-    this->editors = new trigger::component_world(true);
-    this->editors->add(new trigger::edit::main_editor());
+    this->editors = new trigger::world(true);
+	this->object = new trigger::world(true);
+	this->main_editor = new trigger::edit::main_editor();
+    this->editors->add(this->main_editor);
     this->renderer = new trigger::rend::REND(hInst, w, h, edit_mod, this);
     this->state = engine_state::initing;
     return true;
@@ -36,5 +38,4 @@ int trigger::core::engine::run()
 
 trigger::core::engine::~engine()
 {
-
 }
