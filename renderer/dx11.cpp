@@ -244,7 +244,8 @@ void trigger::rend::dx11::build_draw_object()
 
 	auto tmp = new transform();
 	auto rend = new trigger::comp::object_renderer();
-	tmp->add_component(rend);
+	rend->time = 10;
+	tmp->add_component(rend);	
 	this->engine->object->add(tmp);
 
 	// Create vertex buffer

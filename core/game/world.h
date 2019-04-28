@@ -39,6 +39,7 @@ namespace trigger
 		explicit inline world(bool UseThread)
 		{
 			start_time = time::now();
+			delta_time = std::chrono::duration<float>();
 			objects = std::map<int, transform*>();
 
 			use_thread = UseThread;
@@ -52,6 +53,7 @@ namespace trigger
 		{
 			objects = std::map<int, transform*>();
 			start_time = time::now();
+			delta_time = std::chrono::duration<float>();
 			set_name(name);
 
 			use_thread = UseThread;
@@ -133,7 +135,11 @@ namespace trigger
 		//add component in world-component-list
 		inline constexpr void add(transform * com) noexcept
 		{
-			if (com != nullptr) objects.insert(std::pair<int, transform*> (com->get_instance_id(), com));
+			if (com != nullptr) 
+				objects.insert
+				(
+					std::pair<int, transform*> (com->get_instance_id(), com)
+				);
 		}
 
 		inline void clean_world() noexcept
