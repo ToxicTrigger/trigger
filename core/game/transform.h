@@ -73,10 +73,7 @@ namespace trigger
 		{
 			if (this->get_component<T>() == nullptr)
 			{
-				T* com = new T();
-				auto size = sizeof(T);
-				memcpy_s(com, sizeof(T), component, sizeof(T));
-				this->components.push_back(com);
+				this->components.push_back(component);
 				return true;
 			}
 			return false;

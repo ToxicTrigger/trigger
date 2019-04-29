@@ -8,6 +8,7 @@
 #include <mutex>
 #include <fstream>
 #include <map>
+#include <Windows.h>
 
 #include "transform.h"
 using namespace trigger;
@@ -23,6 +24,8 @@ namespace trigger
 		std::map<int, transform*> objects;
 		Time start_time;
 		std::chrono::duration<float> delta_time;
+		Time old_time;
+
 		std::chrono::duration<float> run_time;
 		std::thread main_thread;
 		std::mutex lock;
@@ -40,12 +43,13 @@ namespace trigger
 		{
 			start_time = time::now();
 			delta_time = std::chrono::duration<float>();
+			old_time = time::now();
 			objects = std::map<int, transform*>();
 
 			use_thread = UseThread;
 			if (UseThread)
 			{
-				main_thread = std::thread(&world::update, this, delta_time.count());
+				main_thread = std::thread(&world::update_all, this);
 			}
 		}
 
@@ -54,12 +58,13 @@ namespace trigger
 			objects = std::map<int, transform*>();
 			start_time = time::now();
 			delta_time = std::chrono::duration<float>();
+			old_time = time::now();
 			set_name(name);
 
 			use_thread = UseThread;
 			if (UseThread)
 			{
-				main_thread = std::thread(&world::update, this, delta_time.count());
+				main_thread = std::thread(&world::update_all, this);
 			}
 		}
 
@@ -135,10 +140,10 @@ namespace trigger
 		//add component in world-component-list
 		inline constexpr void add(transform * com) noexcept
 		{
-			if (com != nullptr) 
+			if (com != nullptr)
 				objects.insert
 				(
-					std::pair<int, transform*> (com->get_instance_id(), com)
+					std::pair<int, transform*>(com->get_instance_id(), com)
 				);
 		}
 
@@ -149,7 +154,6 @@ namespace trigger
 				auto delete_list = std::list<transform*>();
 				for (auto i : objects)
 				{
-					
 					if (!i.second->active) delete_list.push_back(i.second);
 				}
 
@@ -160,41 +164,30 @@ namespace trigger
 			}
 		}
 
-		//simulating world
-		inline void update(float delta) noexcept
-		{
-			while (use_thread)
-			{
-				if (objects.size() != 0)
-				{
-					while (this->active)
-					{
-						update_all();
-					}
-				}
-			}
-		}
-
 		void update_all()
 		{
-			if (objects.size() != 0)
+			do
 			{
-				run_time = std::chrono::duration_cast<std::chrono::duration<float>>(time::now() - start_time);
-				auto t = time::now();
-				lock.lock();
-				for (auto i : objects)
+				this->lock.lock();
+				this->old_time = time::now();
+				
+				if (objects.size() != 0)
 				{
-					if (i.second != nullptr)
+					run_time = std::chrono::duration_cast<std::chrono::duration<float>>(time::now() - start_time);
+					for (auto i : objects)
 					{
-						if (i.second->active)
+						if (i.second != nullptr)
 						{
-							i.second->update(this->delta_time.count() * time_scale * i.second->time_scale);
+							if (i.second->active)
+							{
+								i.second->update(this->delta_time.count() * time_scale * i.second->time_scale);
+							}
 						}
 					}
 				}
-				lock.unlock();
-				delta_time = std::chrono::duration_cast<std::chrono::duration<float>>(time::now() - t);
-			}
+				delta_time = std::chrono::duration_cast<std::chrono::duration<float>>(time::now() - old_time);
+				this->lock.unlock();
+			} while (use_thread && this->active);
 		}
 
 		////TODO

@@ -155,9 +155,7 @@ void dx11::draw()
 		vec3 target(0.0f, 0.0f, 0.0f);
 		vec3 up(0.0f, 1.0f, 0.0f);
 		this->view = glm::lookAtLH(pos, target, up);
-		auto n = glm::normalize(this->engine->main_editor->get_window_position());
-		auto t = glm::translate(world, n);
-		tick += 0.001f;
+		this->world = glm::rotate(world, this->engine->editors->get_delta_time(), glm::vec3(0,0,1));
 	}
 
 	{
@@ -173,11 +171,11 @@ void dx11::draw()
 		e->draw();
 	}
 	
-	auto objs = this->engine->object->get_objects < trigger::transform>();
+	auto objs = this->engine->object->get_all();
 	for (auto i : objs)
 	{
-		ImGui::Begin(i->name.c_str());
-		ImGui::Text("%f", i->get_component<trigger::comp::object_renderer>()->time);
+		ImGui::Begin(i.second->name.c_str());
+		ImGui::Text("%f", i.second->get_component<trigger::comp::object_renderer>()->time);
 		ImGui::End();
 	}
 
@@ -244,7 +242,6 @@ void trigger::rend::dx11::build_draw_object()
 
 	auto tmp = new transform();
 	auto rend = new trigger::comp::object_renderer();
-	rend->time = 10;
 	tmp->add_component(rend);	
 	this->engine->object->add(tmp);
 
