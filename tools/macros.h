@@ -27,8 +27,8 @@
 #define REND vk
 #define INSTANCE VkInstance
 #define WH GLFWwindow
-#define DEVICE 
-#define EFFECT 
+#define DEVICE VkDevice
+#define EFFECT VkQueue 
 #endif
 
 #endif

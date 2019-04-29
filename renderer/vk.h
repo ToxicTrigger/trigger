@@ -342,6 +342,7 @@ namespace trigger
             virtual int init() override;
             virtual void set_up() override;
             virtual void resize() override;
+            virtual void draw() override;
             virtual int rendering() override;
             void draw_editors();
 

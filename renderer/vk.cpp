@@ -131,7 +131,7 @@ int vk::init()
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        auto editor_list = this->engine->editors->get_components<trigger::edit::impl_editor>();
+        auto editor_list = this->engine->editors->get_objects<trigger::edit::impl_editor>();
 		for(auto e : editor_list)
 		{
 			e->draw();
@@ -174,7 +174,7 @@ void trigger::rend::vk::draw_editors()
 		ImGui_ImplVulkan_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-		auto editor_list = this->engine->editors->get_components<trigger::edit::impl_editor>();
+		auto editor_list = this->engine->editors->get_objects<trigger::edit::impl_editor>();
 		for(auto e : editor_list)
 		{
 			e->draw();
@@ -191,6 +191,9 @@ void vk::resize()
 {
 
 }
+
+void vk::draw()
+{}
 
 int vk::rendering()
 {

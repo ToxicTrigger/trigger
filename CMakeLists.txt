@@ -73,7 +73,6 @@ core/game/component.h
 core/game/world.h 
 core/game/fsm.h 
 core/game/trigger_tools.h 
-core/game/vec.h core/game/vec.cpp 
 core/game/engine.h core/game/engine.cpp
 core/game/file.h
 core/game/mini_core.h
@@ -119,7 +118,7 @@ include(CPack)
 
 # make shared library
 ADD_LIBRARY(trigger.plugin SHARED 
-renderer/renderer.cpp
+core/game/transform.cpp
 )
 
 if(WIN32) # Check if we are on Windows

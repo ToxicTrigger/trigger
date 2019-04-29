@@ -17,7 +17,7 @@
 #include <dxgi.h>
 #include <d3dcompiler.h>
 #else
-
+#include <vulkan/vulkan.h>
 #endif
 
 namespace trigger::rend

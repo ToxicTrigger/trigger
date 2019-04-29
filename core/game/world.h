@@ -8,7 +8,6 @@
 #include <mutex>
 #include <fstream>
 #include <map>
-#include <Windows.h>
 
 #include "transform.h"
 using namespace trigger;
