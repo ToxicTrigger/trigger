@@ -1,0 +1,15 @@
+[setting]
+	ObjectSize = 2
+	use_thread = true
+	gravity = -9.8000001907348633
+	type = "map"
+	name = "SceneObjects"
+[SceneObjects]
+	[SceneObjects.SeungYun]
+		[SceneObjects.SeungYun.".PEAVcomponent@trigger@@"]
+			hash_code = ["int", "-643011992"]
+			active = ["bool", "1"]
+	[SceneObjects.Jinwon]
+		[SceneObjects.Jinwon.".PEAVcomponent@trigger@@"]
+			hash_code = ["int", "643010462"]
+			active = ["bool", "1"]

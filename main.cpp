@@ -4,10 +4,16 @@
 static bool enable_editor = true;
 
 #ifdef _WIN64
+#include <direct.h>
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, int showCmd)
 {
     if(strcmp(cmdLine, "-exec") == 0) enable_editor = false; 
+
+    char strBuffer[_MAX_PATH] = { 0, };
+	char *pstrBuffer = NULL;
+    std::string path(getcwd( strBuffer, _MAX_PATH ));
     auto engine = new trigger::core::engine(hInstance, 800, 600, enable_editor);
+    assert(trigger::world::save_world(path+"\\Assets\\Scene", "test.txt", engine->object));
 	return engine->renderer->rendering();
 }
 #else

@@ -2,6 +2,7 @@
 #define COMPONENT_H
 
 #include <string>
+#include <iostream>
 #include "trigger_tools.h"
 #include "../../cpptoml/include/cpptoml.h"
 
@@ -48,8 +49,16 @@ namespace trigger
 			_params = cpptoml::make_table();
 			
 			SAVE_VAR(bool, active);
-
 			_params->insert(T_CLASS, _tmp);
+		}
+		
+		component( trigger::component* type )
+		{
+			_tmp = cpptoml::make_table();
+			_params = cpptoml::make_table();
+			
+			SAVE_VAR(bool, active);
+			_params->insert(typeid(type).raw_name(), _tmp);
 		}
 
 		auto get_params()->decltype(_params) 

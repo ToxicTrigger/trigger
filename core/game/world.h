@@ -189,33 +189,34 @@ namespace trigger
 			} while (use_thread && this->active);
 		}
 
-		////TODO
-		//static bool save_world(std::string p, std::string n, component_world *w)
-		//{
-		//	auto map = cpptoml::make_table();
-		//	auto set = cpptoml::make_table();
-		//	auto actors = cpptoml::make_table();
+		//TODO
+		static bool save_world(std::string p, std::string n, world *w)
+		{
+			auto map = cpptoml::make_table();
+			auto set = cpptoml::make_table();
+			auto actors = cpptoml::make_table();
 
-		//	std::ofstream o(p + "/" + n);
-		//	if (!o.is_open()) return false;
-		//	auto ac = w->get_components<transform>();
+			std::ofstream o(p + slash + n);
+			if (!o.is_open()) return false;
+			auto ac = w->get_objects<transform>();
 
-		//	for (auto& i : ac)
-		//	{
-		//		actors->insert(i->name, i->get_params());
-		//	}
+			set->insert("ObjectSize", ac.size());
+			for (auto& i : ac)
+			{
+				actors->insert(i->name, i->get_params());
+			}
 
-		//	set->insert("type", "map");
-		//	set->insert("gravity", w->gravity);
-		//	set->insert("use_thread", w->use_thread);
-		//	set->insert("name", w->name);
-		//	map->insert("setting", set);
+			set->insert("type", "map");
+			set->insert("gravity", w->gravity);
+			set->insert("use_thread", w->use_thread);
+			set->insert("name", w->name);
+			map->insert("setting", set);
 
-		//	map->insert(w->get_name(), actors);
-		//	o << *map;
-		//	o.close();
-		//	return true;
-		//}
+			map->insert(w->get_name(), actors);
+			o << *map;
+			o.close();
+			return true;
+		}
 
 		////TODO
 		//static inline component_world* load_world(std::string path)

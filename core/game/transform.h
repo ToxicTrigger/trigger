@@ -18,7 +18,7 @@ static int make_hash_code()
 namespace trigger
 {
 	/// component head
-	class transform
+	class transform : public trigger::component
 	{
 	private:
 		int hash_code;
@@ -37,10 +37,21 @@ namespace trigger
 		float time_scale = 1.0f;
 		std::string name;
 
-		transform(vec3 pos = vec3(0.0f, 0.0f, 0.0f), vec3 scale = vec3(1.0f, 1.0f, 1.0f), vec3 rot = vec3(0.0f, 0.0f, 0.0f), std::string name = "Object");
+		transform(vec3 pos = vec3(0.0f, 0.0f, 0.0f), vec3 scale = vec3(1.0f, 1.0f, 1.0f), vec3 rot = vec3(0.0f, 0.0f, 0.0f), std::string name = "Object") : trigger::component(this)
+		{
+			this->hash_code = make_hash_code();
+			this->real_position = pos;
+			this->real_scale = scale;
+			this->real_rotation = rot;
+			this->name = name;
+			this->components = std::vector<trigger::component*>();
+			SAVE_VAR(int, hash_code);
+			
+		};
+
 		virtual ~transform();
 
-		void update(float delta);
+		void update(float delta) noexcept;
 
 		template<typename T>
 		T* get_component()

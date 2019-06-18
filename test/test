@@ -1,0 +1,9 @@
+[setting]
+	use_thread = true
+	gravity = -9.8000001907348633
+	type = "map"
+	name = ""
+[]
+	[.Object]
+		[.Object."trigger::component"]
+			active = ["bool", "1"]
