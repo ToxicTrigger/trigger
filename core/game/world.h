@@ -163,6 +163,11 @@ namespace trigger
 			}
 		}
 
+		inline void empty_world() noexcept
+		{
+			this->objects.clear();
+		}
+
 		void update_all()
 		{
 			do
@@ -173,11 +178,11 @@ namespace trigger
 				if (objects.size() != 0)
 				{
 					run_time = std::chrono::duration_cast<std::chrono::duration<float>>(time::now() - start_time);
-					for (auto i : objects)
+					for (auto&& i : objects)
 					{
 						if (i.second != nullptr)
 						{
-							if (i.second->active)
+							if (objects.size() != 0 && i.second->active)
 							{
 								i.second->update(this->delta_time.count() * time_scale * i.second->time_scale);
 							}
