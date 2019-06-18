@@ -1,7 +1,7 @@
 #pragma once
+
 #include "component.h"
-#include <chrono>
-#include <glm/glm.hpp>
+
 typedef glm::fvec2 vec2;
 typedef glm::fvec3 vec3;
 typedef glm::fvec4 vec4;
@@ -17,17 +17,27 @@ static int make_hash_code()
 
 namespace trigger
 {
+	class component;
+	class transform;
+
+	static auto instance(std::string type) -> decltype(auto)
+	{
+		decltype(trigger::CLASS_ARRAY[type]) tmp = trigger::CLASS_ARRAY[type];
+		return tmp;
+	};
+
 	/// component head
 	class transform : public trigger::component
 	{
 	private:
-		int hash_code;
+		int instance_id;
 
 	protected:
 		vec3 real_position;
 		vec3 real_scale;
 		vec3 real_rotation;
 		std::vector<trigger::component*> components;
+		std::string name;
 
 	public:
 		vec3 position;
@@ -35,19 +45,61 @@ namespace trigger
 		vec3 rotation;
 		bool active;
 		float time_scale = 1.0f;
-		std::string name;
+		
 
-		transform(vec3 pos = vec3(0.0f, 0.0f, 0.0f), vec3 scale = vec3(1.0f, 1.0f, 1.0f), vec3 rot = vec3(0.0f, 0.0f, 0.0f), std::string name = "Object") : trigger::component(this)
+		transform(vec3 pos = vec3(0.0f, 0.0f, 0.0f), vec3 scale = vec3(1.0f, 1.0f, 1.0f), vec3 rot = vec3(0.0f, 0.0f, 0.0f), std::string name = "Object") : trigger::component(T_CLASS)
 		{
-			this->hash_code = make_hash_code();
 			this->real_position = pos;
 			this->real_scale = scale;
 			this->real_rotation = rot;
 			this->name = name;
 			this->components = std::vector<trigger::component*>();
-			SAVE_VAR(int, hash_code);
-			
+			this->instance_id = make_hash_code();
+			save();
 		};
+
+		std::shared_ptr<cpptoml::table> get_component_toml(std::vector<trigger::component*> vec)
+		{
+			auto table = cpptoml::make_table();
+			for(auto&& i : vec)
+			{
+				table->insert(i->get_type_name(), i->get_params());
+			}
+			return table;
+		}
+
+		std::string get_string_from_table(std::shared_ptr<cpptoml::table> table)
+		{
+			std::ostringstream o;
+			o << *table;
+			return o.str();
+		}
+
+		void set_name(std::string name)
+		{
+			this->name = name;
+			save();
+		}
+
+		std::string get_name()
+		{
+			return this->name;
+		}
+
+		void set_instance_id(int code)
+		{
+			this->instance_id = code;
+			save();
+		}
+
+		virtual void save()
+		{
+			SAVE_TOML(components, get_component_toml(components));
+			SAVE_STR(name, name);
+			SAVE_STR(real_position , glm::to_string(real_position));
+			SAVE_VAR(int, instance_id);
+			SAVE_VAR(size_t, type_code);
+		}
 
 		virtual ~transform();
 
@@ -74,6 +126,7 @@ namespace trigger
 			{
 				T* com = new T();
 				this->components.push_back(com);
+				save();
 				return true;
 			}
 			return false;
@@ -85,6 +138,7 @@ namespace trigger
 			if (this->get_component<T>() == nullptr)
 			{
 				this->components.push_back(component);
+				save();
 				return true;
 			}
 			return false;

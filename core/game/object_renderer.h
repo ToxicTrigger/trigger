@@ -7,11 +7,17 @@ namespace trigger::comp
     {
 	public:
 		float time;
-		object_renderer() : component()
+
+		object_renderer() : component(T_CLASS)
 		{
-			time = 0;
+			SAVE_VAR_INIT(float, time, 0.0f);
 		};
 
+		virtual void save()
+		{
+			SAVE_VAR(float, time);
+		}
+	
 		virtual void update(float delta) noexcept override
 		{
 			time += delta;

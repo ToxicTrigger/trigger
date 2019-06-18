@@ -336,8 +336,6 @@ namespace trigger
     {
         class vk : public trigger::rend::renderer
         {
-        public:
-
         private:
             virtual int init() override;
             virtual void set_up() override;

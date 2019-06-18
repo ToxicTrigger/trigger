@@ -7,10 +7,7 @@
 
 namespace trigger
 {
-    namespace core
-    {
-        class engine;
-    }
+    namespace core { class engine; };
 
     namespace rend
     {

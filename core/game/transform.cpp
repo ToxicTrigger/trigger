@@ -2,6 +2,7 @@
 
 trigger::transform::~transform()
 {
+	trigger::component::~component();
 	this->components.clear();
 }
 
@@ -15,7 +16,7 @@ void trigger::transform::update(float delta) noexcept
 
 const int trigger::transform::get_instance_id() const
 {
-	return this->hash_code;
+	return this->instance_id;
 }
 
 auto trigger::transform::get_components() const
