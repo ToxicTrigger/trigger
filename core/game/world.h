@@ -198,7 +198,7 @@ namespace trigger
 		{
 			std::ofstream o(p + slash + n);
 			if (!o.is_open()) return false;
-			
+
 			auto map = cpptoml::make_table();
 			auto set = cpptoml::make_table();
 			auto actors = cpptoml::make_table();
@@ -240,14 +240,20 @@ namespace trigger
 			
 			for(const auto& i : *scene_objs)
 			{
-				auto tmp = new trigger::transform(vec3((0.0F), (0.0F), (0.0F)), vec3((1.0F), (1.0F), (1.0F)), vec3((0.0F), (0.0F), (0.0F)), i.first);
+				auto tmp = new trigger::transform
+				(
+					vec3((0.0F), (0.0F), (0.0F)), 
+					vec3((1.0F), (1.0F), (1.0F)), 
+					vec3((0.0F), (0.0F), (0.0F)), 
+					i.first
+				);
+
 				auto tab = scene_objs->get_table(i.first);
 				for(auto ii : *tab)
 				{
 					auto dd = tab->get_table(ii.first);
 					tmp->set_name(get_data<std::string>(dd, "name"));
-					tmp->set_instance_id(get_data_int(dd,"instance_id"));
-					tmp = cast<trigger::transform*>(const_cast<char*>(get_data<std::string>(dd, "data").c_str()));
+					tmp->set_instance_id(get_data<int>(dd,"instance_id"));
 				}
 				world->add(tmp);
 			}

@@ -10,7 +10,6 @@
 #include "../../cpptoml/include/cpptoml.h"
 #include "transform.h"
 
-
 //TODO:: Add using macro in import * export component_world's code. 
 
 // Add name in Component List
@@ -53,10 +52,6 @@ static int make_hash_code_()
 	return hash;
 }
 
-#define SAVE(val) reinterpret_cast<char*>(&val)
-#define SAVE_THIS() reinterpret_cast<char*>(this)
-#define LOAD(type, val) reinterpret_cast<type##*>(val);
-
 template <class TO, class FROM>
 TO cast(FROM v)
 {
@@ -66,21 +61,9 @@ TO cast(FROM v)
 template <typename T>
 inline T get_data(std::shared_ptr<cpptoml::table> array, const std::string& key)
 {
-	auto d = array->get_array_of<T>(key);
+	auto d = array->get_array_of<std::string>(key);
 	T a;
 	for(const auto& v : *d)
-	{
-		a = v;
-	}
-	return a;
-}
-
-
-inline int get_data_int(std::shared_ptr<cpptoml::table> array, const std::string& key)
-{
-	auto d = array->get_array_of<std::string>(key);
-	int a = 0;
-	for(const auto v : *d)
 	{
 		std::stringstream s(v);
 		if((s>>a).fail()) continue;
@@ -88,6 +71,9 @@ inline int get_data_int(std::shared_ptr<cpptoml::table> array, const std::string
 	return a;
 }
 
+#define REGI_CLASS(type) \
+_params->insert(type, _tmp); \
+trigger::CLASS_ARRAY.insert(std::pair<std::string, trigger::transform*>(type, (trigger::transform*)this));
 
 #define PRI_A 54059 /* a prime */
 #define PRI_B 76963 /* another prime */
@@ -109,9 +95,6 @@ namespace trigger
 	class component;
 	static std::map<std::string, trigger::transform*> CLASS_ARRAY = std::map<std::string, trigger::transform*>();
 
-	#define REGI_CLASS(type) _params->insert(type, _tmp); \
-	trigger::CLASS_ARRAY.insert(std::pair<std::string, trigger::transform*>(type, (trigger::transform*)this));
-
 	class component
 	{
 	protected:
@@ -126,11 +109,12 @@ namespace trigger
 
 		component()
 		{
+			this->instance_id = make_hash_code_();
 			_tmp = cpptoml::make_table();
 			_params = cpptoml::make_table();
+
 			type_code = hash_str("trigger::component");
 			type_name = "trigger::component";
-			this->instance_id = make_hash_code_();
 			SAVE_VAR(bool, active);
 			SAVE_VAR(size_t, type_code);
 			SAVE_VAR(int, instance_id);
@@ -142,15 +126,19 @@ namespace trigger
 			this->instance_id = make_hash_code_();
 			_tmp = cpptoml::make_table();
 			_params = cpptoml::make_table();
-			REGI_CLASS(type);
-			type_code = hash_str(type.c_str());
-			type_name = type;
+
 			SAVE_VAR(bool, active);
 			SAVE_VAR(size_t, type_code);
 			SAVE_VAR(int, instance_id);
+			REGI_CLASS(type);
+			type_code = hash_str(type.c_str());
+			type_name = type;
 		}
 
-		virtual void save(){};
+		virtual void save()
+		{
+
+		};
 
 		virtual ~component()
 		{
