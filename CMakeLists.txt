@@ -77,6 +77,9 @@ core/game/engine.h core/game/engine.cpp
 core/game/file.h
 core/game/mini_core.h
 
+core/impl/impl_singleton.h
+core/game/class_manager.h
+
 core/game/object_renderer.h
 core/game/transform.h core/game/transform.cpp
 )

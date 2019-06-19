@@ -40,7 +40,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
         a->set_name("dd");
         auto s = cast<char*>(a);
         b = cast<trigger::transform*>(s);
-        auto aaa = trigger::world::load_world(path+"\\Assets\\Scene\\test.txt");
+        auto aaa = trigger::world::load_world(path+"\\Assets\\Scene\\test.toml");
         engine = new trigger::core::engine(hInstance, 800, 600, enable_editor);
 
         engine->object->add(b);

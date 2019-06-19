@@ -20,12 +20,6 @@ namespace trigger
 	class component;
 	class transform;
 
-	static auto instance(std::string type) -> decltype(auto)
-	{
-		decltype(trigger::CLASS_ARRAY[type]) tmp = trigger::CLASS_ARRAY[type];
-		return tmp;
-	};
-
 	/// component head
 	class transform : public trigger::component
 	{
