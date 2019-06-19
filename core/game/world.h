@@ -196,12 +196,13 @@ namespace trigger
 
 		static bool save_world(std::string p, std::string n, world *w)
 		{
+			std::ofstream o(p + slash + n);
+			if (!o.is_open()) return false;
+			
 			auto map = cpptoml::make_table();
 			auto set = cpptoml::make_table();
 			auto actors = cpptoml::make_table();
 
-			std::ofstream o(p + slash + n);
-			if (!o.is_open()) return false;
 			auto ac = w->get_objects<transform>();
 
 			set->insert("ObjectSize", ac.size());
@@ -246,6 +247,7 @@ namespace trigger
 					auto dd = tab->get_table(ii.first);
 					tmp->set_name(get_data<std::string>(dd, "name"));
 					tmp->set_instance_id(get_data_int(dd,"instance_id"));
+					tmp = cast<trigger::transform*>(const_cast<char*>(get_data<std::string>(dd, "data").c_str()));
 				}
 				world->add(tmp);
 			}

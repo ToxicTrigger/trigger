@@ -99,6 +99,7 @@ namespace trigger
 			SAVE_STR(real_position , glm::to_string(real_position));
 			SAVE_VAR(int, instance_id);
 			SAVE_VAR(size_t, type_code);
+			SAVE_STR(data, cast<char*>(this));
 		}
 
 		virtual ~transform();

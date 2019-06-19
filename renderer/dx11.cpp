@@ -174,7 +174,9 @@ void dx11::draw()
 	auto objs = this->engine->object->get_all();
 	for (auto i : objs)
 	{
-		ImGui::Begin(i.second->get_name().c_str());
+		std::string title(i.second->get_name());
+		title += ":" + std::to_string(i.first);
+		ImGui::Begin(title.c_str());
 		auto render = i.second->get_component<trigger::comp::object_renderer>() != nullptr ? true : false;
 		if(render) ImGui::Text("%f", i.second->get_component<trigger::comp::object_renderer>()->time);
 		ImGui::End();

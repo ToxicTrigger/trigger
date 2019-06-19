@@ -53,6 +53,16 @@ static int make_hash_code_()
 	return hash;
 }
 
+#define SAVE(val) reinterpret_cast<char*>(&val)
+#define SAVE_THIS() reinterpret_cast<char*>(this)
+#define LOAD(type, val) reinterpret_cast<type##*>(val);
+
+template <class TO, class FROM>
+TO cast(FROM v)
+{
+	return static_cast<TO>(static_cast<void*>(v));
+}
+
 template <typename T>
 inline T get_data(std::shared_ptr<cpptoml::table> array, const std::string& key)
 {

@@ -3,6 +3,17 @@
 
 static bool enable_editor = true;
 
+class test
+{
+
+private :
+    int c = 2;
+
+public:
+    int a = 0;
+    int b = 0;  
+};
+
 #ifdef _WIN64
 #include <direct.h>
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, int showCmd)
@@ -24,7 +35,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
     }
     else
     {
+        trigger::transform* a, *b;
+        a = new trigger::transform();
+        a->set_name("dd");
+        auto s = cast<char*>(a);
+        b = cast<trigger::transform*>(s);
+        auto aaa = trigger::world::load_world(path+"\\Assets\\Scene\\test.txt");
         engine = new trigger::core::engine(hInstance, 800, 600, enable_editor);
+
+        engine->object->add(b);
+        assert(trigger::world::save_world(path+"\\Assets\\Scene", "test2.map", engine->object));
     }
 	return engine->renderer->rendering();
     //Save

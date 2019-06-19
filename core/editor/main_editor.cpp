@@ -12,6 +12,11 @@ bool trigger::edit::main_editor::draw() noexcept
     if(ImGui::BeginTabItem("Editor View"))
     {
 		current_tab = windows::editor;
+        if(ImGui::Button("Create Object"))
+        {
+            auto* tmp = new trigger::transform();
+            this->world->add(tmp);
+        }
         ImGui::EndTabItem();
     }
     static bool hello;
