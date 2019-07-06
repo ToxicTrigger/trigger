@@ -137,13 +137,14 @@ namespace trigger
 		}
 
 		//add component in world-component-list
-		inline constexpr void add(transform * com) noexcept
+		inline constexpr transform* add(transform * com) noexcept
 		{
 			if (com != nullptr)
 				objects.insert
 				(
 					std::pair<int, transform*>(com->get_instance_id(), com)
 				);
+			return com;
 		}
 
 		inline void clean_world() noexcept
@@ -168,13 +169,13 @@ namespace trigger
 			do
 			{
 				this->lock.lock();
-				this->old_time = time::now();
-				
 				if (objects.size() != 0)
 				{
+					this->old_time = time::now();
 					run_time = std::chrono::duration_cast<std::chrono::duration<float>>(time::now() - start_time);
 					for (auto i : objects)
 					{
+						
 						if (i.second != nullptr)
 						{
 							if (i.second->active)
@@ -183,39 +184,39 @@ namespace trigger
 							}
 						}
 					}
+					delta_time = std::chrono::duration_cast<std::chrono::duration<float>>(time::now() - old_time);
 				}
-				delta_time = std::chrono::duration_cast<std::chrono::duration<float>>(time::now() - old_time);
 				this->lock.unlock();
 			} while (use_thread && this->active);
 		}
 
-		////TODO
-		//static bool save_world(std::string p, std::string n, component_world *w)
-		//{
-		//	auto map = cpptoml::make_table();
-		//	auto set = cpptoml::make_table();
-		//	auto actors = cpptoml::make_table();
+		//TODO
+		static bool save_world(std::string p, std::string n, world *w)
+		{
+			auto map = cpptoml::make_table();
+			auto set = cpptoml::make_table();
+			auto actors = cpptoml::make_table();
 
-		//	std::ofstream o(p + "/" + n);
-		//	if (!o.is_open()) return false;
-		//	auto ac = w->get_components<transform>();
+			std::ofstream o(p + "/" + n);
+			if (!o.is_open()) return false;
+			auto ac = w->get_objects<trigger::transform>();
 
-		//	for (auto& i : ac)
-		//	{
-		//		actors->insert(i->name, i->get_params());
-		//	}
+			for (auto& i : ac)
+			{
+				actors->insert(i->name, i->get_params());
+			}
 
-		//	set->insert("type", "map");
-		//	set->insert("gravity", w->gravity);
-		//	set->insert("use_thread", w->use_thread);
-		//	set->insert("name", w->name);
-		//	map->insert("setting", set);
+			set->insert("type", "map");
+			set->insert("gravity", w->gravity);
+			set->insert("use_thread", w->use_thread);
+			set->insert("name", w->name);
+			map->insert("setting", set);
 
-		//	map->insert(w->get_name(), actors);
-		//	o << *map;
-		//	o.close();
-		//	return true;
-		//}
+			map->insert(w->get_name(), actors);
+			o << *map;
+			o.close();
+			return true;
+		}
 
 		////TODO
 		//static inline component_world* load_world(std::string path)

@@ -3,10 +3,10 @@
 bool trigger::edit::main_editor::draw() noexcept
 {
     ImGui::Begin("Finally!");
-	this->window_size = ImGui::GetWindowSize();
-	ImGui::Text("%f : %f", window_size.x, window_size.y);
+    this->window_size = ImGui::GetWindowSize();
 	this->window_pos = ImGui::GetWindowPos();
 	ImGui::Text("%f : %f", window_pos.x, window_pos.y);
+	ImGui::Text("%f : %f", window_size.x, window_size.y);
 
     ImGui::BeginTabBar("Test");
     if(ImGui::BeginTabItem("Editor View"))

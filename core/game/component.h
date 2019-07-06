@@ -31,6 +31,7 @@ _tmp->insert(#var_name, var);\
 
 #define SAVE_VAR_INIT(type, var_name, var) var_name = var; SAVE_VAR(type, var_name);
 
+
 namespace trigger
 {
 	class component

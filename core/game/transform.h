@@ -1,6 +1,7 @@
 #pragma once
 #include "component.h"
 #include <chrono>
+#include <vector>
 #include <glm/glm.hpp>
 typedef glm::fvec2 vec2;
 typedef glm::fvec3 vec3;
@@ -11,6 +12,7 @@ static int make_hash_code()
 	auto t = std::chrono::system_clock::now();
 	auto hash = static_cast<int>(t.time_since_epoch().count());
 	std::srand(hash);
+	hash += std::rand() % 999;
 	hash *= std::rand() >= RAND_MAX/2 ? 1 : -1;
 	return hash;
 }
@@ -18,7 +20,7 @@ static int make_hash_code()
 namespace trigger
 {
 	/// component head
-	class transform
+	class transform : public trigger::component
 	{
 	private:
 		int hash_code;
@@ -37,10 +39,13 @@ namespace trigger
 		float time_scale = 1.0f;
 		std::string name;
 
+		transform* parent;
+		std::vector<transform*> childs;
+
 		transform(vec3 pos = vec3(0.0f, 0.0f, 0.0f), vec3 scale = vec3(1.0f, 1.0f, 1.0f), vec3 rot = vec3(0.0f, 0.0f, 0.0f), std::string name = "Object");
 		virtual ~transform();
 
-		void update(float delta);
+		virtual void update(float delta) noexcept;
 
 		template<typename T>
 		T* get_component()

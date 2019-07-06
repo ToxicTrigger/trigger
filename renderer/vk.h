@@ -329,7 +329,6 @@ static void glfw_resize_callback(GLFWwindow*, int w, int h)
 	g_ResizeHeight = h;
 }
 
-
 namespace trigger 
 {
     namespace rend
@@ -350,7 +349,6 @@ namespace trigger
             vk(int w, int h, bool edit, trigger::core::engine* engine) : renderer(w,h,edit, engine)
             {
                 this->init();
-                this->set_up();
             }
         };
     }

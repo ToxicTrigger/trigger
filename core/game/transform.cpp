@@ -13,9 +13,11 @@ trigger::transform::transform(vec3 pos, vec3 scale, vec3 rot, std::string name)
 trigger::transform::~transform()
 {
 	this->components.clear();
+	this->parent = nullptr;
+	this->childs.clear();
 }
 
-void trigger::transform::update(float delta)
+void trigger::transform::update(float delta) noexcept
 {
 	for (auto i : this->components)
 	{

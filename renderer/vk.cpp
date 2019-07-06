@@ -2,18 +2,19 @@
 #include "vk.h"
 
 #include "../core/editor/impl_editor.h"
+#include "../core/game/object_renderer.h"
 
 using namespace trigger::rend;
 
 int vk::init()
 {
-    	// Setup window
+    // Setup window
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
         return 1;
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+Vulkan example", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+Vulkan example", NULL, NULL);
 
     // Setup Vulkan
     if (!glfwVulkanSupported())
@@ -22,25 +23,26 @@ int vk::init()
         return 1;
     }
     uint32_t extensions_count = 0;
-    const char** extensions = glfwGetRequiredInstanceExtensions(&extensions_count);
+    const char **extensions = glfwGetRequiredInstanceExtensions(&extensions_count);
     SetupVulkan(extensions, extensions_count);
-    
+
     // Create Window Surface
     VkSurfaceKHR surface;
-    VkResult err = glfwCreateWindowSurface( g_Instance, window, g_Allocator, &surface);
+    VkResult err = glfwCreateWindowSurface(g_Instance, window, g_Allocator, &surface);
     check_vk_result(err);
 
     // Create Framebuffers
     int w, h;
     glfwGetFramebufferSize(window, &w, &h);
     glfwSetFramebufferSizeCallback(window, glfw_resize_callback);
-    ImGui_ImplVulkanH_WindowData* wd = &g_WindowData;
+    ImGui_ImplVulkanH_WindowData *wd = &g_WindowData;
     SetupVulkanWindowData(wd, surface, w, h);
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGuiIO &io = ImGui::GetIO();
+    (void)io;
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
 
@@ -111,6 +113,8 @@ int vk::init()
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
+    this->set_up();
+
     // Main loop
     while (!glfwWindowShouldClose(window))
     {
@@ -120,36 +124,18 @@ int vk::init()
         // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
         // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
         glfwPollEvents();
-		if (g_ResizeWanted)
-		{
-			ImGui_ImplVulkanH_CreateWindowDataSwapChainAndFramebuffer(g_PhysicalDevice, g_Device, &g_WindowData, g_Allocator, g_ResizeWidth, g_ResizeHeight);
-			g_ResizeWanted = false;
-		}
+        if (g_ResizeWanted)
+        {
+            ImGui_ImplVulkanH_CreateWindowDataSwapChainAndFramebuffer(g_PhysicalDevice, g_Device, &g_WindowData, g_Allocator, g_ResizeWidth, g_ResizeHeight);
+            g_ResizeWanted = false;
+        }
 
-        // Start the Dear ImGui frame
-        ImGui_ImplVulkan_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-
-        auto editor_list = this->engine->editors->get_objects<trigger::edit::impl_editor>();
-		for(auto e : editor_list)
-		{
-			e->draw();
-		}	
-
-        ImGui::Begin("Test");
-		ImVec2 pos = ImGui::GetCursorScreenPos();
-		ImGui::GetWindowDrawList()->AddImage(
-			(void *)wd->Frames[wd->FrameIndex].CommandBuffer,
-			ImVec2(ImGui::GetCursorScreenPos()), ImVec2(pos.x + ImGui::GetWindowWidth(), pos.y + ImGui::GetWindowHeight()),
-			ImVec2(0, 1),
-			ImVec2(1, 0));
-		ImGui::End();
+        this->draw_editors();
 
         // Rendering
         ImGui::Render();
         memcpy(&wd->ClearValue.color.float32[0], &clear_color, 4 * sizeof(float));
-		FrameRender(wd);
+        FrameRender(wd);
 
         FramePresent(wd);
     }
@@ -169,31 +155,46 @@ int vk::init()
 
 void trigger::rend::vk::draw_editors()
 {
-	if(this->edit_mode)
-	{
-		ImGui_ImplVulkan_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
-		auto editor_list = this->engine->editors->get_objects<trigger::edit::impl_editor>();
-		for(auto e : editor_list)
-		{
-			e->draw();
-		}	
-	}
+    if (this->edit_mode)
+    {
+        ImGui_ImplVulkan_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        auto editor_list = this->engine->editors->get_objects<trigger::edit::impl_editor>();
+        for (auto&& e : editor_list)
+        {
+            e->draw();
+        }
+        auto objs = this->engine->editors->get_all();
+        for (auto&& i : objs)
+        {
+            auto com = i.second->get_component<trigger::comp::object_renderer>();
+            if (com != nullptr)
+            {
+                com->update(this->engine->editors->get_delta_time());
+                ImGui::Begin(i.second->name.c_str());
+                ImGui::Text("%f", com->time);
+                ImGui::End();
+            }
+        }
+    }
 }
 
 void vk::set_up()
 {
-
+    auto tmp = this->engine->editors->add(new trigger::transform());
+    tmp->name = "lol";
+    tmp->add_component<trigger::comp::object_renderer>();
 }
 
 void vk::resize()
 {
-
 }
 
 void vk::draw()
-{}
+{
+}
 
 int vk::rendering()
 {

@@ -1,5 +1,6 @@
 #include <iostream>
 #include "core/game/mini_core.h"
+#include "../zinny/src/zinny.h"
 
 static bool enable_editor = true;
 
@@ -18,6 +19,7 @@ int main(int in, char **argv)
     std::string cur_exec_name = argv[0];
     std::string first_arg;
     std::vector<std::string> all_args;
+    auto zin = new zinny();
 
     if(in == 2)
     {
@@ -32,6 +34,7 @@ int main(int in, char **argv)
     {
         
     }
+
     auto engine = new trigger::core::engine(800, 600, enable_editor);
 }
 #endif

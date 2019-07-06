@@ -12,7 +12,7 @@
 bool trigger::core::engine::init(int w, int h, bool edit_mod)
 {
     this->editors = new trigger::world(true);
-    this->object = new trigger::world(true);
+    //this->object = new trigger::world(true);
     this->editors->add(new trigger::edit::main_editor());
     this->renderer = new trigger::rend::REND(w,h,edit_mod,this);
     return true;

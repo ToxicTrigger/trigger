@@ -88,7 +88,11 @@ core/editor/main_editor.h core/editor/main_editor.cpp
 ImGuiColorTextEdit/TextEditor.h ImGuiColorTextEdit/TextEditor.cpp
 )
 
-INCLUDE_DIRECTORIES(${LUA_HEADER} ${DX_HEADER} ${VK_HEADER} ${REND_HEADER} ${TOOLS} ${CORE_HEADER} ${IMGUI} ${IMGUI_VK} ${IMGUI_DX} ${EDITOR_MAIN})
+set(ZINNY 
+zinny/src/zinny.h
+)
+
+INCLUDE_DIRECTORIES(${LUA_HEADER} ${DX_HEADER} ${VK_HEADER} ${REND_HEADER} ${TOOLS} ${CORE_HEADER} ${IMGUI} ${IMGUI_VK} ${IMGUI_DX} ${EDITOR_MAIN} ${ZINNY})
 
 if(WIN32)
 	add_executable(trigger main.cpp 
@@ -99,6 +103,7 @@ if(WIN32)
 	${IMGUI_DX}
 	${CORE_HEADER}
 	${EDITOR_MAIN}
+	${ZINNY}
 	)
 else()
 	add_executable(trigger main.cpp 
@@ -109,6 +114,7 @@ else()
 	${IMGUI_VK}
 	${CORE_HEADER}
 	${EDITOR_MAIN}
+	${ZINNY}
 	)
 endif()
 
