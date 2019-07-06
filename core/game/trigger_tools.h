@@ -3,6 +3,7 @@
 
 #include <string>
 #include <memory>
+#include <map>
 #include "../tools/macros.h"
 
 #define T_METHOD methodName(__FUNCTION__).c_str()

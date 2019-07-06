@@ -1,4 +1,5 @@
 # Trigger Engine 
+![Logo](https://github.com/ToxicTrigger/trigger/blob/master/Assets/Resource/Image/trigger.png)
 
 ## Version
 >>[0.1.89](Unfortunate Orge) Lua Editor
@@ -24,8 +25,9 @@ Trigger Engine 은 imgui 와 DX12 & Vulkan 을 결합한 게임 엔진 입니다
 |   :arrow_up:   |      Updated code!      |
 |     :bug:      |       Found Bug..       |
 |    :wrench:    |      Resolved Bug!      |
-|     :fire:     | Removing code or Files! |
+|     :fire:      | Removing code or Files! |
 | :construction: |    Work in progress.    |
+|       🚿          |    code cleaning        |
 
 # Todo list
 

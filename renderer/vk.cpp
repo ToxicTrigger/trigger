@@ -173,9 +173,6 @@ void trigger::rend::vk::draw_editors()
             if (com != nullptr)
             {
                 com->update(this->engine->editors->get_delta_time());
-                ImGui::Begin(i.second->name.c_str());
-                ImGui::Text("%f", com->time);
-                ImGui::End();
             }
         }
     }
@@ -184,7 +181,6 @@ void trigger::rend::vk::draw_editors()
 void vk::set_up()
 {
     auto tmp = this->engine->editors->add(new trigger::transform());
-    tmp->name = "lol";
     tmp->add_component<trigger::comp::object_renderer>();
 }
 

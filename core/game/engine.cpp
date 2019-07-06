@@ -12,7 +12,7 @@
 bool trigger::core::engine::init(int w, int h, bool edit_mod)
 {
     this->editors = new trigger::world(true);
-    //this->object = new trigger::world(true);
+    this->object = new trigger::world(true);
     this->editors->add(new trigger::edit::main_editor());
     this->renderer = new trigger::rend::REND(w,h,edit_mod,this);
     return true;
@@ -24,7 +24,8 @@ bool trigger::core::engine::init(INSTANCE hInst, int w, int h, bool edit_mod)
 
     this->editors = new trigger::world(true);
 	this->object = new trigger::world(true);
-	this->main_editor = new trigger::edit::main_editor();
+    this->object->name = "SceneObjects";
+	this->main_editor = new trigger::edit::main_editor(this->object);
     this->editors->add(this->main_editor);
     this->renderer = new trigger::rend::REND(hInst, w, h, edit_mod, this);
     this->state = engine_state::initing;

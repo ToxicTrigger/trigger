@@ -164,6 +164,11 @@ namespace trigger
 			}
 		}
 
+		inline void empty_world() noexcept
+		{
+			this->objects.clear();
+		}
+
 		void update_all()
 		{
 			do
@@ -173,12 +178,12 @@ namespace trigger
 				{
 					this->old_time = time::now();
 					run_time = std::chrono::duration_cast<std::chrono::duration<float>>(time::now() - start_time);
-					for (auto i : objects)
+					for (auto&& i : objects)
 					{
 						
 						if (i.second != nullptr)
 						{
-							if (i.second->active)
+							if (objects.size() != 0 && i.second->active)
 							{
 								i.second->update(this->delta_time.count() * time_scale * i.second->time_scale);
 							}
@@ -190,20 +195,21 @@ namespace trigger
 			} while (use_thread && this->active);
 		}
 
-		//TODO
 		static bool save_world(std::string p, std::string n, world *w)
 		{
+			std::ofstream o(p + slash + n);
+			if (!o.is_open()) return false;
+
 			auto map = cpptoml::make_table();
 			auto set = cpptoml::make_table();
 			auto actors = cpptoml::make_table();
 
-			std::ofstream o(p + "/" + n);
-			if (!o.is_open()) return false;
-			auto ac = w->get_objects<trigger::transform>();
+			auto ac = w->get_objects<transform>();
 
+			set->insert("ObjectSize", ac.size());
 			for (auto& i : ac)
 			{
-				actors->insert(i->name, i->get_params());
+				actors->insert(i->get_name(), i->get_params());
 			}
 
 			set->insert("type", "map");
@@ -218,41 +224,43 @@ namespace trigger
 			return true;
 		}
 
-		////TODO
-		//static inline component_world* load_world(std::string path)
-		//{
-		//	auto map = cpptoml::parse_file(path);
-		//	auto set = cpptoml::make_table();
-		//	set = map->get_table("setting");
-		//	auto type = set->get_as<std::string>("type").value_or("unknown");
-		//	//if (!type._Equal("map")) return nullptr;
+		static inline world* load_world(std::string path)
+		{
+			auto map = cpptoml::parse_file(path);
+			auto set = cpptoml::make_table();
+			set = map->get_table("setting");
+			auto type = set->get_as<std::string>("type").value_or("unknown");
+			if (hash_str("map") != hash_str(type.c_str())) return nullptr;
 
-		//	auto com = set->get_table("trigger::component_world");
-		//	auto actors = cpptoml::make_table();
+			auto scene_objs = map->get_table("SceneObjects");
+			auto actors = cpptoml::make_table();
 
-		//	auto world = new component_world(set->get_as<bool>("use_thread").value_or(true));
-		//	world->gravity = (float)set->get_as<double>("gravity").value_or(-9.8f);
-		//	world->name = set->get_as<std::string>("name").value_or("untitled");
+			auto world = new trigger::world(set->get_as<bool>("use_thread").value_or(true));
+			world->gravity = (float)set->get_as<double>("gravity").value_or(-9.8f);
+			world->name = set->get_as<std::string>("name").value_or("untitled");	
+			
+			for(const auto& i : *scene_objs)
+			{
+				auto tmp = new trigger::transform
+				(
+					vec3((0.0F), (0.0F), (0.0F)), 
+					vec3((1.0F), (1.0F), (1.0F)), 
+					vec3((0.0F), (0.0F), (0.0F)), 
+					i.first
+				);
 
-		//	auto super = com->get_table("trigger::component");
-		//	world->active = super->get_as<bool>("active").value_or(true);
-		//	world->time_scale = (float)super->get_as<double>("time_scale").value_or(1.0f);
+				auto tab = scene_objs->get_table(i.first);
+				for(auto ii : *tab)
+				{
+					auto dd = tab->get_table(ii.first);
+					tmp->set_name(get_data<std::string>(dd, "name"));
+					tmp->set_instance_id(get_data<int>(dd,"instance_id"));
+				}
+				world->add(tmp);
+			}
 
-		//	actors = map->get_table(world->name);
-		//	int count = 0;
-		//	for (const auto& i : *actors)
-		//	{
-		//		auto t = i.second->as_table();
-		//		auto comp = t->get_table("trigger::component");
-		//		auto ac = new trigger::actor();
-		//		ac->name = i.first;
-		//		//TODO
-		//		count++;
-		//		world->add(ac);
-		//	}
-
-		//	return world;
-		//}
+			return world;
+		}
 
 		~world()
 		{

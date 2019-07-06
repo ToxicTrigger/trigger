@@ -174,8 +174,11 @@ void dx11::draw()
 	auto objs = this->engine->object->get_all();
 	for (auto i : objs)
 	{
-		ImGui::Begin(i.second->name.c_str());
-		ImGui::Text("%f", i.second->get_component<trigger::comp::object_renderer>()->time);
+		std::string title(i.second->get_name());
+		title += ":" + std::to_string(i.first);
+		ImGui::Begin(title.c_str());
+		auto render = i.second->get_component<trigger::comp::object_renderer>() != nullptr ? true : false;
+		if(render) ImGui::Text("%f", i.second->get_component<trigger::comp::object_renderer>()->time);
 		ImGui::End();
 	}
 
@@ -239,11 +242,6 @@ void trigger::rend::dx11::build_draw_object()
 	this->proj = glm::mat4(1.0f);
 	this->world = glm::mat4(1.0f);
 	this->view = glm::mat4(1.0f);
-
-	auto tmp = new transform();
-	auto rend = new trigger::comp::object_renderer();
-	tmp->add_component(rend);	
-	this->engine->object->add(tmp);
 
 	// Create vertex buffer
 	trigger::math::vertex vertices[] =

@@ -5,6 +5,7 @@
 #include "../../ImGuiColorTextEdit/TextEditor.h"
 #include <string>
 #include <glm/glm.hpp>
+#include "../core/game/world.h"
 
 #define add_insfector(insfector, var) \
 {\
@@ -33,6 +34,7 @@ namespace trigger::edit
 		bool is_draw_insfector = false;
 		TextEditor::LanguageDefinition lang;
 		std::string TEST;
+		trigger::world* world;
 
 	public:
 		virtual bool draw() noexcept override;
@@ -43,6 +45,14 @@ namespace trigger::edit
 			lang = TextEditor::LanguageDefinition::Lua();
 			lua_editor.SetLanguageDefinition(lang);
 			lua_editor.SetText(this->TEST);
+		};
+
+		explicit main_editor(trigger::world* world)
+		{
+			lang = TextEditor::LanguageDefinition::Lua();
+			lua_editor.SetLanguageDefinition(lang);
+			lua_editor.SetText(this->TEST);
+			this->world = world;
 		};
 
 		glm::fvec3 get_window_size()
