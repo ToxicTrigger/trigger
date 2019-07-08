@@ -47,7 +47,7 @@
 	var_name = var;                        \
 	SAVE_VAR(type, var_name);
 
-static int make_hash_code_()
+static hash_id make_hash_code_()
 {
 	auto t = std::chrono::system_clock::now();
 	auto hash = static_cast<int>(t.time_since_epoch().count());
@@ -92,9 +92,10 @@ class component
 protected:
 	std::shared_ptr<cpptoml::table> _params;
 	std::shared_ptr<cpptoml::table> _tmp;
-	size_t type_code;
+	std::shared_ptr<cpptoml::table> toml_properties;
+	hash_id type_code;
 	std::string type_name;
-	int instance_id;
+	hash_id instance_id;
 
 public:
 	std::map< hash_id, property> properties;
@@ -102,17 +103,15 @@ public:
 
 	component()
 	{
+
 		this->instance_id = make_hash_code_();
 		_tmp = cpptoml::make_table();
 		_params = cpptoml::make_table();
-		this->properties = std::map<hash_id, property>();
-
+		toml_properties = cpptoml::make_table();
 		type_code = hash_str("trigger::component");
 		type_name = "trigger::component";
-		SAVE_VAR(bool, active);
-		SAVE_VAR(size_t, type_code);
-		SAVE_VAR(int, instance_id);
 		REGI_CLASS("trigger::component");
+		this->properties = std::map<hash_id, property>();
 	}
 
 	component(std::string type)
@@ -120,27 +119,21 @@ public:
 		this->instance_id = make_hash_code_();
 		_tmp = cpptoml::make_table();
 		_params = cpptoml::make_table();
-
-		this->properties = std::map<hash_id, property>();
-
-		SAVE_VAR(bool, active);
-		SAVE_VAR(size_t, type_code);
-		SAVE_VAR(int, instance_id);
+		toml_properties = cpptoml::make_table();
 		REGI_CLASS(type);
 		type_code = hash_str(type.c_str());
 		type_name = type;
+		this->properties = std::map<hash_id, property>();
+		property(active, property::data_type::Bool, "active",  &this->properties);
+		property(type_code, property::data_type::HashID, "type_code",  &this->properties);
+		property(instance_id, property::data_type::HashID, "instance_id",  &this->properties);
 	}
 
-	template<typename T>
-	const char* match(trigger::property b)
-	{
-		if(typeid(T) == b.value.type())
-		{
-			return b.to_string<T>().value_or("Failed");
-		}
-		return "";
-	}
-
+	//save 함수는 자신이 들고있는 toml 테이블을 갱신시키는 함수임
+	//왜 그렇게 되냐면 Unknown 타입에 대한 대응을 위해서임
+	// unknown 타입을 스트링으로 바꾸기 위해서는 자신의 타입을 알아야 하는데 이를 
+	// add_unknown( ) 함수를 통해 테이블에 새로 추가하는 개념이기 때문임 
+	// 아직 미구현이니 일단 이대로 진행함
 	auto save() -> decltype(auto)
 	{
 		auto proper = cpptoml::make_table();
@@ -148,7 +141,32 @@ public:
 		std::ostringstream ss;
 		for(auto& i : this->properties)
 		{
-			ss << match<int>(i.second);
+			switch(i.second.type)
+			{
+				case property::data_type::Int :
+					ss << i.second.to_string<int>().value();
+					break;
+				case property::data_type::Float :
+					ss << i.second.to_string<float>().value();
+					break;
+				case property::data_type::Double :
+					ss << i.second.to_string<double>().value();
+					break;
+				case property::data_type::String :
+					ss << i.second.to_string<std::string>().value();
+					break;
+				case property::data_type::Bool:
+					ss << i.second.to_string<bool>().value();
+					break;
+				case property::data_type::SizeT:
+					ss << i.second.to_string<size_t>().value();
+					break;
+				case property::data_type::HashID:
+					ss << i.second.to_string<hash_id>().value();
+					break;
+				case property::data_type::Unknown:
+					break;
+			}
 			pro->insert(i.second.get_name(), std::string(ss.str()));         
 		}
 		proper->insert("Properties", pro);
@@ -160,7 +178,6 @@ public:
 		auto map = std::map< hash_id, property>();
 		for(auto& i : *table)
 		{
-		
 		}
 
 		return map;

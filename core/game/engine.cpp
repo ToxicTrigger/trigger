@@ -1,6 +1,7 @@
 #include "engine.h"
 #include "../editor/main_editor.h"
 #include "mini_core.h"
+#include "object_renderer.h"
 
 #ifdef _WIN64
 #include "../../renderer/dx11.h"
@@ -13,6 +14,11 @@ bool trigger::core::engine::init(int w, int h, bool edit_mod)
 {
     this->editors = new trigger::world(true);
     this->object = new trigger::world(true);
+    this->object->name = "SceneObjects";
+    auto tmp = new trigger::transform();
+    tmp->add_component(new trigger::comp::object_renderer());
+    this->object->add(tmp);
+    object->save_world("..","my.toml", object);
     this->editors->add(new trigger::edit::main_editor());
     this->renderer = new trigger::rend::REND(w,h,edit_mod,this);
     return true;

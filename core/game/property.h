@@ -39,8 +39,20 @@ private:
     std::string name;
 
 public:
-    std::any value;
+    enum data_type
+    {
+        Unknown,
+        Int, 
+        Float,
+        Double,
+        Bool,
+        SizeT,
+        HashID,
+        String
+    };
 
+    std::any value;
+    data_type type;
     property()
     {
         value = 0;
@@ -49,6 +61,15 @@ public:
 
     property(std::any val, std::string property_name, std::map<hash_id, property>* author)
     {
+        this->value = val;
+        this->name = property_name;
+        this->id = hash_str(name.c_str());
+        author->insert(std::pair<hash_id, property>(id, *this));
+    }
+
+    property(std::any val, data_type type, std::string property_name, std::map<hash_id, property>* author)
+    {
+        this->type = type;
         this->value = val;
         this->name = property_name;
         this->id = hash_str(name.c_str());
