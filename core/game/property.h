@@ -55,9 +55,14 @@ public:
         author->insert(std::pair<hash_id, property>(id, *this));
     }
 
-    unsigned int get_id()
+    hash_id get_id()
     {
         return id;
+    }
+
+    static const hash_id get_id(property property)
+    {
+        return property.get_id();
     }
 
     const std::string get_name()
@@ -65,10 +70,29 @@ public:
         return this->name;
     }
 
+    const static std::string get_name(property property)
+    {
+        return property.get_name();
+    }
+
     template<typename T>
     std::optional<const char*> to_string()
     {
         if(auto val = std::any_cast<T>(&value))
+        {
+            void* ref = static_cast<void*>(new T(*val));
+            return static_cast<const char*>(ref);
+        }
+        else
+        {
+            return {};
+        }
+    }
+
+    template<typename T>
+    static std::optional<const char*> to_string(property property)
+    {
+        if(auto val = std::any_cast<T>(&property.value))
         {
             void* ref = static_cast<void*>(new T(*val));
             return static_cast<const char*>(ref);
@@ -88,6 +112,16 @@ public:
         return {};
     }
 
+    
+    static std::optional<int> get_int(property property)
+    {
+        if(auto var = std::any_cast<int>(&property.value))
+        {
+            return *var;
+        }
+        return {};
+    }
+
     std::optional<float> get_float()
     {
         if(auto var = std::any_cast<float>(&this->value))
@@ -97,9 +131,29 @@ public:
         return {};
     }
 
+    
+    static std::optional<float> get_float(property property)
+    {
+        if(auto var = std::any_cast<float>(&property.value))
+        {
+            return *var;
+        }
+        return {};
+    }
+
+
     std::optional<double> get_double()
     {
         if(auto var = std::any_cast<double>(&this->value))
+        {
+            return *var;
+        }
+        return {};
+    }
+
+    static std::optional<double> get_double(property property)
+    {
+        if(auto var = std::any_cast<double>(&property.value))
         {
             return *var;
         }
@@ -115,6 +169,16 @@ public:
         return {};
     }
 
+    static std::optional<std::string> get_string(property property)
+    {
+        if(auto var = std::any_cast<std::string>(&property.value))
+        {
+            return *var;
+        }
+        return {};
+    }
+
+
     template<typename T>
     static T parse(const char* data)
     {
@@ -125,7 +189,13 @@ public:
     template<typename T>
     T get()
     {
-        return std::any_cast<T>(this->value);
+        return *std::any_cast<T>(&this->value);
+    }
+
+     template<typename T>
+    static auto get(property property) -> decltype(auto)
+    {
+        return *std::any_cast<T>(&property.value);
     }
 
     virtual ~property()
