@@ -1,6 +1,9 @@
 #pragma once
 #include <string>
 #include <memory>
+#include <any>
+#include <optional>
+#include "component.h"
 
 template <class TO, class FROM>
 static TO cast(FROM v)
@@ -8,11 +11,13 @@ static TO cast(FROM v)
     return static_cast<TO>(static_cast<void *>(v));
 }
 
+using hash_id = unsigned int;
+
 #define PRI_A 54059   /* a prime */
 #define PRI_B 76963   /* another prime */
 #define PRI_C 86969   /* yet another prime */
 #define PRI_FIRSTH 37 /* also prime */
-static unsigned hash_str(const char *s)
+static hash_id hash_str(const char *s)
 {
 	unsigned h = PRI_FIRSTH;
 	while (*s)
@@ -25,16 +30,16 @@ static unsigned hash_str(const char *s)
 
 namespace trigger
 {
-template <typename T>
+class component;
+
 class property
 {
-
 private:
-    unsigned int id;
+    hash_id id;
     std::string name;
 
 public:
-    T value;
+    std::any value;
 
     property()
     {
@@ -42,11 +47,12 @@ public:
         id = hash_str(name.c_str());
     }
 
-    property(T val, std::string property_name)
+    property(std::any val, std::string property_name, std::map<hash_id, property>* author)
     {
         this->value = val;
         this->name = property_name;
         this->id = hash_str(name.c_str());
+        author->insert(std::pair<hash_id, property>(id, *this));
     }
 
     unsigned int get_id()
@@ -59,31 +65,76 @@ public:
         return this->name;
     }
 
-    std::string to_string()
+    template<typename T>
+    std::optional<const char*> to_string()
     {
-        auto val = cast<char*>(value);
-        return std::string(val);
+        if(auto val = std::any_cast<T>(&value))
+        {
+            void* ref = static_cast<void*>(new T(*val));
+            return static_cast<const char*>(ref);
+        }
+        else
+        {
+            return {};
+        }
     }
 
-    std::shared_ptr<T> parse(const char* data)
+    std::optional<int> get_int()
     {
-        auto re = (void*)(data);
-        auto sum = std::make_shared<T>(cast<T>(re));
-        return sum;
+        if(auto var = std::any_cast<int>(&this->value))
+        {
+            return *var;
+        }
+        return {};
     }
 
-    std::shared_ptr<T> parse(std::string data)
+    std::optional<float> get_float()
     {
-        auto re = (void*)(data.c_str());
-        auto sum = std::make_shared<T>(cast<T>(re));
-        return sum;
+        if(auto var = std::any_cast<float>(&this->value))
+        {
+            return *var;
+        }
+        return {};
+    }
+
+    std::optional<double> get_double()
+    {
+        if(auto var = std::any_cast<double>(&this->value))
+        {
+            return *var;
+        }
+        return {};
+    }
+
+    std::optional<std::string> get_string()
+    {
+        if(auto var = std::any_cast<std::string>(&this->value))
+        {
+            return *var;
+        }
+        return {};
+    }
+
+    template<typename T>
+    static T parse(const char* data)
+    {
+        void* sum = static_cast<void*>((void*)data);
+        return *static_cast<T*>(sum);
+    }
+
+    template<typename T>
+    T get()
+    {
+        return std::any_cast<T>(this->value);
     }
 
     virtual ~property()
     {
-        delete value;
+        value.reset();
         name.clear();
     }
 };
+
+
 
 } // namespace trigger

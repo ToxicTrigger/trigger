@@ -13,11 +13,6 @@ namespace trigger::comp
 			SAVE_VAR_INIT(float, time, 0.0f);
 		};
 
-		virtual void save() override
-		{
-			SAVE_VAR(float, time);
-		}
-	
 		virtual void update(float delta) noexcept override
 		{
 			time += delta;

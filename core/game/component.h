@@ -79,6 +79,13 @@ namespace trigger
 {
 class transform;
 class component;
+class property;
+
+struct Test
+{
+	int a;
+	int b;
+};
 
 class component
 {
@@ -88,9 +95,9 @@ protected:
 	size_t type_code;
 	std::string type_name;
 	int instance_id;
-	trigger::property<int*> me;
 
 public:
+	std::map< hash_id, property> properties;
 	bool active = true;
 
 	component()
@@ -98,6 +105,7 @@ public:
 		this->instance_id = make_hash_code_();
 		_tmp = cpptoml::make_table();
 		_params = cpptoml::make_table();
+		this->properties = std::map<hash_id, property>();
 
 		type_code = hash_str("trigger::component");
 		type_name = "trigger::component";
@@ -112,15 +120,8 @@ public:
 		this->instance_id = make_hash_code_();
 		_tmp = cpptoml::make_table();
 		_params = cpptoml::make_table();
-		
-		me = trigger::property<int*>(new int(10), "me");
-		auto a = this->me.to_string();
-		auto v = *this->me.parse(a.c_str());
 
-		auto bt = trigger::property<char*>("Heelo", "bt");
-		auto test = bt.get_id();
-		auto tex = bt.to_string();
-		auto val = bt.parse(tex);
+		this->properties = std::map<hash_id, property>();
 
 		SAVE_VAR(bool, active);
 		SAVE_VAR(size_t, type_code);
@@ -130,9 +131,41 @@ public:
 		type_name = type;
 	}
 
-	virtual void save(){
+	template<typename T>
+	const char* match(trigger::property b)
+	{
+		if(typeid(T) == b.value.type())
+		{
+			return b.to_string<T>().value_or("Failed");
+		}
+		return "";
+	}
 
+	auto save() -> decltype(auto)
+	{
+		auto proper = cpptoml::make_table();
+		auto pro = cpptoml::make_table();
+		std::ostringstream ss;
+		for(auto& i : this->properties)
+		{
+			ss << match<int>(i.second);
+			pro->insert(i.second.get_name(), std::string(ss.str()));         
+		}
+		proper->insert("Properties", pro);
+		return proper;
 	};
+
+	std::map< hash_id, property> load(std::shared_ptr<cpptoml::table> table)
+	{
+		auto map = std::map< hash_id, property>();
+		for(auto& i : *table)
+		{
+		
+		}
+
+		return map;
+	} 
+	
 
 	virtual ~component()
 	{

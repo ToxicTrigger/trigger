@@ -1,6 +1,5 @@
 #include <iostream>
 #include "core/game/mini_core.h"
-#include "../zinny/src/zinny.h"
 
 static bool enable_editor = true;
 
