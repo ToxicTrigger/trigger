@@ -177,8 +177,24 @@ void dx11::draw()
 		std::string title(i.second->get_name());
 		title += ":" + std::to_string(i.first);
 		ImGui::Begin(title.c_str());
+		if(ImGui::Button("Add Component"))
+		{
+			i.second->add_component(new trigger::comp::object_renderer());
+		}
+		if(ImGui::Button("CheckID"))
+		{
+			auto editors = this->engine->editors->get_objects<trigger::edit::main_editor>();
+			for (auto e : editors)
+			{
+				e->current_id = i.first;
+			}
+		}
 		auto render = i.second->get_component<trigger::comp::object_renderer>() != nullptr ? true : false;
-		if(render) ImGui::Text("%f", i.second->get_component<trigger::comp::object_renderer>()->time);
+		if(render)
+		{
+			ImGui::Text("%f", this->engine->object->get_delta_time());
+			ImGui::Text("%f", i.second->get_component<trigger::comp::object_renderer>()->time.get_float().value_or(0.0f));	
+		} 
 		ImGui::End();
 	}
 

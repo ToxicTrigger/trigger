@@ -35,6 +35,7 @@ namespace trigger::edit
 		TextEditor::LanguageDefinition lang;
 		std::string TEST;
 		trigger::world* world;
+		hash_id current_id = 0;
 
 	public:
 		virtual bool draw() noexcept override;

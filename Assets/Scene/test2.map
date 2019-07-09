@@ -6,11 +6,7 @@
 	name = "SceneObjects"
 [SceneObjects]
 	[SceneObjects.dd]
-		[SceneObjects.dd."trigger::transform"]
-			active = ["bool", "1"]
-			type_code = ["size_t", "81083"]
-			instance_id = ["int", "2121078654"]
-			real_position = ["vec3(0.000000, 0.000000, 0.000000)"]
-			name = ["dd"]
-			data = ["€XZ+÷"]
-			[SceneObjects.dd."trigger::transform".components]
+		[SceneObjects.dd.Properties]
+			type_code = "81083"
+			active = "1"
+			instance_id = "3990502024"

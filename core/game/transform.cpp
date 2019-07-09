@@ -21,7 +21,7 @@ const int trigger::transform::get_instance_id() const
 	return this->instance_id;
 }
 
-auto trigger::transform::get_components() const
+std::vector<trigger::component*> trigger::transform::get_components() const
 {
 	return this->components;
 }

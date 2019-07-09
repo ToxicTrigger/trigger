@@ -43,7 +43,6 @@ namespace trigger
 		bool active;
 		float time_scale = 1.0f;
 		
-
 		transform(vec3 pos = vec3(0.0f, 0.0f, 0.0f), vec3 scale = vec3(1.0f, 1.0f, 1.0f), vec3 rot = vec3(0.0f, 0.0f, 0.0f), std::string name = "Object") : trigger::component(T_CLASS)
 		{
 			this->real_position = pos;
@@ -137,6 +136,6 @@ namespace trigger
 		}
 
 		const int get_instance_id() const;
-		auto get_components() const;
+		std::vector<trigger::component*> get_components() const;
 	};
 };

@@ -20,7 +20,7 @@ namespace trigger
 		typedef std::chrono::time_point<std::chrono::steady_clock> Time;
 
 	private:
-		std::map<int, transform*> objects;
+		std::map<hash_id, transform*> objects;
 		Time start_time;
 		std::chrono::duration<float> delta_time;
 		Time old_time;
@@ -44,7 +44,7 @@ namespace trigger
 			start_time = time::now();
 			delta_time = std::chrono::duration<float>();
 			old_time = time::now();
-			objects = std::map<int, transform*>();
+			objects = std::map<hash_id, transform*>();
 
 			use_thread = UseThread;
 			if (UseThread)
@@ -55,7 +55,7 @@ namespace trigger
 
 		explicit inline world(bool UseThread, std::string name)
 		{
-			objects = std::map<int, transform*>();
+			objects = std::map<hash_id, transform*>();
 			start_time = time::now();
 			delta_time = std::chrono::duration<float>();
 			old_time = time::now();
@@ -96,7 +96,7 @@ namespace trigger
 			return nullptr;
 		};
 
-		inline std::map<int, transform*> get_all() const
+		inline std::map<hash_id, transform*> get_all() const
 		{
 			return this->objects;
 		}
@@ -116,7 +116,7 @@ namespace trigger
 			return tmp;
 		};
 
-		inline transform* get(unsigned int index) noexcept
+		inline transform* get(hash_id index) noexcept
 		{
 			if (index >= objects.size()) return nullptr;
 
@@ -174,25 +174,26 @@ namespace trigger
 		{
 			do
 			{
-				this->lock.lock();
+				this->old_time = new_time;
+				this->new_time = time::now();
+				delta_time = std::chrono::duration_cast<std::chrono::duration<float>>(new_time - old_time);
+				run_time = std::chrono::duration_cast<std::chrono::duration<float>>(time::now() - start_time);
+
 				if (objects.size() != 0)
 				{
-					this->old_time = new_time;
-					this->new_time = time::now();
-					delta_time = std::chrono::duration_cast<std::chrono::duration<float>>(new_time - old_time);
-					run_time = std::chrono::duration_cast<std::chrono::duration<float>>(time::now() - start_time);
+
 					for (auto&& i : objects)
 					{
 						if (i.second != nullptr)
 						{
 							if (objects.size() != 0 && i.second->active)
 							{
-								i.second->update(this->delta_time.count() * 0.001f * time_scale * i.second->time_scale);
+								i.second->update(this->delta_time.count() * time_scale * i.second->time_scale);
 							}
 						}
 					}
 				}
-				this->lock.unlock();
+
 			} while (use_thread && this->active);
 		}
 

@@ -7,6 +7,7 @@ namespace trigger::comp
     {
 	public:
 		trigger::property time;
+		float t;
 
 		object_renderer() : component(T_CLASS)
 		{
@@ -15,7 +16,8 @@ namespace trigger::comp
 
 		virtual void update(float delta) noexcept override
 		{
-			time.value = std::any_cast<float>(time.value) + delta;
+			time.value = time.get_float().value() + delta;
+			t = time.get_float().value();
 		}
     };
 };

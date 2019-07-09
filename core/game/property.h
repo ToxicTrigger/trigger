@@ -3,6 +3,7 @@
 #include <memory>
 #include <any>
 #include <optional>
+#include <fstream>
 #include "component.h"
 
 template <class TO, class FROM>
@@ -96,34 +97,6 @@ public:
         return property.get_name();
     }
 
-    template<typename T>
-    std::optional<const char*> to_string()
-    {
-        if(auto val = std::any_cast<T>(&value))
-        {
-            void* ref = static_cast<void*>(new T(*val));
-            return static_cast<const char*>(ref);
-        }
-        else
-        {
-            return {};
-        }
-    }
-
-    template<typename T>
-    static std::optional<const char*> to_string(property property)
-    {
-        if(auto val = std::any_cast<T>(&property.value))
-        {
-            void* ref = static_cast<void*>(new T(*val));
-            return static_cast<const char*>(ref);
-        }
-        else
-        {
-            return {};
-        }
-    }
-
     std::optional<int> get_int()
     {
         if(auto var = std::any_cast<int>(&this->value))
@@ -199,22 +172,12 @@ public:
         return {};
     }
 
-
-    template<typename T>
-    static T parse(const char* data)
-    {
-        void* sum = static_cast<void*>((void*)data);
-        return *static_cast<T*>(sum);
-    }
-
-    template<typename T>
-    T get()
+    template<typename T> T get()
     {
         return *std::any_cast<T>(&this->value);
     }
 
-     template<typename T>
-    static auto get(property property) -> decltype(auto)
+    template<typename T> static auto get(property property) -> decltype(auto)
     {
         return *std::any_cast<T>(&property.value);
     }

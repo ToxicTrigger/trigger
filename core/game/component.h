@@ -111,6 +111,7 @@ public:
 		type_code = hash_str("trigger::component");
 		type_name = "trigger::component";
 		REGI_CLASS("trigger::component");
+		active = true;
 		this->properties = std::map<hash_id, property>();
 	}
 
@@ -124,10 +125,13 @@ public:
 		type_code = hash_str(type.c_str());
 		type_name = type;
 		this->properties = std::map<hash_id, property>();
+		active = true;
 		property(active, property::data_type::Bool, "active",  &this->properties);
 		property(type_code, property::data_type::HashID, "type_code",  &this->properties);
 		property(instance_id, property::data_type::HashID, "instance_id",  &this->properties);
 	}
+
+
 
 	//save 함수는 자신이 들고있는 toml 테이블을 갱신시키는 함수임
 	//왜 그렇게 되냐면 Unknown 타입에 대한 대응을 위해서임
@@ -138,36 +142,37 @@ public:
 	{
 		auto proper = cpptoml::make_table();
 		auto pro = cpptoml::make_table();
-		std::ostringstream ss;
+
 		for(auto& i : this->properties)
 		{
+			std::ostringstream ss;
 			switch(i.second.type)
 			{
 				case property::data_type::Int :
-					ss << i.second.to_string<int>().value();
+					ss << i.second.get_int().value_or(-999);
 					break;
 				case property::data_type::Float :
-					ss << i.second.to_string<float>().value();
+					ss << i.second.get_float().value_or(-0.999f);
 					break;
 				case property::data_type::Double :
-					ss << i.second.to_string<double>().value();
+					ss << i.second.get_double().value_or(-0.999);
 					break;
 				case property::data_type::String :
-					ss << i.second.to_string<std::string>().value();
+					ss << i.second.get_string().value_or("FAILED");
 					break;
 				case property::data_type::Bool:
-					ss << i.second.to_string<bool>().value();
+					ss << i.second.get<bool>();
 					break;
 				case property::data_type::SizeT:
-					ss << i.second.to_string<size_t>().value();
+					ss << i.second.get<size_t>();
 					break;
 				case property::data_type::HashID:
-					ss << i.second.to_string<hash_id>().value();
+					ss << i.second.get<hash_id>();
 					break;
 				case property::data_type::Unknown:
 					break;
 			}
-			pro->insert(i.second.get_name(), std::string(ss.str()));         
+			pro->insert(i.second.get_name(), std::string(ss.str()));      
 		}
 		proper->insert("Properties", pro);
 		return proper;

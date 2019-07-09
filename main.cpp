@@ -45,6 +45,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
 
         engine->object->add(b);
         assert(trigger::world::save_world(path+"\\Assets\\Scene", "test2.map", engine->object));
+        
     }
 	return engine->renderer->rendering();
     //Save
