@@ -24,6 +24,7 @@ namespace trigger
 		Time start_time;
 		std::chrono::duration<float> delta_time;
 		Time old_time;
+		Time new_time;
 
 		std::chrono::duration<float> run_time;
 		std::thread main_thread;
@@ -176,20 +177,20 @@ namespace trigger
 				this->lock.lock();
 				if (objects.size() != 0)
 				{
-					this->old_time = time::now();
+					this->old_time = new_time;
+					this->new_time = time::now();
+					delta_time = std::chrono::duration_cast<std::chrono::duration<float>>(new_time - old_time);
 					run_time = std::chrono::duration_cast<std::chrono::duration<float>>(time::now() - start_time);
 					for (auto&& i : objects)
 					{
-						
 						if (i.second != nullptr)
 						{
 							if (objects.size() != 0 && i.second->active)
 							{
-								i.second->update(this->delta_time.count() * time_scale * i.second->time_scale);
+								i.second->update(this->delta_time.count() * 0.001f * time_scale * i.second->time_scale);
 							}
 						}
 					}
-					delta_time = std::chrono::duration_cast<std::chrono::duration<float>>(time::now() - old_time);
 				}
 				this->lock.unlock();
 			} while (use_thread && this->active);
