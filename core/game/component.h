@@ -72,92 +72,93 @@ inline T get_data(std::shared_ptr<cpptoml::table> array, const std::string &key)
 
 #define REGI_CLASS(type)         \
 	_params->insert(type, _tmp); \
-	trigger::manager::class_manager::get_instance()->get_class_array().insert(std::pair<std::string, trigger::component *>(type, (trigger::component *)this));
+	trigger::manager::class_manager::get_instance()->get_class_array()->insert(std::pair<std::string, trigger::component *>(type, dynamic_cast<trigger::component*>(this)));
 
 
 namespace trigger
 {
-class transform;
-class component;
-class property;
+	class transform;
+	class component;
+	class property;
 
-struct Test
-{
-	int a;
-	int b;
-};
-
-class component
-{
-protected:
-	std::shared_ptr<cpptoml::table> _params;
-	std::shared_ptr<cpptoml::table> _tmp;
-	std::shared_ptr<cpptoml::table> toml_properties;
-	hash_id type_code;
-	std::string type_name;
-	hash_id instance_id;
-
-public:
-	std::map< hash_id, property> properties;
-	bool active = true;
-
-	component()
+	class component
 	{
+	protected:
+		std::shared_ptr<cpptoml::table> _params;
+		std::shared_ptr<cpptoml::table> _tmp;
+		std::shared_ptr<cpptoml::table> toml_properties;
+		hash_id type_code;
+		std::string type_name;
+		hash_id instance_id;
 
-		this->instance_id = make_hash_code_();
-		_tmp = cpptoml::make_table();
-		_params = cpptoml::make_table();
-		toml_properties = cpptoml::make_table();
-		type_code = hash_str("trigger::component");
-		type_name = "trigger::component";
-		REGI_CLASS("trigger::component");
-		active = true;
-		this->properties = std::map<hash_id, property>();
-	}
+	public:
+		std::map< hash_id, property> properties;
+		bool active = true;
 
-	component(std::string type)
-	{
-		this->instance_id = make_hash_code_();
-		_tmp = cpptoml::make_table();
-		_params = cpptoml::make_table();
-		toml_properties = cpptoml::make_table();
-		REGI_CLASS(type);
-		type_code = hash_str(type.c_str());
-		type_name = type;
-		this->properties = std::map<hash_id, property>();
-		active = true;
-		property(active, property::data_type::Bool, "active",  &this->properties);
-		property(type_code, property::data_type::HashID, "type_code",  &this->properties);
-		property(instance_id, property::data_type::HashID, "instance_id",  &this->properties);
-	}
-
-
-
-	//save í•¨ìˆ˜ëŠ” ìžì‹ ì´ ë“¤ê³ ìžˆëŠ” toml í…Œì´ë¸”ì„ ê°±ì‹ ì‹œí‚¤ëŠ” í•¨ìˆ˜ìž„
-	//ì™œ ê·¸ë ‡ê²Œ ë˜ëƒë©´ Unknown íƒ€ìž…ì— ëŒ€í•œ ëŒ€ì‘ì„ ìœ„í•´ì„œìž„
-	// unknown íƒ€ìž…ì„ ìŠ¤íŠ¸ë§ìœ¼ë¡œ ë°”ê¾¸ê¸° ìœ„í•´ì„œëŠ” ìžì‹ ì˜ íƒ€ìž…ì„ ì•Œì•„ì•¼ í•˜ëŠ”ë° ì´ë¥¼ 
-	// add_unknown( ) í•¨ìˆ˜ë¥¼ í†µí•´ í…Œì´ë¸”ì— ìƒˆë¡œ ì¶”ê°€í•˜ëŠ” ê°œë…ì´ê¸° ë•Œë¬¸ìž„ 
-	// ì•„ì§ ë¯¸êµ¬í˜„ì´ë‹ˆ ì¼ë‹¨ ì´ëŒ€ë¡œ ì§„í–‰í•¨
-	auto save() -> decltype(auto)
-	{
-		auto proper = cpptoml::make_table();
-		auto pro = cpptoml::make_table();
-
-		for(auto& i : this->properties)
+		component()
 		{
-			std::ostringstream ss;
-			switch(i.second.type)
+			this->instance_id = make_hash_code_();
+			_tmp = cpptoml::make_table();
+			_params = cpptoml::make_table();
+			toml_properties = cpptoml::make_table();
+			type_code = hash_str("trigger::component");
+			type_name = "trigger::component";
+			REGI_CLASS("trigger::component");
+			active = true;
+			this->properties = std::map<hash_id, property>();
+		}
+
+		component(std::string type)
+		{
+			this->instance_id = make_hash_code_();
+			_tmp = cpptoml::make_table();
+			_params = cpptoml::make_table();
+			toml_properties = cpptoml::make_table();
+			type_code = hash_str(type.c_str());
+			type_name = type;
+			this->properties = std::map<hash_id, property>();
+			active = true;
+			property(active, property::data_type::Bool, "active", &this->properties);
+			property(type_code, property::data_type::HashID, "type_code", &this->properties);
+			property(instance_id, property::data_type::HashID, "instance_id", &this->properties);
+			REGI_CLASS(type);
+		}
+
+		template<typename T = trigger::component>
+		static void regi_component()
+		{
+			T* com = new T();
+			trigger::manager::class_manager::get_instance()->
+				get_class_array()->
+				insert(
+					std::pair<std::string, trigger::component *>(T_CLASS, dynamic_cast<trigger::component*>(com)));
+		}
+		
+		//save ÇÔ¼ö´Â ÀÚ½ÅÀÌ µé°íÀÖ´Â toml Å×ÀÌºíÀ» °»½Å½ÃÅ°´Â ÇÔ¼öÀÓ
+		//¿Ö ±×·¸°Ô µÇ³Ä¸é Unknown Å¸ÀÔ¿¡ ´ëÇÑ ´ëÀÀÀ» À§ÇØ¼­ÀÓ
+		// unknown Å¸ÀÔÀ» ½ºÆ®¸µÀ¸·Î ¹Ù²Ù±â À§ÇØ¼­´Â ÀÚ½ÅÀÇ Å¸ÀÔÀ» ¾Ë¾Æ¾ß ÇÏ´Âµ¥ ÀÌ¸¦ 
+		// add_unknown( ) ÇÔ¼ö¸¦ ÅëÇØ Å×ÀÌºí¿¡ »õ·Î Ãß°¡ÇÏ´Â °³³äÀÌ±â ¶§¹®ÀÓ 
+		// ¾ÆÁ÷ ¹Ì±¸ÇöÀÌ´Ï ÀÏ´Ü ÀÌ´ë·Î ÁøÇàÇÔ
+		auto save() -> decltype(auto)
+		{
+			auto proper = cpptoml::make_table();
+			auto pro = cpptoml::make_table();
+
+			for (auto& i : this->properties)
 			{
-				case property::data_type::Int :
+				std::ostringstream ss;
+				switch (i.second.type)
+				{
+				case property::data_type::Int:
 					ss << i.second.get_int().value_or(-999);
 					break;
-				case property::data_type::Float :
+				case property::data_type::Float:
 					ss << i.second.get_float().value_or(-0.999f);
 					break;
-				case property::data_type::Double :
+				case property::data_type::Double:
 					ss << i.second.get_double().value_or(-0.999);
 					break;
-				case property::data_type::String :
+				case property::data_type::String:
 					ss << i.second.get_string().value_or("FAILED");
 					break;
 				case property::data_type::Bool:
@@ -171,46 +172,46 @@ public:
 					break;
 				case property::data_type::Unknown:
 					break;
+				}
+				pro->insert(i.second.get_name(), std::string(ss.str()));
 			}
-			pro->insert(i.second.get_name(), std::string(ss.str()));      
-		}
-		proper->insert("Properties", pro);
-		return proper;
-	};
+			proper->insert("Properties", pro);
+			return proper;
+		};
 
-	std::map< hash_id, property> load(std::shared_ptr<cpptoml::table> table)
-	{
-		auto map = std::map< hash_id, property>();
-		for(auto& i : *table)
+		std::map< hash_id, property> load(std::shared_ptr<cpptoml::table> table)
 		{
+			auto map = std::map< hash_id, property>();
+			for (auto& i : *table)
+			{
+			}
+
+			return map;
 		}
 
-		return map;
-	} 
-	
 
-	virtual ~component()
-	{
-		save();
-	}
+		virtual ~component()
+		{
+			save();
+		}
 
-	size_t get_type_id()
-	{
-		return this->type_code;
-	}
+		size_t get_type_id()
+		{
+			return this->type_code;
+		}
 
-	std::string get_type_name()
-	{
-		return this->type_name;
-	}
+		std::string get_type_name()
+		{
+			return this->type_name;
+		}
 
-	auto get_params() -> decltype(_params)
-	{
-		return _params;
-	}
+		auto get_params() -> decltype(_params)
+		{
+			return _params;
+		}
 
-	virtual void update(float delta) noexcept = 0;
-};
+		virtual void update(float delta) noexcept {};
+	};
 } // namespace trigger
 
 #endif

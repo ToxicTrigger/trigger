@@ -10,7 +10,7 @@ trigger::transform::~transform()
 
 void trigger::transform::update(float delta) noexcept
 {
-	for (auto i : this->components)
+	for (auto& i : this->components)
 	{
 		if(i->active) i->update(delta);
 	}

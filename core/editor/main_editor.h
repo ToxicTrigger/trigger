@@ -7,13 +7,6 @@
 #include <glm/glm.hpp>
 #include "../core/game/world.h"
 
-#define add_insfector(insfector, var) \
-{\
-	ImGui::Text(#var);\
-	ImGui::SameLine();\
-	ImGui::InputFloat(var);	\
-}\
-
 static TextEditor lua_editor;
 namespace trigger::edit
 {
@@ -36,25 +29,15 @@ namespace trigger::edit
 		std::string TEST;
 		trigger::world* world;
 		hash_id current_id = 0;
+		int current_selected_component;
+		char* component_name;
+		bool sel;
 
 	public:
 		virtual bool draw() noexcept override;
 		virtual void update(float delta) noexcept override;
 
-		explicit main_editor()
-		{
-			lang = TextEditor::LanguageDefinition::Lua();
-			lua_editor.SetLanguageDefinition(lang);
-			lua_editor.SetText(this->TEST);
-		};
-
-		explicit main_editor(trigger::world* world)
-		{
-			lang = TextEditor::LanguageDefinition::Lua();
-			lua_editor.SetLanguageDefinition(lang);
-			lua_editor.SetText(this->TEST);
-			this->world = world;
-		};
+		main_editor(trigger::world* world);
 
 		glm::fvec3 get_window_size()
 		{ 

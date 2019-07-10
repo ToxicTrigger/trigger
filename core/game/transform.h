@@ -4,6 +4,7 @@
 #include <chrono>
 #include <vector>
 #include <glm/glm.hpp>
+#include <mutex>
 typedef glm::fvec2 vec2;
 typedef glm::fvec3 vec3;
 typedef glm::fvec4 vec4;
@@ -14,7 +15,7 @@ static int make_hash_code()
 	auto hash = static_cast<int>(t.time_since_epoch().count());
 	std::srand(hash);
 	hash += std::rand() % 999;
-	hash *= std::rand() >= RAND_MAX/2 ? 1 : -1;
+	hash *= std::rand() >= RAND_MAX / 2 ? 1 : -1;
 	return hash;
 }
 
@@ -28,6 +29,7 @@ namespace trigger
 	{
 	private:
 		int instance_id;
+		std::mutex lock;
 
 	protected:
 		vec3 real_position;
@@ -42,7 +44,7 @@ namespace trigger
 		vec3 rotation;
 		bool active;
 		float time_scale = 1.0f;
-		
+
 		transform(vec3 pos = vec3(0.0f, 0.0f, 0.0f), vec3 scale = vec3(1.0f, 1.0f, 1.0f), vec3 rot = vec3(0.0f, 0.0f, 0.0f), std::string name = "Object") : trigger::component(T_CLASS)
 		{
 			this->real_position = pos;
@@ -51,13 +53,12 @@ namespace trigger
 			this->name = name;
 			this->components = std::vector<trigger::component*>();
 			this->instance_id = make_hash_code();
-			save();
 		};
 
 		std::shared_ptr<cpptoml::table> get_component_toml(std::vector<trigger::component*> vec)
 		{
 			auto table = cpptoml::make_table();
-			for(auto&& i : vec)
+			for (auto&& i : vec)
 			{
 				table->insert(i->get_type_name(), i->get_params());
 			}
@@ -91,7 +92,7 @@ namespace trigger
 		transform* parent;
 		std::vector<transform*> childs;
 
-		
+
 		virtual ~transform();
 
 		virtual void update(float delta) noexcept;
@@ -102,7 +103,7 @@ namespace trigger
 			for (auto i : this->components)
 			{
 				auto t = dynamic_cast<T*>(i);
-				if (t != nullptr)
+				if(t != nullptr)
 				{
 					return t;
 				}
@@ -111,28 +112,41 @@ namespace trigger
 		};
 
 		template<typename T>
+		bool is_it()
+		{
+			if (get_component<T>() == nullptr) return false;
+			return true;
+		}
+
+		template<typename T>
 		bool add_component()
 		{
-			if (this->get_component<T>() == nullptr)
-			{
-				T* com = new T();
-				this->components.push_back(com);
-				save();
-				return true;
-			}
-			return false;
+			this->lock.lock();
+			T* com = new T();
+			this->components.push_back(com);
+			save();
+			this->lock.unlock();
+			return true;
 		}
 
 		template<typename T>
 		bool add_component(T* component)
 		{
-			if (this->get_component<T>() == nullptr)
-			{
-				this->components.push_back(component);
-				save();
-				return true;
-			}
-			return false;
+			this->lock.lock();
+			this->components.push_back(component);
+			save();
+			this->lock.unlock();
+			return true;
+		}
+
+		template<typename T>
+		bool add_component(T component)
+		{
+			this->lock.lock();
+			this->components.push_back(new T(component));
+			save();
+			this->lock.unlock();
+			return true;
 		}
 
 		const int get_instance_id() const;

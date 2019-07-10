@@ -5,30 +5,24 @@ template <typename T> T * trigger::impl::impl_singletone<T>::_inst = 0;
 
 namespace trigger
 {
-    class component;
-namespace manager
-{
-class class_manager : public trigger::impl::impl_singletone<class_manager>
-{
-private:
-    std::map<std::string, trigger::component *> CLASS_ARRAY = std::map<std::string, trigger::component *>();
+	class component;
+	namespace manager
+	{
+		class class_manager : public trigger::impl::impl_singletone<class_manager>
+		{
+		private:
+			std::map<std::string, trigger::component *> CLASS_ARRAY;
 
-public:
-    class_manager()
-    {
-    }
+		public:
+			class_manager()
+			{
+				CLASS_ARRAY = std::map<std::string, trigger::component *>();
+			}
 
-    auto get_class_array()
-    {
-        return this->CLASS_ARRAY;
-    }
-
-    //BUG BUG
-    auto instancing(std::string type) -> decltype(auto)
-    {
-        decltype(CLASS_ARRAY[type]) ma = (CLASS_ARRAY[type]);
-        return ma;
-    };
-};
-} // namespace manager
+			auto* get_class_array()
+			{
+				return &this->CLASS_ARRAY;
+			}
+		};
+	} // namespace manager
 } // namespace trigger

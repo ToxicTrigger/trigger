@@ -54,6 +54,9 @@ public:
 
     std::any value;
     data_type type;
+	bool controllable = true;
+
+
     property()
     {
         value = 0;
@@ -76,6 +79,16 @@ public:
         this->id = hash_str(name.c_str());
         author->insert(std::pair<hash_id, property>(id, *this));
     }
+
+	property(std::any val, data_type type, bool can_access_editor, std::string property_name, std::map<hash_id, property>* author)
+	{
+		this->type = type;
+		this->value = val;
+		this->name = property_name;
+		this->id = hash_str(name.c_str());
+		author->insert(std::pair<hash_id, property>(id, *this));
+		this->controllable = can_access_editor;
+	}
 
     hash_id get_id()
     {
@@ -176,6 +189,12 @@ public:
     {
         return *std::any_cast<T>(&this->value);
     }
+
+	template<typename T>
+	void set(T val)
+	{
+		this->value = val;
+	}
 
     template<typename T> static auto get(property property) -> decltype(auto)
     {

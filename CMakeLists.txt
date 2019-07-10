@@ -82,6 +82,7 @@ core/impl/impl_singleton.h
 core/game/class_manager.h
 
 core/game/object_renderer.h
+core/components/collider.h
 core/game/transform.h core/game/transform.cpp
 )
 
