@@ -30,6 +30,7 @@ namespace trigger
 		std::thread main_thread;
 		std::mutex lock;
 		float time_scale = 1;
+		int fixed_time = 20;
 		bool active = true;
 
 	public:
@@ -174,6 +175,7 @@ namespace trigger
 		{
 			do
 			{
+				std::this_thread::sleep_for(std::chrono::milliseconds(this->fixed_time));
 				this->old_time = new_time;
 				this->new_time = time::now();
 				delta_time = std::chrono::duration_cast<std::chrono::duration<float>>(new_time - old_time);
