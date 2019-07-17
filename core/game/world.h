@@ -175,6 +175,7 @@ namespace trigger
 		{
 			do
 			{
+				this->lock.lock();
 				std::this_thread::sleep_for(std::chrono::milliseconds(this->fixed_time));
 				this->old_time = new_time;
 				this->new_time = time::now();
@@ -183,7 +184,6 @@ namespace trigger
 
 				if (objects.size() != 0)
 				{
-
 					for (auto&& i : objects)
 					{
 						if (i.second != nullptr)
@@ -195,6 +195,7 @@ namespace trigger
 						}
 					}
 				}
+				this->lock.unlock();
 
 			} while (use_thread && this->active);
 		}
