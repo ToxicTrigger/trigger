@@ -1,0 +1,7 @@
+[
+{
+  "directory": "d:/projects/trigger/trigger-component/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2017\\COMMUN~1\\VC\\Tools\\MSVC\\1416~1.270\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP   /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1   /FoCMakeFiles\\components.dir\\components.cpp.obj /FdTARGET_COMPILE_PDB /FS -c D:\\projects\\trigger\\trigger-component\\components.cpp",
+  "file": "D:/projects/trigger/trigger-component/components.cpp"
+}
+]

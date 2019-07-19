@@ -1,0 +1,23 @@
+[setting]
+	ObjectSize = 2
+	use_thread = true
+	gravity = -9.8000001907348633
+	type = "map"
+	name = "SceneObjects"
+[SceneObjects]
+	[SceneObjects.Syha]
+		[SceneObjects.Syha."trigger::transform"]
+			instance_id = ["int", "-1577777502"]
+			active = ["bool", "1"]
+			type_code = ["size_t", "81083"]
+			real_position = ["vec3(0.000000, 0.000000, 0.000000)"]
+			name = ["Syha"]
+			[SceneObjects.Syha."trigger::transform".components]
+	[SceneObjects.Marine]
+		[SceneObjects.Marine."trigger::transform"]
+			instance_id = ["int", "1577771820"]
+			active = ["bool", "1"]
+			type_code = ["size_t", "81083"]
+			real_position = ["vec3(0.000000, 0.000000, 0.000000)"]
+			name = ["Marine"]
+			[SceneObjects.Marine."trigger::transform".components]

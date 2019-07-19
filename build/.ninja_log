@@ -1,0 +1,16 @@
+# ninja log v5
+31	1136	585254848	trigger-engine/CMakeFiles/trigger.dir/imgui/imgui_draw.cpp.obj	2a290a581c5273aa
+14	1178	585254848	trigger-engine/CMakeFiles/trigger.dir/imgui/imgui_widgets.cpp.obj	9f7f550f217d662e
+26	1182	585254848	trigger-engine/CMakeFiles/trigger.dir/imgui/imgui_demo.cpp.obj	c74f5d7a7cedcb6d
+79	1379	585254848	trigger-component/CMakeFiles/components.dir/components.cpp.obj	1bb343748bfbc10d
+1379	1487	585254848	trigger-component/components.lib	1f08ded2abc2eb18
+56	1768	585254849	trigger-engine/CMakeFiles/trigger.dir/core/imgui/imgui_impl_win32.cpp.obj	168085d6949c8c43
+37	1857	585254849	trigger-engine/CMakeFiles/trigger.dir/imgui/imgui.cpp.obj	eefa0d4af0ffcd5b
+50	2903	585254850	trigger-engine/CMakeFiles/trigger.dir/core/imgui/imgui_impl_dx11.cpp.obj	d06f7acf841319c3
+68	3638	585254851	trigger-engine/CMakeFiles/trigger.dir/ImGuiColorTextEdit/TextEditor.cpp.obj	a5398e718ab9c277
+62	3915	585254851	trigger-engine/CMakeFiles/trigger.dir/core/game/transform.cpp.obj	4eaf05c508aca376
+74	4848	585254852	trigger-engine/CMakeFiles/trigger.dir/core/editor/main_editor.cpp.obj	6e664e49f4bd1d7b
+20	5379	585254852	trigger-engine/CMakeFiles/trigger.dir/renderer/dx11.cpp.obj	96392b5a00cc4b73
+43	5391	585254852	trigger-engine/CMakeFiles/trigger.dir/core/game/engine.cpp.obj	ea2c1f20f7d2c87f
+3	5523	585254852	trigger-engine/CMakeFiles/trigger.dir/renderer/renderer.cpp.obj	fbcfeffa42e42d63
+9	5725	585254853	trigger-engine/CMakeFiles/trigger.dir/main.cpp.obj	9a873d87d5b0866b

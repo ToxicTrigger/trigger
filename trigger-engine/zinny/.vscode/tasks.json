@@ -1,0 +1,18 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "run zinny -win",
+            "type": "shell",
+            "command": "cd build && zinny.exe"
+        },
+        {
+            "label": "run zinny -linux",
+            "type": "shell",
+            "args": [],
+            "command": "cd ${workspaceFolder}/build && ./zinny"
+        }
+    ]
+}
