@@ -130,15 +130,9 @@ namespace trigger
 			T* com = new T();
 			trigger::manager::class_manager::get_instance()->
 				get_class_array()->
-				insert(
-					std::pair<std::string, trigger::component *>(T_CLASS, dynamic_cast<trigger::component*>(com)));
+				insert(std::pair<std::string, trigger::component *>(T_CLASS, dynamic_cast<trigger::component*>(com)));
 		}
-		
-		//save 함수는 자신이 들고있는 toml 테이블을 갱신시키는 함수임
-		//왜 그렇게 되냐면 Unknown 타입에 대한 대응을 위해서임
-		// unknown 타입을 스트링으로 바꾸기 위해서는 자신의 타입을 알아야 하는데 이를 
-		// add_unknown( ) 함수를 통해 테이블에 새로 추가하는 개념이기 때문임 
-		// 아직 미구현이니 일단 이대로 진행함
+
 		auto save() -> decltype(auto)
 		{
 			auto proper = cpptoml::make_table();
@@ -179,6 +173,7 @@ namespace trigger
 			return proper;
 		};
 
+		//TODO
 		std::map< hash_id, property> load(std::shared_ptr<cpptoml::table> table)
 		{
 			auto map = std::map< hash_id, property>();

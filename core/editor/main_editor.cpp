@@ -10,6 +10,7 @@ bool trigger::edit::main_editor::draw() noexcept
 		this->window_pos = ImGui::GetWindowPos();
 		ImGui::Text("%f : %f", window_pos.x, window_pos.y);
 		ImGui::Text("%f : %f", window_size.x, window_size.y);
+		ImGui::Text("Object Count : %d", this->world->get_all().size());
 
 		ImGui::BeginTabBar("Test");
 		if (ImGui::BeginTabItem("Editor View"))
@@ -24,6 +25,22 @@ bool trigger::edit::main_editor::draw() noexcept
 			if (ImGui::Button("Add Component"))
 			{
 				ImGui::OpenPopup("Select Component");
+			}
+
+			if (ImGui::Button("New Component"))
+			{
+				ImGui::OpenPopup("Make a New Component");
+			}
+
+			if (ImGui::BeginPopup("Make a New Component"))
+			{
+				ImGui::InputText("Component Name", this->new_component_name,30);
+				if (ImGui::Button("Let's GO!"))
+				{
+					//Add new Component 
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::EndPopup();
 			}
 
 			if (ImGui::BeginPopup("Select Component"))
@@ -48,6 +65,7 @@ bool trigger::edit::main_editor::draw() noexcept
 					if (this->current_id != 0)
 					{
 						auto comps = objs[this->current_id];
+						//auto coll = GET_CLASS(trigger::comp::collider).value();
 						auto tmp = trigger::manager::class_manager::get_instance()->get_class_array()->at(this->component_name);
 						comps->add_component(tmp);
 						ImGui::CloseCurrentPopup();
@@ -122,17 +140,19 @@ bool trigger::edit::main_editor::draw() noexcept
 	return true;
 };
 
-void trigger::edit::main_editor::update(float delta) noexcept {
+void trigger::edit::main_editor::update(float delta) noexcept
+{
 
 }
+
 trigger::edit::main_editor::main_editor(trigger::world* world)
 {
+	this->new_component_name = new char();
 	this->component_name = "Please Select!";
 	lang = TextEditor::LanguageDefinition::Lua();
 	lua_editor.SetLanguageDefinition(lang);
 	lua_editor.SetText(this->TEST);
 	this->world = world;
-	trigger::component::regi_component<trigger::transform>();
 	trigger::component::regi_component<trigger::comp::object_renderer>();
 	trigger::component::regi_component<trigger::comp::collider>();
 };

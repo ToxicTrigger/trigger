@@ -44,6 +44,8 @@ namespace trigger
 		vec3 rotation;
 		bool active;
 		float time_scale = 1.0f;
+		transform* parent;
+		std::vector<transform*> childs;
 
 		transform(vec3 pos = vec3(0.0f, 0.0f, 0.0f), vec3 scale = vec3(1.0f, 1.0f, 1.0f), vec3 rot = vec3(0.0f, 0.0f, 0.0f), std::string name = "Object") : trigger::component(T_CLASS)
 		{
@@ -88,9 +90,6 @@ namespace trigger
 			this->instance_id = code;
 			save();
 		}
-
-		transform* parent;
-		std::vector<transform*> childs;
 
 
 		virtual ~transform();

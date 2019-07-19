@@ -31,6 +31,7 @@ namespace trigger::edit
 		hash_id current_id = 0;
 		int current_selected_component;
 		char* component_name;
+		char* new_component_name;
 		bool sel;
 
 	public:
