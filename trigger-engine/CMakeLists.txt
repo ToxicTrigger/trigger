@@ -129,7 +129,7 @@ if(WIN32) # Check if we are on Windows
 			WIN32_EXECUTABLE YES
 		)
 		LINK_LIBRARIES( lua53 d3d11 d3dcompiler dxgi )
-		target_link_libraries(trigger "d3d11.lib" "d3dx11.lib" "d3dcompiler.lib" "dxgi.lib" "lua53.lib" "Effects11d.lib" trigger-component)
+		target_link_libraries(trigger "d3d11.lib" "d3dx11.lib" "d3dcompiler.lib" "dxgi.lib" "lua53.lib" "Effects11d.lib" "../trigger-component/build/components")
 	elseif(CMAKE_COMPILER_IS_GNUCXX)
 			# SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mwindows") # Not tested
 	else()
@@ -148,7 +148,7 @@ elseif(APPLE)
 	"/usr/local/lib/libglfw.3.3.dylib" 
 	"${CMAKE_SOURCE_DIR}/lib/vk/libvulkan.1.dylib"
 	"${CMAKE_SOURCE_DIR}/lib/vk/libvulkan.1.1.97.dylib"
-	trigger-component
+	"../trigger-component/build/components.lib"
 	)
 elseif(UNIX)
 	set_target_properties(trigger PROPERTIES
