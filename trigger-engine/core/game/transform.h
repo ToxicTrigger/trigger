@@ -3,8 +3,7 @@
 #include "component.h"
 #include <chrono>
 #include <vector>
-#include <glm/glm.hpp>
-#include <mutex>
+#include "../../lib/vk/glm/glm.hpp"
 typedef glm::fvec2 vec2;
 typedef glm::fvec3 vec3;
 typedef glm::fvec4 vec4;
@@ -21,15 +20,13 @@ static int make_hash_code()
 
 namespace trigger
 {
-	class component;
 	class transform;
-
+	class component;
 	/// component head
 	class transform : public trigger::component
 	{
 	private:
 		int instance_id;
-		std::mutex lock;
 
 	protected:
 		vec3 real_position;
@@ -120,31 +117,31 @@ namespace trigger
 		template<typename T>
 		bool add_component()
 		{
-			this->lock.lock();
+
 			T* com = new T();
 			this->components.push_back(com);
 			save();
-			this->lock.unlock();
+
 			return true;
 		}
 
 		template<typename T>
 		bool add_component(T* component)
 		{
-			this->lock.lock();
+
 			this->components.push_back(component);
 			save();
-			this->lock.unlock();
+
 			return true;
 		}
 
 		template<typename T>
 		bool add_component(T component)
 		{
-			this->lock.lock();
+
 			this->components.push_back(new T(component));
 			save();
-			this->lock.unlock();
+
 			return true;
 		}
 

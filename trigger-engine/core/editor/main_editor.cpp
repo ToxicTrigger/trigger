@@ -4,7 +4,7 @@
 
 #include <stdlib.h>
 #include <fstream>
-
+#include "../../tools/macros.h"
 
 bool trigger::edit::main_editor::draw() noexcept
 {
@@ -39,31 +39,28 @@ bool trigger::edit::main_editor::draw() noexcept
 			if (ImGui::BeginPopup("Make a New Component"))
 			{
 				ImGui::InputText("Component Name", this->new_component_name,30);
+				ImGui::TextColored(ImVec4(1.0f, 0.2f, 0.2f, 1.0f), "This action will cause the program to restart!");
+				ImGui::TextColored(ImVec4(1.0f, 0.2f, 0.2f, 1.0f), "Name cannot be blank.");
+
 				if (ImGui::Button("Let's GO!"))
 				{
-					//Add new Component 
-					//todo already have??
-					std::string path("mkdir ..");
-					path.append(slash);
-					path.append("trigger-component");
-					path.append(slash);
-					path.append("src");
-					path.append(slash);
-					path.append(this->new_component_name);
-					//mkdir
-					system(path.c_str());
-					path.append(slash);
-					path.append(this->new_component_name);
-					path.append(".h");
-					std::ofstream o(path.substr(6, path.size()));
-					o << "#include \"../../../trigger-engine/core/game/component.h\"\n\n\nclass ";
-					o << this->new_component_name;
-					o << " : public trigger::component\n{\n\t";
-					o << this->new_component_name;
-					o << "() : trigger::component(T_CLASS)\n\t{\n\t}\n};";
-					o.close();
-					system("dir | cmake --build build --config Debug --target all -- -j 7");
-					ImGui::CloseCurrentPopup();
+					auto re = std::strcmp(this->new_component_name, "");
+					if (re == 0)
+					{
+
+					}
+					else
+					{
+						this->new_component();
+						std::string command;
+						command.append("cd ..");
+						command.append(slash);
+						command.append("trigger-component & cmake --build . --config Debug");
+						system(command.c_str());
+						//RELOAD!
+						std::exit(42);
+						ImGui::CloseCurrentPopup();
+					}
 				}
 				ImGui::EndPopup();
 			}
@@ -120,6 +117,9 @@ bool trigger::edit::main_editor::draw() noexcept
 							{
 								float f = p.second.get_float().value_or(0);
 								bool* b = std::any_cast<bool>(&p.second.value);
+								int* i32 = std::any_cast<int>(&p.second.value);
+								std::string text = p.second.get_string().value_or("");
+
 								switch (p.second.type)
 								{
 								case trigger::property::data_type::Bool:
@@ -132,6 +132,18 @@ bool trigger::edit::main_editor::draw() noexcept
 									ImGui::Text(p.second.get_name().c_str());
 									ImGui::SameLine();
 									ImGui::InputFloat("", &f);
+									break;
+
+								case trigger::property::data_type::Int:
+									ImGui::Text(p.second.get_name().c_str());
+									ImGui::SameLine();
+									ImGui::InputInt("", i32);
+									break;
+
+								case trigger::property::data_type::String:
+									ImGui::Text(p.second.get_name().c_str());
+									ImGui::SameLine();
+									ImGui::InputText("", const_cast<char*>(text.c_str()), 1024);
 									break;
 								}
 							}
@@ -178,6 +190,143 @@ trigger::edit::main_editor::main_editor(trigger::world* world)
 	lua_editor.SetLanguageDefinition(lang);
 	lua_editor.SetText(this->TEST);
 	this->world = world;
-	trigger::component::regi_component<trigger::comp::object_renderer>();
-	trigger::component::regi_component<trigger::comp::collider>();
-};
+}
+bool trigger::edit::main_editor::new_component()
+{
+	//Add new Component 
+//todo already have??
+	std::string path("mkdir ..");
+	path.append(slash);
+	path.append("trigger-component");
+	path.append(slash);
+	path.append("src");
+	path.append(slash);
+	path.append(this->new_component_name);
+	//mkdir
+	system(path.c_str());
+	path.append(slash);
+	path.append(this->new_component_name);
+	path.append(".h");
+
+	std::string new_name(path.substr(6, path.size()));
+	new_name.replace(new_name.size() - 2, 2, ".cpp");
+	//make header
+	std::ofstream o(path.substr(6, path.size()));
+	o << "#pragma once\n#include \"../../../trigger-engine/core/game/component.h\"\n\nclass ";
+	o << this->new_component_name;
+	o << " : public trigger::component\n{\npublic:\n\t";
+	o << this->new_component_name;
+	o << "() : trigger::component(T_CLASS)\n\t{\n\t}\n};";
+	o.close();
+	o.open(new_name.c_str());
+	o << "#include \"";
+	o << new_component_name;
+	o << ".h";
+	o << "\"";
+	o.close();
+
+	//read component cmakelists.txt!
+	std::vector<std::string> text;
+	std::string cmake;
+	cmake.append("..");
+	cmake.append(slash);
+	cmake.append("trigger-component");
+	cmake.append(slash);
+	cmake.append("CMakeLists.txt");
+	std::fstream f(cmake.c_str());
+	if (f.is_open())
+	{
+		std::string line;
+		while (std::getline(f, line))
+		{
+			text.push_back(line);
+		}
+	}
+	f.close();
+
+	for (int i = 0; i < text.size(); ++i)
+	{
+		if (text[i].find("components.cpp") != std::string::npos)
+		{
+			std::string name;
+			name.append("src/");
+			name.append(this->new_component_name);
+			name.append("/");
+			name.append(this->new_component_name);
+			name.append(".h ");
+			name.append("src/");
+			name.append(this->new_component_name);
+			name.append("/");
+			name.append(this->new_component_name);
+			name.append(".cpp ");
+			text.insert(text.begin() + i, name);
+			break;
+		}
+	}
+
+	std::ofstream ou(cmake);
+	for (auto& s : text)
+	{
+		ou << s;
+		ou << '\n';
+	}
+	ou.close();
+
+	std::vector<std::string> regi;
+	std::string coms;
+	coms.append("..");
+	coms.append(slash);
+	coms.append("trigger-component");
+	coms.append(slash);
+	coms.append("components.h");
+	f.open(coms);
+	if (f.is_open())
+	{
+		std::string line;
+		while (std::getline(f, line))
+		{
+			regi.push_back(line);
+		}
+	}
+	f.close();
+
+	for (int i = 0; i < regi.size(); ++i)
+	{
+		if (regi[i].find("//DO NOT EDIT THIS FILE!") != std::string::npos)
+		{
+			std::string name;
+			name.append("#include \"");
+			name.append("src/");
+			name.append(this->new_component_name);
+			name.append("/");
+			name.append(this->new_component_name);
+			name.append(".h\"");
+			regi.insert(regi.begin() + i + 1, name);
+		}
+		if (regi[i].find("static void reload(){") != std::string::npos)
+		{
+			std::string name;
+			name.append("\tregi_component(");
+			name.append(this->new_component_name);
+			name.append(");");
+			regi.insert(regi.begin() + i + 1, name);
+		}
+	}
+
+	ou.open(coms);
+	for (auto& s : regi)
+	{
+		ou << s;
+		ou << '\n';
+	}
+	ou.close();
+
+	return false;
+}
+
+//TODO
+bool trigger::edit::main_editor::del_component()
+{
+	return false;
+}
+;

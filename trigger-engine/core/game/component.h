@@ -1,14 +1,11 @@
 #ifndef COMPONENT_H
 #define COMPONENT_H
 #define GLM_ENABLE_EXPERIMENTAL 1
-#include <glm/glm.hpp>
-#include <glm/gtx/string_cast.hpp>
 #include <string>
 #include <iostream>
 #include <chrono>
 #include "trigger_tools.h"
 #include "../../cpptoml/include/cpptoml.h"
-#include "transform.h"
 #include "class_manager.h"
 #include "property.h"
 
@@ -70,15 +67,8 @@ inline T get_data(std::shared_ptr<cpptoml::table> array, const std::string &key)
 	return a;
 }
 
-#define REGI_CLASS(type)         \
-	_params->insert(type, _tmp); \
-	trigger::manager::class_manager::get_instance()->get_class_array()->insert(std::pair<std::string, trigger::component *>(type, dynamic_cast<trigger::component*>(this)));
-
-
 namespace trigger
 {
-	class transform;
-	class component;
 	class property;
 
 	class component
@@ -103,7 +93,6 @@ namespace trigger
 			toml_properties = cpptoml::make_table();
 			type_code = hash_str("trigger::component");
 			type_name = "trigger::component";
-			REGI_CLASS("trigger::component");
 			active = true;
 			this->properties = std::map<hash_id, property>();
 		}
@@ -121,16 +110,15 @@ namespace trigger
 			property(active, property::data_type::Bool, "active", &this->properties);
 			property(type_code, property::data_type::HashID, "type_code", &this->properties);
 			property(instance_id, property::data_type::HashID, "instance_id", &this->properties);
-			REGI_CLASS(type);
 		}
 
 		template<typename T = trigger::component>
-		static void regi_component()
+		static void regi_component(std::string type)
 		{
 			T* com = new T();
 			trigger::manager::class_manager::get_instance()->
 				get_class_array()->
-				insert(std::pair<std::string, trigger::component *>(T_CLASS, dynamic_cast<trigger::component*>(com)));
+				insert(std::pair<std::string, trigger::component *>(type, dynamic_cast<trigger::component*>(com)));
 		}
 
 		auto save() -> decltype(auto)

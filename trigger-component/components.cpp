@@ -1,6 +1,2 @@
-#include <iostream>
+#include "components.h"
 
-void say_hello()
-{
-    std::cout << "Hello, from components!\n";
-}

@@ -10,12 +10,10 @@ endif()
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(CMAKE_BUILD_TYPE Debug)
-
-include(CTest)
-enable_testing()
-
 LINK_DIRECTORIES( lib/lua lib/dx11 lib/vk/glm lib/vk/glm/ext core)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 
 set(LUA_HEADER 
 lib/lua/include/lua.h 
@@ -93,6 +91,8 @@ core/editor/main_editor.h core/editor/main_editor.cpp
 ImGuiColorTextEdit/TextEditor.h ImGuiColorTextEdit/TextEditor.cpp
 )
 
+INCLUDE_DIRECTORIES("../trigger-component/src")
+
 INCLUDE_DIRECTORIES(${LUA_HEADER} ${DX_HEADER} ${VK_HEADER} ${REND_HEADER} ${TOOLS} ${CORE_HEADER} ${IMGUI} ${IMGUI_VK} ${IMGUI_DX} ${EDITOR_MAIN})
 
 if(WIN32)
@@ -121,15 +121,28 @@ set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
 
+add_library(trigger-engine ${CORE_HEADER})
+
 target_compile_features(trigger PRIVATE cxx_range_for)
 
+get_filename_component(PARENT_DIR ${CMAKE_SOURCE_DIR} DIRECTORY)
+
 if(WIN32) # Check if we are on Windows
-	if(MSVC) # Check if we are using the Visual Studio compiler
+if(MSVC) # Check if we are using the Visual Studio compiler
 		set_target_properties(trigger PROPERTIES
 			WIN32_EXECUTABLE YES
 		)
-		LINK_LIBRARIES( lua53 d3d11 d3dcompiler dxgi )
-		target_link_libraries(trigger "d3d11.lib" "d3dx11.lib" "d3dcompiler.lib" "dxgi.lib" "lua53.lib" "Effects11d.lib" "../trigger-component/build/components")
+		# searching for library file
+		LINK_LIBRARIES( lua53 d3d11 d3dcompiler dxgi  )
+
+		message(WARNING "${CMAKE_BUILD_TYPE}")
+
+		if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+			target_link_libraries(trigger "d3d11.lib" "d3dx11.lib" "d3dcompiler.lib" "dxgi.lib" "lua53.lib" "Effects11d.lib" "${CMAKE_SOURCE_DIR}/build/Debug/components.lib")
+		else()
+			target_link_libraries(trigger "d3d11.lib" "d3dx11.lib" "d3dcompiler.lib" "dxgi.lib" "lua53.lib" "Effects11d.lib" "${CMAKE_SOURCE_DIR}/build/Debug/components.lib")
+		endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
+		
 	elseif(CMAKE_COMPILER_IS_GNUCXX)
 			# SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mwindows") # Not tested
 	else()
@@ -148,7 +161,7 @@ elseif(APPLE)
 	"/usr/local/lib/libglfw.3.3.dylib" 
 	"${CMAKE_SOURCE_DIR}/lib/vk/libvulkan.1.dylib"
 	"${CMAKE_SOURCE_DIR}/lib/vk/libvulkan.1.1.97.dylib"
-	"../trigger-component/build/components.lib"
+	"../trigger-component/build/components.dylib"
 	)
 elseif(UNIX)
 	set_target_properties(trigger PROPERTIES

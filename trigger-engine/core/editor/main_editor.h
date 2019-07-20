@@ -40,6 +40,9 @@ namespace trigger::edit
 
 		main_editor(trigger::world* world);
 
+		bool new_component();
+		bool del_component();
+
 		glm::fvec3 get_window_size()
 		{ 
 			return glm::fvec3(this->window_size.x, this->window_size.y, 0.0f);

@@ -2,6 +2,7 @@
 #include "component.h"
 #include <optional>
 #include "../impl/impl_singleton.h"
+
 template <typename T> T * trigger::impl::impl_singletone<T>::_inst = 0;
 
 #define GET_CLASS(type) trigger::manager::class_manager::get_instance()->get_class<type>(#type)

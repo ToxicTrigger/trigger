@@ -8,8 +8,9 @@
 #include <mutex>
 #include <fstream>
 #include <map>
-
+#include "../tools/macros.h"
 #include "transform.h"
+#include "../../../trigger-component/components.h"
 using namespace trigger;
 
 namespace trigger
@@ -52,6 +53,8 @@ namespace trigger
 			{
 				main_thread = std::thread(&world::update_all, this);
 			}
+			trigger::manager::class_manager::get_instance()->get_class_array()->clear();
+			reload();
 		}
 
 		explicit inline world(bool UseThread, std::string name)
@@ -67,6 +70,8 @@ namespace trigger
 			{
 				main_thread = std::thread(&world::update_all, this);
 			}
+			trigger::manager::class_manager::get_instance()->get_class_array()->clear();
+			reload();
 		}
 
 		inline float get_delta_time() const noexcept
