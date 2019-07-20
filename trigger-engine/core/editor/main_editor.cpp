@@ -2,6 +2,10 @@
 #include "../core/game/object_renderer.h"
 #include "../components/collider.h"
 
+#include <stdlib.h>
+#include <fstream>
+
+
 bool trigger::edit::main_editor::draw() noexcept
 {
 	{
@@ -38,6 +42,27 @@ bool trigger::edit::main_editor::draw() noexcept
 				if (ImGui::Button("Let's GO!"))
 				{
 					//Add new Component 
+					//todo already have??
+					std::string path("mkdir ..");
+					path.append(slash);
+					path.append("trigger-component");
+					path.append(slash);
+					path.append("src");
+					path.append(slash);
+					path.append(this->new_component_name);
+					//mkdir
+					system(path.c_str());
+					path.append(slash);
+					path.append(this->new_component_name);
+					path.append(".h");
+					std::ofstream o(path.substr(6, path.size()));
+					o << "#include \"../../../trigger-engine/core/game/component.h\"\n\n\nclass ";
+					o << this->new_component_name;
+					o << " : public trigger::component\n{\n\t";
+					o << this->new_component_name;
+					o << "() : trigger::component(T_CLASS)\n\t{\n\t}\n};";
+					o.close();
+					system("dir | cmake --build build --config Debug --target all -- -j 7");
 					ImGui::CloseCurrentPopup();
 				}
 				ImGui::EndPopup();
