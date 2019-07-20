@@ -121,8 +121,6 @@ set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
 
-add_library(trigger-engine ${CORE_HEADER})
-
 target_compile_features(trigger PRIVATE cxx_range_for)
 
 get_filename_component(PARENT_DIR ${CMAKE_SOURCE_DIR} DIRECTORY)
