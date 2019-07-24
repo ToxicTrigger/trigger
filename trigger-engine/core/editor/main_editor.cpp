@@ -1,7 +1,7 @@
 #include "main_editor.h"
 #include "../core/game/object_renderer.h"
 #include "../components/collider.h"
-
+#include <list>
 #include <stdlib.h>
 #include <fstream>
 #include "../../tools/macros.h"
@@ -34,6 +34,21 @@ bool trigger::edit::main_editor::draw() noexcept
 			if (ImGui::Button("New Component"))
 			{
 				ImGui::OpenPopup("Make a New Component");
+			}
+
+			if (ImGui::Button("Delete Component"))
+			{
+				ImGui::OpenPopup("Delete Component");
+			}
+
+			if (ImGui::BeginPopup("Delete Component"))
+			{
+				ImGui::InputText("Component Name", this->new_component_name, 30);
+				if (ImGui::Button("Delete"))
+				{
+					this->del_component();
+				}
+				ImGui::EndPopup();
 			}
 
 			if (ImGui::BeginPopup("Make a New Component"))
@@ -327,6 +342,99 @@ bool trigger::edit::main_editor::new_component()
 //TODO
 bool trigger::edit::main_editor::del_component()
 {
-	return false;
+	std::string path("..");
+	path.append(slash);
+	path.append("trigger-component");
+	path.append(slash);
+	path.append("src");
+	path.append(slash);
+	path.append(this->new_component_name);
+	path.append(slash);
+	path.append(this->new_component_name);
+
+	if (remove((path + ".h").c_str()) == -1)
+	{
+		return false;
+	}
+	remove((path + ".cpp").c_str());
+	std::string rm("rmdir ..");
+	rm.append(slash);
+	rm.append("trigger-component");
+	rm.append(slash);
+	rm.append("src");
+	rm.append(slash);
+	rm.append(this->new_component_name);
+	system( rm.c_str() );
+
+	//read component cmakelists.txt!
+	std::list<std::string> text;
+	std::string cmake;
+	cmake.append("..");
+	cmake.append(slash);
+	cmake.append("trigger-component");
+	cmake.append(slash);
+	cmake.append("CMakeLists.txt");
+	std::fstream f(cmake.c_str());
+	if (f.is_open())
+	{
+		std::string line;
+		while (std::getline(f, line))
+		{
+			text.push_back(line);
+		}
+	}
+	f.close();
+	for (auto&& i : text)
+	{
+		if (i.find(this->new_component_name) != std::string::npos)
+		{
+			text.remove(i);
+			break;
+		}
+	}
+
+	std::ofstream ou(cmake);
+	for (auto& s : text)
+	{
+		ou << s;
+		ou << '\n';
+	}
+	ou.close();
+
+	std::list<std::string> regi;
+	std::string coms;
+	coms.append("..");
+	coms.append(slash);
+	coms.append("trigger-component");
+	coms.append(slash);
+	coms.append("components.h");
+	f.open(coms);
+	if (f.is_open())
+	{
+		std::string line;
+		while (std::getline(f, line))
+		{
+			regi.push_back(line);
+		}
+	}
+	f.close();
+
+	for (auto i : regi)
+	{
+		if (i.find(this->new_component_name) != std::string::npos)
+		{
+			regi.remove(i);
+			continue;
+		}
+	}
+
+	ou.open(coms);
+	for (auto& s : regi)
+	{
+		ou << s;
+		ou << '\n';
+	}
+	ou.close();
+	return true;
 }
 ;
