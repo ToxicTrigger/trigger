@@ -43,7 +43,17 @@ bool trigger::edit::main_editor::draw() noexcept
 
 			if (ImGui::BeginPopup("Delete Component"))
 			{
-				ImGui::InputText("Component Name", this->new_component_name, 30);
+				if (ImGui::BeginCombo("", this->new_component_name))
+				{
+					for (auto& i : *trigger::manager::class_manager::get_instance()->get_class_array())
+					{
+						if (ImGui::Selectable(i.first.c_str(), &this->sel))
+						{
+							this->new_component_name = const_cast<char*>(i.first.c_str());
+						}
+					}
+					ImGui::EndCombo();
+				}
 				if (ImGui::Button("Delete"))
 				{
 					this->del_component();
