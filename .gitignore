@@ -82,4 +82,5 @@ imgui.ini
 *.tcl
 .vs/
 components.lib
+!trigger-engine/lib/vk/glslangValidator.exe
 
