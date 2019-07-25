@@ -26,7 +26,7 @@ bool trigger::core::engine::init(int w, int h, bool edit_mod)
 #else
 bool trigger::core::engine::init(INSTANCE hInst, int w, int h, bool edit_mod)
 {
-    this->state = engine_state::not_inited;
+    this->state = engine_state::not_inited;	
 
     this->editors = new trigger::world(true);
 	this->object = new trigger::world(true);
