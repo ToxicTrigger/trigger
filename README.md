@@ -32,11 +32,8 @@ Trigger Engine 은 imgui 와 DX12 & Vulkan 을 결합한 게임 엔진 입니다
 # Todo list
 
 - [ ] Attach Thread for All Engines Job ex) World Exporter & Editor & CPU DesHeap 
-- [ ] make Template Macro ex) TCLASS like UCLASS-unreal
+- [x] make Template Macro ex) TCLASS like UCLASS-unreal
 - [x] make Save Variable Data Like .. SAVE_VAR(var_name) :: -> component.h 
-- [ ] parse Lua + engine-side editor ) build Scriptable API for access Core API
-- [ ] make Default Lua Template :: -> trigger_lua.h & trigger/lua/lua_default
-- [ ] Game Control Api for Lua Like .. move( actor , vec(0, 1, 0) * moveSpeed * deltaTime ) & rotation( actor , vec(0, 1, 0) * deltaTime )
 - [ ] Add Mesh Renderer 
 - [ ] Add Model importer
 - [ ] Add Path Finding 
@@ -52,7 +49,6 @@ Trigger Engine 은 imgui 와 DX12 & Vulkan 을 결합한 게임 엔진 입니다
 - [ ] Add Tessellation Based LOD
 - [ ] Add View debugger.
 - [ ] Make it Buildable
-- [ ] Dynamic Lighting like Day->Night 
 - [ ] FSM , Animation  node Editor -> like BluePrint
 - [ ] Use Imgui Dock
 - [x] Implement Vulkan API 
@@ -60,7 +56,6 @@ Trigger Engine 은 imgui 와 DX12 & Vulkan 을 결합한 게임 엔진 입니다
 - [ ] Shader Converter (hlsl <-> glsl <-> spri-v)
 - [ ] Enable Mode
 - [ ] Import Zinny & wget
-- [ ] make Plug-in API (lua)
 
 # Build?
 - Windows 10 + VS2017 + CMake + 64bit
