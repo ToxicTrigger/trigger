@@ -1,4 +1,4 @@
-#ifdef _WIN64
+#ifndef _WIN64
 #ifndef DX11_HEADER
 #define DX11_HEADER
 

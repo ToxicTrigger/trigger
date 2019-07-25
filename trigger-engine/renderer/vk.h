@@ -1,4 +1,4 @@
-#ifndef _WIN64
+
 #include "renderer.h"
 #if REND == vk
 #ifndef VK_H
@@ -351,6 +351,5 @@ namespace trigger
         };
     }
 }
-#endif
 #endif
 #endif

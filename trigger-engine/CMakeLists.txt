@@ -10,7 +10,7 @@ endif()
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-LINK_DIRECTORIES( lib/lua lib/dx11 lib/vk/glm lib/vk/glm/ext core)
+LINK_DIRECTORIES( lib/lua lib/dx11 lib/vk/glm lib/vk/Lib lib/vk/glm/ext core lib/vk/glfw-3.2.1.WIN64/lib-vc2015 )
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
@@ -46,10 +46,10 @@ renderer/material.h
 
 
 set(DX_HEADER 
-lib/dx11/D3DX11.h
-lib/dx11/D3DX11Effect.h
-renderer/dx11.h
-renderer/dx11.cpp
+#lib/dx11/D3DX11.h
+#lib/dx11/D3DX11Effect.h
+#renderer/dx11.h
+#renderer/dx11.cpp
 )
 
 set(VK_HEADER 
@@ -95,17 +95,7 @@ INCLUDE_DIRECTORIES("../trigger-component/src")
 
 INCLUDE_DIRECTORIES(${LUA_HEADER} ${DX_HEADER} ${VK_HEADER} ${REND_HEADER} ${TOOLS} ${CORE_HEADER} ${IMGUI} ${IMGUI_VK} ${IMGUI_DX} ${EDITOR_MAIN})
 
-if(WIN32)
-	add_executable(trigger main.cpp 
-	${TOOLS} 
-	${REND_HEADER} 
-	${DX_HEADER} 
-	${IMGUI} 
-	${IMGUI_DX}
-	${CORE_HEADER}
-	${EDITOR_MAIN}
-	)
-else()
+
 	add_executable(trigger main.cpp 
 	${TOOLS} 
 	${REND_HEADER} 
@@ -115,7 +105,7 @@ else()
 	${CORE_HEADER}
 	${EDITOR_MAIN}
 	)
-endif()
+
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
@@ -131,14 +121,15 @@ if(MSVC) # Check if we are using the Visual Studio compiler
 			WIN32_EXECUTABLE YES
 		)
 		# searching for library file
-		LINK_LIBRARIES( lua53 d3d11 d3dcompiler dxgi  )
+		find_library(glfw3 NAMES glfw3.lib HINTS lib/vk/glfw3-3.2.1.WIN64/lib-vc2015 REQUIRED)
+		LINK_LIBRARIES( lua53 vulkan-1 ${glfw3} )
 
 		message(WARNING "${CMAKE_BUILD_TYPE}")
 
 		if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-			target_link_libraries(trigger "d3d11.lib" "d3dx11.lib" "d3dcompiler.lib" "dxgi.lib" "lua53.lib" "Effects11d.lib" "${CMAKE_SOURCE_DIR}/build/Debug/components.lib")
+			target_link_libraries(trigger "vulkan-1.lib" "${glfw3}" "lua53.lib" "${CMAKE_SOURCE_DIR}/build/Debug/components.lib")
 		else()
-			target_link_libraries(trigger "d3d11.lib" "d3dx11.lib" "d3dcompiler.lib" "dxgi.lib" "lua53.lib" "Effects11d.lib" "${CMAKE_SOURCE_DIR}/build/Debug/components.lib")
+			target_link_libraries(trigger "vulkan-1.lib" "glfw3.lib" "lua53.lib" "${CMAKE_SOURCE_DIR}/build/Debug/components.lib")
 		endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
 		
 	elseif(CMAKE_COMPILER_IS_GNUCXX)

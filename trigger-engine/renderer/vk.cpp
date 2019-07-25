@@ -1,4 +1,3 @@
-#ifndef _WIN64
 #include "vk.h"
 
 #include "../core/editor/impl_editor.h"
@@ -14,7 +13,7 @@ int vk::init()
         return 1;
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    GLFWwindow *window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+Vulkan example", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(1280, 720, "trigger engine", NULL, NULL);
 
     // Setup Vulkan
     if (!glfwVulkanSupported())
@@ -22,6 +21,7 @@ int vk::init()
         printf("GLFW: Vulkan Not Supported\n");
         return 1;
     }
+
     uint32_t extensions_count = 0;
     const char **extensions = glfwGetRequiredInstanceExtensions(&extensions_count);
     SetupVulkan(extensions, extensions_count);
@@ -197,4 +197,3 @@ int vk::rendering()
     return 0;
 }
 
-#endif

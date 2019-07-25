@@ -15,20 +15,14 @@
     #define API_IMPORT
 #endif
 
+#define REND vk
+
 #ifdef _WIN64
-#define REND dx11
 #define INSTANCE HINSTANCE
 #define WH HWND
-#define DEVICE ID3D11Device*
-#define EFFECT ID3DX11Effect*
-#define ReleaseCOM(x) { if(x){ x->Release(); x = 0; } }
-#define SafeDelete(x) { delete x; x = 0; }
 #else
-#define REND vk
 #define INSTANCE VkInstance
 #define WH GLFWwindow
-#define DEVICE VkDevice
-#define EFFECT VkQueue 
 #endif
 
 #endif
