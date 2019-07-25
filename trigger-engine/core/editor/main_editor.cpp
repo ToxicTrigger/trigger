@@ -83,7 +83,7 @@ bool trigger::edit::main_editor::draw() noexcept
 						command.append("trigger-component & cmake --build . --config Debug");
 						system(command.c_str());
 						//RELOAD!
-						std::exit(42);
+						//std::exit(42);
 						ImGui::CloseCurrentPopup();
 					}
 				}
