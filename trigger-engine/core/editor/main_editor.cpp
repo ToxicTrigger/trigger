@@ -419,12 +419,11 @@ bool trigger::edit::main_editor::del_component()
 	}
 	f.close();
 
-	for (auto i : regi)
+	for (auto i = regi.begin(); i != regi.end(); ++i)
 	{
-		if (i.find(this->new_component_name) != std::string::npos)
+		if(i->find(this->new_component_name) != std::string::npos)
 		{
-			regi.remove(i);
-			continue;
+			regi.erase(i);
 		}
 	}
 
