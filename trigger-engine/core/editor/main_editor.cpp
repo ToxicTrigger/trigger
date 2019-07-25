@@ -429,11 +429,15 @@ bool trigger::edit::main_editor::del_component()
 	}
 	f.close();
 
-	for (auto i = regi.begin(); i != regi.end(); ++i)
+	for (auto i = regi.begin(); i != regi.end();)
 	{
 		if(i->find(this->new_component_name) != std::string::npos)
 		{
-			regi.erase(i);
+			regi.erase(i++);
+		}
+		else
+		{
+			i++;
 		}
 	}
 
@@ -444,6 +448,9 @@ bool trigger::edit::main_editor::del_component()
 		ou << '\n';
 	}
 	ou.close();
+
+	trigger::manager::class_manager::get_instance()->get_class_array()->erase(this->new_component_name);
+	this->new_component_name = "";
 	return true;
 }
 ;
