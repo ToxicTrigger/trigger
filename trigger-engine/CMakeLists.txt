@@ -122,14 +122,14 @@ if(MSVC) # Check if we are using the Visual Studio compiler
 		)
 		# searching for library file
 		find_library(glfw3 NAMES glfw3.lib HINTS lib/vk/glfw3-3.2.1.WIN64/lib-vc2015 REQUIRED)
-		LINK_LIBRARIES( lua53 vulkan-1 ${glfw3} )
+		LINK_LIBRARIES( vulkan-1 ${glfw3} )
 
 		message(WARNING "${CMAKE_BUILD_TYPE}")
 
 		if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-			target_link_libraries(trigger "vulkan-1.lib" "${glfw3}" "lua53.lib" "${CMAKE_SOURCE_DIR}/build/Debug/components.lib")
+			target_link_libraries(trigger "vulkan-1.lib" "${glfw3}" "${CMAKE_SOURCE_DIR}/build/Debug/components.lib")
 		else()
-			target_link_libraries(trigger "vulkan-1.lib" "glfw3.lib" "lua53.lib" "${CMAKE_SOURCE_DIR}/build/Debug/components.lib")
+			target_link_libraries(trigger "vulkan-1.lib" "glfw3.lib" "${CMAKE_SOURCE_DIR}/build/Debug/components.lib")
 		endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
 		
 	elseif(CMAKE_COMPILER_IS_GNUCXX)
@@ -138,18 +138,17 @@ if(MSVC) # Check if we are using the Visual Studio compiler
 		message(SEND_ERROR "You are using an unsupported Windows compiler! (Not MSVC or GCC)")
 	endif(MSVC)
 elseif(APPLE)
-	set(VK_ICD_FILENAMES "${CMAKE_SOURCE_DIR}/lib/vk/icd.d/MoltenVK_icd.json")
-	set(VK_LAYER_PATH "${CMAKE_SOURCE_DIR}/lib/vk/explicit_layer.d")
+	set(VK_ICD_FILENAMES "trigger-engine/lib/vk/icd.d/MoltenVK_icd.json")
+	set(VK_LAYER_PATH "trigger-engine/lib/vk/explicit_layer.d")
 	set_target_properties(trigger PROPERTIES
 			MACOSX_BUNDLE YES)
-	find_library(lua NAMES lua53.lib HINTS lib/ REQUIRED)
 	find_library(glfw3 NAMES glfw3.lib REQUIRED)
 	find_library(glm REQUIRED)
-	LINK_LIBRARIES( ${lua} ${glfw3} ${glm} )
-	target_link_libraries(trigger "${CMAKE_SOURCE_DIR}/lib/lua/lua53.lib" 
+	LINK_LIBRARIES( ${glfw3} ${glm} )
+	target_link_libraries(trigger 
 	"/usr/local/lib/libglfw.3.3.dylib" 
-	"${CMAKE_SOURCE_DIR}/lib/vk/libvulkan.1.dylib"
-	"${CMAKE_SOURCE_DIR}/lib/vk/libvulkan.1.1.97.dylib"
+	"trigger-engine/lib/vk/libvulkan.1.dylib"
+	"trigger-engine/lib/vk/libvulkan.1.1.97.dylib"
 	"../trigger-component/build/components.dylib"
 	)
 elseif(UNIX)
