@@ -7,6 +7,7 @@
 #include <tuple>
 #include <memory>
 #include <string>
+#include <stdlib.h>
 
 #include <vulkan/vulkan.h>
 
@@ -24,13 +25,14 @@ namespace trigger::rend
         bool is_init = false; 
 
     public:
-        std::unique_ptr<trigger::core::file> path;
+        trigger::core::file path;
         shader_type type;
+
 
         shader(std::string shader_path, shader_type Type)
         {
-        };
 
+        };
 
         bool const is_usable()
         {
