@@ -10,18 +10,10 @@ endif()
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-LINK_DIRECTORIES( lib/lua lib/dx11 lib/vk/glm lib/vk/Lib lib/vk/glm/ext core lib/vk/glfw-3.2.1.WIN64/lib-vc2015 )
+LINK_DIRECTORIES( lib/dx11 lib/vk/glm lib/vk/Lib lib/vk/glm/ext core lib/vk/glfw-3.2.1.WIN64/lib-vc2015 )
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
-
-set(LUA_HEADER 
-lib/lua/include/lua.h 
-lib/lua/include/lua.hpp 
-lib/lua/include/luaconf.h 
-lib/lua/include/lualib.h 
-lib/lua/include/lauxlib.h 
-)
 
 set(TOOLS tools/macros.h )
 
@@ -69,6 +61,7 @@ lib/vk/glm/glm.hpp
 lib/vk/glm/ext/matrix_clip_space.hpp
 core/game/property.h
 core/game/component.h 
+core/impl/impl_singleton.h
 core/game/world.h 
 core/game/fsm.h 
 core/game/trigger_tools.h 
@@ -76,11 +69,6 @@ core/game/engine.h core/game/engine.cpp
 core/game/file.h
 core/game/mini_core.h
 
-core/impl/impl_singleton.h
-core/game/class_manager.h
-
-core/game/object_renderer.h
-core/components/collider.h
 core/game/transform.h core/game/transform.cpp
 )
 
@@ -93,7 +81,7 @@ ImGuiColorTextEdit/TextEditor.h ImGuiColorTextEdit/TextEditor.cpp
 
 INCLUDE_DIRECTORIES("../trigger-component/src")
 
-INCLUDE_DIRECTORIES(${LUA_HEADER} ${DX_HEADER} ${VK_HEADER} ${REND_HEADER} ${TOOLS} ${CORE_HEADER} ${IMGUI} ${IMGUI_VK} ${IMGUI_DX} ${EDITOR_MAIN})
+INCLUDE_DIRECTORIES(${DX_HEADER} ${VK_HEADER} ${REND_HEADER} ${TOOLS} ${CORE_HEADER} ${IMGUI} ${IMGUI_VK} ${IMGUI_DX} ${EDITOR_MAIN})
 
 
 	add_executable(trigger main.cpp 
@@ -138,8 +126,8 @@ if(MSVC) # Check if we are using the Visual Studio compiler
 		message(SEND_ERROR "You are using an unsupported Windows compiler! (Not MSVC or GCC)")
 	endif(MSVC)
 elseif(APPLE)
-	set(VK_ICD_FILENAMES "trigger-engine/lib/vk/icd.d/MoltenVK_icd.json")
-	set(VK_LAYER_PATH "trigger-engine/lib/vk/explicit_layer.d")
+	set(VK_ICD_FILENAMES "${CMAKE_SOURCE_DIR}/trigger-engine/lib/vk/icd.d/MoltenVK_icd.json")
+	set(VK_LAYER_PATH "${CMAKE_SOURCE_DIR}/trigger-engine/lib/vk/explicit_layer.d")
 	set_target_properties(trigger PROPERTIES
 			MACOSX_BUNDLE YES)
 	find_library(glfw3 NAMES glfw3.lib REQUIRED)
@@ -147,9 +135,9 @@ elseif(APPLE)
 	LINK_LIBRARIES( ${glfw3} ${glm} )
 	target_link_libraries(trigger 
 	"/usr/local/lib/libglfw.3.3.dylib" 
-	"trigger-engine/lib/vk/libvulkan.1.dylib"
-	"trigger-engine/lib/vk/libvulkan.1.1.97.dylib"
-	"../trigger-component/build/components.dylib"
+	"${CMAKE_SOURCE_DIR}/trigger-engine/lib/vk/libvulkan.1.dylib"
+	"${CMAKE_SOURCE_DIR}/trigger-engine/lib/vk/libvulkan.1.1.97.dylib"
+	"${CMAKE_SOURCE_DIR}/build/build/libcomponents.a"
 	)
 elseif(UNIX)
 	set_target_properties(trigger PROPERTIES

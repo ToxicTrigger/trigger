@@ -1,6 +1,5 @@
 #include "main_editor.h"
 #include "../core/game/object_renderer.h"
-#include "../components/collider.h"
 #include <list>
 #include <stdlib.h>
 #include <fstream>
@@ -10,11 +9,6 @@ bool trigger::edit::main_editor::draw() noexcept
 {
 	{
 		ImGui::Begin("Finally!");
-		this->window_size = ImGui::GetWindowSize();
-		this->window_pos = ImGui::GetWindowPos();
-		ImGui::Text("%f : %f", window_pos.x, window_pos.y);
-		ImGui::Text("%f : %f", window_size.x, window_size.y);
-		ImGui::Text("Object Count : %d", this->world->get_all().size());
 
 		ImGui::BeginTabBar("Test");
 		if (ImGui::BeginTabItem("Editor View"))
@@ -207,15 +201,6 @@ void trigger::edit::main_editor::update(float delta) noexcept
 
 }
 
-trigger::edit::main_editor::main_editor(trigger::world* world)
-{
-	this->new_component_name = new char();
-	this->component_name = "Please Select!";
-	lang = TextEditor::LanguageDefinition::Lua();
-	lua_editor.SetLanguageDefinition(lang);
-	lua_editor.SetText(this->TEST);
-	this->world = world;
-}
 bool trigger::edit::main_editor::new_component()
 {
 	//Add new Component 
