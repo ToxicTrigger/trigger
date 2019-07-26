@@ -12,6 +12,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 set( comps 
 
 #DO NOT EDIT
+src/material/material.h src/material/material.cpp 
 components.h components.cpp
 )
 
