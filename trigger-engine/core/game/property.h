@@ -86,8 +86,8 @@ public:
 		this->value = val;
 		this->name = property_name;
 		this->id = hash_str(name.c_str());
-		author->insert(std::pair<hash_id, property>(id, *this));
 		this->controllable = can_access_editor;
+		author->insert(std::pair<hash_id, property>(id, *this));
 	}
 
     hash_id get_id()

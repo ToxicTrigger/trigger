@@ -49,9 +49,15 @@ namespace trigger
 			this->real_position = pos;
 			this->real_scale = scale;
 			this->real_rotation = rot;
-			this->name = name;
-			this->components = std::vector<trigger::component*>();
 			this->instance_id = make_hash_code();
+			std::string n(name);
+			if (name.find("Object") != std::string::npos)
+			{
+				n += ":";
+				n += std::to_string(instance_id);
+			}
+			this->name = n;
+			this->components = std::vector<trigger::component*>();
 		};
 
 		std::shared_ptr<cpptoml::table> get_component_toml(std::vector<trigger::component*> vec)
@@ -77,9 +83,15 @@ namespace trigger
 			save();
 		}
 
-		std::string get_name()
+		void set_name(char* const name)
 		{
-			return this->name;
+			this->name = name;
+			save();
+		}
+
+		std::string* get_name()
+		{
+			return &this->name;
 		}
 
 		void set_instance_id(int code)

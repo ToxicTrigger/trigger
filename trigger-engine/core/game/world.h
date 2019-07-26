@@ -219,7 +219,7 @@ namespace trigger
 			set->insert("ObjectSize", ac.size());
 			for (auto& i : ac)
 			{
-				actors->insert(i->get_name(), i->save());
+				actors->insert(*i->get_name(), i->save());
 			}
 
 			set->insert("type", "map");

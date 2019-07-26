@@ -43,6 +43,7 @@ namespace trigger::core
             map,
             pot,
             tps,
+			spv,
             unknown
         };
 
@@ -83,6 +84,10 @@ namespace trigger::core
             {
                 this->type = file::type::tps;
             }
+			else if (exec.compare("spv") == 0)
+			{
+				this->type = file::type::spv;
+			}
             else
             {
                 this->type = file::type::unknown;

@@ -17,7 +17,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 
 set(TOOLS tools/macros.h )
 
-set(IMGUI imgui/ imgui/imgui.h imgui/imgui.cpp imgui/imconfig.h imgui/imgui_demo.cpp imgui/imgui_draw.cpp imgui/imgui_internal.h imgui/imgui_widgets.cpp)
+set(IMGUI imgui/ imgui/imgui.h imgui/imgui.cpp imgui/imconfig.h imgui/imgui_demo.cpp imgui/imgui_draw.cpp imgui/imgui_internal.h imgui/imgui_widgets.cpp  imgui/misc/cpp/imgui_stdlib.h imgui/misc/cpp/imgui_stdlib.cpp)
 
 set(IMGUI_VK 
 core/imgui/imgui_impl_glfw.h  core/imgui/imgui_impl_glfw.cpp 

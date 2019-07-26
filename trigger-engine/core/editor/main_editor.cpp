@@ -4,9 +4,13 @@
 #include <stdlib.h>
 #include <fstream>
 #include "../../tools/macros.h"
+#include "../../imgui/misc/cpp/imgui_stdlib.h"
 
 bool trigger::edit::main_editor::draw() noexcept
 {
+	draw_inspector();
+	draw_objects();
+	draw_console();
 	{
 		ImGui::Begin("Finally!");
 
@@ -111,7 +115,7 @@ bool trigger::edit::main_editor::draw() noexcept
 					{
 						auto comps = objs[this->current_id];
 						//auto coll = GET_CLASS(trigger::comp::collider).value();
-						auto tmp = trigger::manager::class_manager::get_instance()->get_class_array()->at(this->component_name);
+						auto tmp = new trigger::component(*trigger::manager::class_manager::get_instance()->get_class_array()->at(this->component_name));
 						comps->add_component(tmp);
 						ImGui::CloseCurrentPopup();
 					}
@@ -119,61 +123,6 @@ bool trigger::edit::main_editor::draw() noexcept
 
 				ImGui::EndGroup();
 				ImGui::EndPopup();
-			}
-
-
-			{
-				auto objs = this->world->get_all();
-
-				if (this->current_id != 0)
-				{
-					ImGui::Text("%s", objs[current_id]->get_name().c_str());
-					ImGui::Text("Instance ID : %d", this->current_id);
-					auto comps = objs[this->current_id]->get_components();
-					for (auto c : comps)
-					{
-						ImGui::Separator();
-						ImGui::Text(c->get_type_name().c_str());
-						for (auto p : c->properties)
-						{
-							if (p.second.controllable)
-							{
-								float f = p.second.get_float().value_or(0);
-								bool* b = std::any_cast<bool>(&p.second.value);
-								int* i32 = std::any_cast<int>(&p.second.value);
-								std::string text = p.second.get_string().value_or("");
-
-								switch (p.second.type)
-								{
-								case trigger::property::data_type::Bool:
-									ImGui::Text(p.second.get_name().c_str());
-									ImGui::SameLine();
-									ImGui::Checkbox("", b);
-									break;
-
-								case trigger::property::data_type::Float:
-									ImGui::Text(p.second.get_name().c_str());
-									ImGui::SameLine();
-									ImGui::InputFloat("", &f);
-									break;
-
-								case trigger::property::data_type::Int:
-									ImGui::Text(p.second.get_name().c_str());
-									ImGui::SameLine();
-									ImGui::InputInt("", i32);
-									break;
-
-								case trigger::property::data_type::String:
-									ImGui::Text(p.second.get_name().c_str());
-									ImGui::SameLine();
-									ImGui::InputText("", const_cast<char*>(text.c_str()), 1024);
-									break;
-								}
-							}
-						}
-						ImGui::Separator();
-					}
-				}
 			}
 
 			ImGui::EndTabItem();
@@ -203,6 +152,91 @@ bool trigger::edit::main_editor::draw() noexcept
 void trigger::edit::main_editor::update(float delta) noexcept
 {
 
+}
+
+void trigger::edit::main_editor::draw_objects()
+{
+	ImGui::Begin("Objects");
+	for (auto& obj : this->world->get_objects<trigger::transform>())
+	{
+		if (ImGui::Selectable(obj->get_name()->c_str()))
+		{
+			this->current_id = obj->get_instance_id();
+		}
+	}
+	ImGui::End();
+}
+
+void trigger::edit::main_editor::draw_inspector()
+{
+	ImGui::Begin("inspector");
+	if (this->current_id != 0)
+	{
+		auto object = this->world->get_all()[current_id];
+		ImGui::InputText("", object->get_name());
+		ImGui::Text("Instance ID : %d", object->get_instance_id());
+		auto comps = object->get_components();
+		for (auto* c : comps)
+		{
+			ImGui::Separator();
+			ImGui::Text(c->get_type_name().c_str());
+
+			for (auto p : c->properties)
+			{
+				if (p.second.controllable)
+				{
+					ImGui::Text(p.second.get_name().c_str());
+					ImGui::SameLine();
+					if (p.second.type == trigger::property::data_type::Bool)
+					{
+						bool* b = std::any_cast<bool>(&p.second.value);
+						if (b != nullptr && ImGui::Checkbox("", b))
+						{
+							c->set_property(p.second.get_name(), *b);
+						}
+					}
+					else if (p.second.type == trigger::property::data_type::Double)
+					{
+						double* d = std::any_cast<double>(&p.second.value);
+						if (d != nullptr && ImGui::InputDouble("", d))
+						{
+							c->set_property(p.second.get_name(), *d);
+						}
+					}
+					else if (p.second.type == trigger::property::data_type::Float)
+					{
+						float* f = std::any_cast<float>(&p.second.value);
+						if (f != nullptr && ImGui::InputFloat("", f))
+						{
+							c->set_property(p.second.get_name(), *f);
+						}
+					}
+					else if (p.second.type == trigger::property::data_type::Int)
+					{
+						int* i = std::any_cast<int>(&p.second.value);
+						if (i != nullptr && ImGui::InputInt("", i))
+						{
+							c->set_property(p.second.get_name(), *i);
+						}
+					}
+					else if (p.second.type == trigger::property::data_type::String)
+					{
+						std::string* s = std::any_cast<std::string>(&p.second.value);
+						if (s != nullptr && ImGui::InputText("", s))
+						{
+							c->set_property(p.second.get_name(), *s);
+						}
+					}
+				}
+			}
+			ImGui::Separator();
+		}
+	}
+	ImGui::End();
+}
+
+void trigger::edit::main_editor::draw_console()
+{
 }
 
 bool trigger::edit::main_editor::new_component()
@@ -236,13 +270,18 @@ bool trigger::edit::main_editor::new_component()
 	o << this->new_component_name;
 	o << " : public trigger::component\n{\npublic:\n\t";
 	o << this->new_component_name;
-	o << "() : trigger::component(T_CLASS)\n\t{\n\t}\n};";
+	o << "() : trigger::component(T_CLASS)\n\t{\n\t}\n\nvirtual void update(float delta) noexcept;\nvirtual ~";
+	o << this->new_component_name;
+	o << "};";
 	o.close();
 	o.open(new_name.c_str());
 	o << "#include \"";
 	o << new_component_name;
 	o << ".h";
-	o << "\"";
+	o << "\"\n";
+	o << "void " << this->new_component_name << "::update(float delta) noexcept\n";
+	o << "{\n};";
+	o << this->new_component_name << "::~" << this->new_component_name << "()\n{\n};";
 	o.close();
 
 	//read component cmakelists.txt!

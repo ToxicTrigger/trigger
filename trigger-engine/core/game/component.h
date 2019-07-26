@@ -119,8 +119,19 @@ public:
 		this->properties = std::map<hash_id, property>();
 		active = true;
 		property(active, property::data_type::Bool, "active", &this->properties);
-		property(type_code, property::data_type::HashID, "type_code", &this->properties);
-		property(instance_id, property::data_type::HashID, "instance_id", &this->properties);
+		property(type_code, property::data_type::HashID, false, "type_code", &this->properties);
+		property(instance_id, property::data_type::HashID, false,"instance_id", &this->properties);
+	}
+
+	template <typename T>
+	bool set_property(std::string name, T val)
+	{
+		if (this->properties.find(hash_str(name.c_str())) != this->properties.end())
+		{
+			this->properties[hash_str(name.c_str())].value = val;
+			return true;
+		}
+		return false;
 	}
 
 	auto save() -> decltype(auto)
@@ -128,7 +139,7 @@ public:
 		auto proper = cpptoml::make_table();
 		auto pro = cpptoml::make_table();
 
-		for (auto &i : this->properties)
+		for (auto i : this->properties)
 		{
 			std::ostringstream ss;
 			switch (i.second.type)
@@ -176,7 +187,6 @@ public:
 
 	virtual ~component()
 	{
-		save();
 	}
 
 	size_t get_type_id()

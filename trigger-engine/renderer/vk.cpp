@@ -180,8 +180,7 @@ void trigger::rend::vk::draw_editors()
 
 void vk::set_up()
 {
-    auto tmp = this->engine->editors->add(new trigger::transform());
-    tmp->add_component<trigger::comp::object_renderer>();
+
 }
 
 void vk::resize()

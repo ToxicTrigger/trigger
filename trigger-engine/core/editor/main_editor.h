@@ -28,8 +28,8 @@ public:
 	TextEditor::LanguageDefinition lang;
 	std::string TEST;
 	trigger::world *world;
-	hash_id current_id = 0;
-	int current_selected_component;
+	int current_id = 0;
+	hash_id current_selected_component;
 	char *component_name;
 	char *new_component_name;
 	bool sel;
@@ -37,6 +37,9 @@ public:
 public:
 	virtual bool draw() noexcept override;
 	virtual void update(float delta) noexcept override;
+	void draw_objects();
+	void draw_inspector();
+	void draw_console();
 
 	main_editor(trigger::world *world)
 	{
