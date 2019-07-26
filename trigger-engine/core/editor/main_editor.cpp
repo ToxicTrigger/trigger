@@ -1,6 +1,5 @@
 #include "main_editor.h"
 #include "../core/game/object_renderer.h"
-#include "../components/collider.h"
 #include <list>
 #include <stdlib.h>
 #include <fstream>
@@ -10,11 +9,6 @@ bool trigger::edit::main_editor::draw() noexcept
 {
 	{
 		ImGui::Begin("Finally!");
-		this->window_size = ImGui::GetWindowSize();
-		this->window_pos = ImGui::GetWindowPos();
-		ImGui::Text("%f : %f", window_pos.x, window_pos.y);
-		ImGui::Text("%f : %f", window_size.x, window_size.y);
-		ImGui::Text("Object Count : %d", this->world->get_all().size());
 
 		ImGui::BeginTabBar("Test");
 		if (ImGui::BeginTabItem("Editor View"))
@@ -78,9 +72,13 @@ bool trigger::edit::main_editor::draw() noexcept
 					{
 						this->new_component();
 						std::string command;
+#ifdef _WIN64
 						command.append("cd ..");
 						command.append(slash);
 						command.append("trigger-component & cmake --build . --config Debug");
+#else
+						command.append("cd trigger-component & cmake --build . --config Debug");
+#endif
 						system(command.c_str());
 						//RELOAD!
 						//std::exit(42);
@@ -207,24 +205,21 @@ void trigger::edit::main_editor::update(float delta) noexcept
 
 }
 
-trigger::edit::main_editor::main_editor(trigger::world* world)
-{
-	this->new_component_name = new char();
-	this->component_name = "Please Select!";
-	lang = TextEditor::LanguageDefinition::Lua();
-	lua_editor.SetLanguageDefinition(lang);
-	lua_editor.SetText(this->TEST);
-	this->world = world;
-}
 bool trigger::edit::main_editor::new_component()
 {
 	//Add new Component 
 //todo already have??
+#ifdef _WIN64
 	std::string path("mkdir ..");
 	path.append(slash);
 	path.append("trigger-component");
 	path.append(slash);
 	path.append("src");
+#else
+	std::string path("mkdir trigger-component/src");
+#endif
+
+	system(path.c_str());
 	path.append(slash);
 	path.append(this->new_component_name);
 	//mkdir
@@ -253,11 +248,16 @@ bool trigger::edit::main_editor::new_component()
 	//read component cmakelists.txt!
 	std::vector<std::string> text;
 	std::string cmake;
+#ifdef _WIN64
 	cmake.append("..");
 	cmake.append(slash);
 	cmake.append("trigger-component");
 	cmake.append(slash);
 	cmake.append("CMakeLists.txt");
+#else
+	cmake.append("trigger-component/CMakeLists.txt");
+#endif
+
 	std::fstream f(cmake.c_str());
 	if (f.is_open())
 	{
@@ -299,11 +299,18 @@ bool trigger::edit::main_editor::new_component()
 
 	std::vector<std::string> regi;
 	std::string coms;
+
+#ifdef _WIN64
 	coms.append("..");
 	coms.append(slash);
 	coms.append("trigger-component");
 	coms.append(slash);
 	coms.append("components.h");
+#else
+	coms.append("trigger-component/components.h");
+#endif
+
+
 	f.open(coms);
 	if (f.is_open())
 	{
@@ -352,7 +359,9 @@ bool trigger::edit::main_editor::new_component()
 //TODO
 bool trigger::edit::main_editor::del_component()
 {
-	std::string path("..");
+	std::string path;
+#ifdef _WIN64
+	path.append("..");
 	path.append(slash);
 	path.append("trigger-component");
 	path.append(slash);
@@ -361,29 +370,50 @@ bool trigger::edit::main_editor::del_component()
 	path.append(this->new_component_name);
 	path.append(slash);
 	path.append(this->new_component_name);
+#else
+	path.append("trigger-component/src/");
+	path.append(this->new_component_name);
+	path.append("/");
+	path.append(this->new_component_name);
+#endif
 
 	if (remove((path + ".h").c_str()) == -1)
 	{
 		return false;
 	}
 	remove((path + ".cpp").c_str());
-	std::string rm("rmdir ..");
+
+	std::string rm("rmdir ");
+#ifdef _WIN64
+	rm.append("..");
 	rm.append(slash);
 	rm.append("trigger-component");
 	rm.append(slash);
 	rm.append("src");
 	rm.append(slash);
 	rm.append(this->new_component_name);
+#else
+	rm.append("trigger-component");
+	rm.append(slash);
+	rm.append("src");
+	rm.append(slash);
+	rm.append(this->new_component_name);
+#endif
 	system( rm.c_str() );
 
 	//read component cmakelists.txt!
 	std::list<std::string> text;
 	std::string cmake;
+#ifdef _WIN64
 	cmake.append("..");
 	cmake.append(slash);
 	cmake.append("trigger-component");
 	cmake.append(slash);
 	cmake.append("CMakeLists.txt");
+#else
+	cmake.append("trigger-component/CMakeLists.txt");
+#endif
+
 	std::fstream f(cmake.c_str());
 	if (f.is_open())
 	{
@@ -413,11 +443,15 @@ bool trigger::edit::main_editor::del_component()
 
 	std::list<std::string> regi;
 	std::string coms;
+#ifdef _WIN64
 	coms.append("..");
 	coms.append(slash);
 	coms.append("trigger-component");
 	coms.append(slash);
 	coms.append("components.h");
+#else
+	coms.append("trigger-component/components.h");
+#endif
 	f.open(coms);
 	if (f.is_open())
 	{
