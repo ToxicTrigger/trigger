@@ -91,7 +91,6 @@
 	ImGui::Render();
 	[[self openGLContext] makeCurrentContext];
 
-    ImGuiIO& io = ImGui::GetIO();
     ImDrawData* draw_data = ImGui::GetDrawData();
     GLsizei width  = (GLsizei)(draw_data->DisplaySize.x * draw_data->FramebufferScale.x);
     GLsizei height = (GLsizei)(draw_data->DisplaySize.y * draw_data->FramebufferScale.y);
@@ -242,7 +241,8 @@
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();

@@ -8,9 +8,73 @@
 
 bool trigger::edit::main_editor::draw() noexcept
 {
+	static bool opt_fullscreen_persistant = true;
+	bool opt_fullscreen = opt_fullscreen_persistant;
+	static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+
+	// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
+	// because it would be confusing to have two docking targets within each others.
+	ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+	if (opt_fullscreen)
+	{
+		ImGuiViewport* viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(viewport->Pos);
+		ImGui::SetNextWindowSize(viewport->Size);
+		ImGui::SetNextWindowViewport(viewport->ID);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+	}
+
+	// When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
+	if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+		window_flags |= ImGuiWindowFlags_NoBackground;
+
+	// Important: note that we proceed even if Begin() returns false (aka window is collapsed).
+	// This is because we want to keep our DockSpace() active. If a DockSpace() is inactive, 
+	// all active windows docked into it will lose their parent and become undocked.
+	// We cannot preserve the docking relationship between an active window and an inactive docking, otherwise 
+	// any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+	ImGui::Begin("DockSpace Demo", 0, window_flags);
+	ImGui::PopStyleVar();
+
+	if (opt_fullscreen)
+		ImGui::PopStyleVar(2);
+	// DockSpace
+	ImGuiIO& io = ImGui::GetIO();
+	if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+	{
+		ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+		ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+	}
+
+	if (ImGui::BeginMenuBar())
+	{
+		if (ImGui::BeginMenu("Objects"))
+		{
+
+			if (ImGui::MenuItem("Create New Object"))
+			{
+				auto tmp = new trigger::transform();
+				this->world->add(tmp);
+			}
+			if (ImGui::MenuItem("Add Component"))
+			{
+				ImGui::OpenPopup("Select Component");
+			}
+			ImGui::EndMenu();
+		}
+		ImGui::EndMenuBar();
+	}
+	ImGui::End();
+
+
 	draw_inspector();
 	draw_objects();
 	draw_console();
+
 	{
 		ImGui::Begin("Finally!");
 
@@ -18,113 +82,6 @@ bool trigger::edit::main_editor::draw() noexcept
 		if (ImGui::BeginTabItem("Editor View"))
 		{
 			current_tab = windows::editor;
-			if (ImGui::Button("Create Object"))
-			{
-				auto tmp = new trigger::transform();
-				this->world->add(tmp);
-			}
-
-			if (ImGui::Button("Add Component"))
-			{
-				ImGui::OpenPopup("Select Component");
-			}
-
-			if (ImGui::Button("New Component"))
-			{
-				ImGui::OpenPopup("Make a New Component");
-			}
-
-			if (ImGui::Button("Delete Component"))
-			{
-				ImGui::OpenPopup("Delete Component");
-			}
-
-			if (ImGui::BeginPopup("Delete Component"))
-			{
-				if (ImGui::BeginCombo("", this->new_component_name))
-				{
-					for (auto& i : *trigger::manager::class_manager::get_instance()->get_class_array())
-					{
-						if (ImGui::Selectable(i.first.c_str(), &this->sel))
-						{
-							this->new_component_name = const_cast<char*>(i.first.c_str());
-						}
-					}
-					ImGui::EndCombo();
-				}
-				if (ImGui::Button("Delete"))
-				{
-					this->del_component();
-				}
-				ImGui::EndPopup();
-			}
-
-			if (ImGui::BeginPopup("Make a New Component"))
-			{
-				ImGui::InputText("Component Name", this->new_component_name,30);
-				ImGui::TextColored(ImVec4(1.0f, 0.2f, 0.2f, 1.0f), "This action will cause the program to restart!");
-				ImGui::TextColored(ImVec4(1.0f, 0.2f, 0.2f, 1.0f), "Name cannot be blank.");
-
-				if (ImGui::Button("Let's GO!"))
-				{
-					auto re = std::strcmp(this->new_component_name, "");
-					if (re == 0)
-					{
-
-					}
-					else
-					{
-						this->new_component();
-						std::string command;
-#ifdef _WIN64
-						command.append("cd ..");
-						command.append(slash);
-						command.append("trigger-component & cmake --build . --config Debug");
-#else
-						command.append("cd trigger-component & cmake --build . --config Debug");
-#endif
-						system(command.c_str());
-						//RELOAD!
-						//std::exit(42);
-						ImGui::CloseCurrentPopup();
-					}
-				}
-				ImGui::EndPopup();
-			}
-
-			if (ImGui::BeginPopup("Select Component"))
-			{
-				ImGui::BeginGroup();
-
-				if (ImGui::BeginCombo("", this->component_name))
-				{
-					for (auto& i : *trigger::manager::class_manager::get_instance()->get_class_array())
-					{
-						if (ImGui::Selectable(i.first.c_str(), &this->sel))
-						{
-							this->component_name = const_cast<char*>(i.first.c_str());
-						}
-					}
-					ImGui::EndCombo();
-				}
-				if (ImGui::Button("Add"))
-				{
-					auto objs = this->world->get_all();
-
-					if (this->current_id != 0)
-					{
-						auto comps = objs[this->current_id];
-						//auto coll = GET_CLASS(trigger::comp::collider).value();
-						auto tmp = new trigger::component(*trigger::manager::class_manager::get_instance()->get_class_array()->at(this->component_name));
-						comps->add_component(tmp);
-						ImGui::CloseCurrentPopup();
-					}
-				}
-
-				ImGui::EndGroup();
-				ImGui::EndPopup();
-			}
-
 			ImGui::EndTabItem();
 		}
 		static bool hello;
@@ -170,8 +127,108 @@ void trigger::edit::main_editor::draw_objects()
 void trigger::edit::main_editor::draw_inspector()
 {
 	ImGui::Begin("inspector");
+
 	if (this->current_id != 0)
 	{
+		if (ImGui::Button("Add Component"))
+		{
+			ImGui::OpenPopup("Select Component");
+		}
+
+		if (ImGui::Button("New Component"))
+		{
+			ImGui::OpenPopup("Make a New Component");
+		}
+
+		if (ImGui::Button("Delete Component"))
+		{
+			ImGui::OpenPopup("Delete Component");
+		}
+
+		{
+			if (ImGui::BeginPopup("Select Component"))
+			{
+				if (ImGui::BeginCombo("", this->component_name))
+				{
+					for (auto& i : *trigger::manager::class_manager::get_instance()->get_class_array())
+					{
+						if (ImGui::Selectable(i.first.c_str(), &this->sel))
+						{
+							this->component_name = const_cast<char*>(i.first.c_str());
+						}
+					}
+					ImGui::EndCombo();
+				}
+				if (ImGui::Button("Add"))
+				{
+					auto objs = this->world->get_all();
+
+					if (this->current_id != 0)
+					{
+						auto comps = objs[this->current_id];
+						//auto coll = GET_CLASS(trigger::comp::collider).value();
+						auto tmp = new trigger::component(*trigger::manager::class_manager::get_instance()->get_class_array()->at(this->component_name));
+						comps->add_component(tmp);
+						ImGui::CloseCurrentPopup();
+					}
+				}
+				ImGui::EndPopup();
+			}
+
+			if (ImGui::BeginPopup("Delete Component"))
+			{
+				if (ImGui::BeginCombo("", this->new_component_name))
+				{
+					for (auto& i : *trigger::manager::class_manager::get_instance()->get_class_array())
+					{
+						if (ImGui::Selectable(i.first.c_str(), &this->sel))
+						{
+							this->new_component_name = const_cast<char*>(i.first.c_str());
+						}
+					}
+					ImGui::EndCombo();
+				}
+				if (ImGui::Button("Delete"))
+				{
+					this->del_component();
+				}
+				ImGui::EndPopup();
+			}
+
+			if (ImGui::BeginPopup("Make a New Component"))
+			{
+				ImGui::InputText("Component Name", this->new_component_name, 30);
+				ImGui::TextColored(ImVec4(1.0f, 0.2f, 0.2f, 1.0f), "This action will cause the program to restart!");
+				ImGui::TextColored(ImVec4(1.0f, 0.2f, 0.2f, 1.0f), "Name cannot be blank.");
+
+				if (ImGui::Button("Let's GO!"))
+				{
+					auto re = std::strcmp(this->new_component_name, "");
+					if (re == 0)
+					{
+
+					}
+					else
+					{
+						this->new_component();
+						std::string command;
+#ifdef _WIN64
+						command.append("cd ..");
+						command.append(slash);
+						command.append("trigger-component & cmake --build . --config Debug");
+#else
+						command.append("cd trigger-component & cmake --build . --config Debug");
+#endif
+						system(command.c_str());
+						//RELOAD!
+						//std::exit(42);
+						ImGui::CloseCurrentPopup();
+					}
+				}
+				ImGui::EndPopup();
+			}
+		}
+		
 		auto object = this->world->get_all()[current_id];
 		ImGui::InputText("", object->get_name());
 		ImGui::Text("Instance ID : %d", object->get_instance_id());
