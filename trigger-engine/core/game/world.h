@@ -33,6 +33,7 @@ namespace trigger
 		float time_scale = 1;
 		int fixed_time = 20;
 		bool active = true;
+		glm::fmat4x4 world_space;
 
 	public:
 		float gravity = -9.8f;

@@ -2,10 +2,10 @@
 
 trigger::transform::~transform()
 {
-	trigger::component::~component();
 	this->components.clear();
 	this->parent = nullptr;
 	this->childs.clear();
+	delete parent;
 }
 
 void trigger::transform::update(float delta) noexcept
