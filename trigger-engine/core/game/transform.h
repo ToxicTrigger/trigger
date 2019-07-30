@@ -36,7 +36,6 @@ namespace trigger
 		std::vector<trigger::component*> components;
 		std::string name;
 		glm::fmat4x4 space;
-		glm::fquat rotation;
 
 	public:
 		vec3 position;
