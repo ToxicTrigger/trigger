@@ -126,31 +126,25 @@ namespace trigger
 		template<typename T>
 		bool add_component()
 		{
-
 			T* com = new T();
 			this->components.push_back(com);
 			save();
-
 			return true;
 		}
 
 		template<typename T>
 		bool add_component(T* component)
 		{
-
 			this->components.push_back(component);
 			save();
-
 			return true;
 		}
 
 		template<typename T>
 		bool add_component(T component)
 		{
-
 			this->components.push_back(new T(component));
 			save();
-
 			return true;
 		}
 
