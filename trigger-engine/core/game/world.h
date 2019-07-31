@@ -42,22 +42,6 @@ namespace trigger
 
 	public:
 		//Build a new World
-		explicit inline world(bool UseThread)
-		{
-			start_time = time::now();
-			delta_time = std::chrono::duration<float>();
-			old_time = time::now();
-			objects = std::map<hash_id, transform*>();
-
-			use_thread = UseThread;
-			if (UseThread)
-			{
-				main_thread = std::thread(&world::update_all, this);
-			}
-			trigger::manager::class_manager::get_instance()->get_class_array()->clear();
-			reload();
-		}
-
 		explicit inline world(bool UseThread, std::string name)
 		{
 			objects = std::map<hash_id, transform*>();
@@ -65,6 +49,7 @@ namespace trigger
 			delta_time = std::chrono::duration<float>();
 			old_time = time::now();
 			set_name(name);
+			fixed_time = 20;
 
 			use_thread = UseThread;
 			if (UseThread)
@@ -246,7 +231,7 @@ namespace trigger
 			auto scene_objs = map->get_table("SceneObjects");
 			auto actors = cpptoml::make_table();
 
-			auto world = new trigger::world(set->get_as<bool>("use_thread").value_or(true));
+			auto world = new trigger::world(set->get_as<bool>("use_thread").value_or(true), set->get_as<std::string>("name").value_or("World"));
 			world->gravity = (float)set->get_as<double>("gravity").value_or(-9.8f);
 			world->name = set->get_as<std::string>("name").value_or("untitled");	
 			

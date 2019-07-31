@@ -4,32 +4,19 @@
 
 #include "../../renderer/vk.h"
 
-
-#ifndef _WIN64
-bool trigger::core::engine::init(int w, int h, bool edit_mod)
-{
-    this->editors = new trigger::world(true);
-    this->object = new trigger::world(true);
-    this->object->name = "SceneObjects";
-    this->editors->add(new trigger::edit::main_editor(this->object));
-    this->renderer = new trigger::rend::REND(w,h,edit_mod,this);
-    return true;
-}
-#else
 bool trigger::core::engine::init(INSTANCE hInst, int w, int h, bool edit_mod)
 {
     this->state = engine_state::not_inited;	
 
-    this->editors = new trigger::world(true);
-	this->object = new trigger::world(true);
-    this->object->name = "SceneObjects";
+    this->editors = new trigger::world(true, "Editors");
+	this->object = new trigger::world(true, "SceneObject");
 	this->main_editor = new trigger::edit::main_editor(this->object);
     this->editors->add(this->main_editor);
     this->renderer = new trigger::rend::REND(w, h, edit_mod, this);
     this->state = engine_state::initing;
     return true;
 }
-#endif
+
 
 int trigger::core::engine::run()
 {

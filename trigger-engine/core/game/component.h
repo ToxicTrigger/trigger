@@ -128,7 +128,7 @@ public:
 	{
 		if (this->properties.find(hash_str(name.c_str())) != this->properties.end())
 		{
-			this->properties[hash_str(name.c_str())].value = val;
+			this->properties[hash_str(name.c_str())].set<T>(val);
 			return true;
 		}
 		return false;

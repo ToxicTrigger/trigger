@@ -60,6 +60,8 @@ namespace trigger
 			}
 			this->name = n;
 			this->components = std::vector<trigger::component*>();
+			parent = nullptr;
+			childs = std::vector<transform*>();
 		};
 
 		std::shared_ptr<cpptoml::table> get_component_toml(std::vector<trigger::component*> vec)
@@ -150,7 +152,7 @@ namespace trigger
 
 		transform* get_parent();
 		void set_parent(transform* target);
-		auto get_childs();
+		std::vector<transform*> get_childs();
 		transform* get_child_at(size_t index);
 		void add_child(transform* child);
 		void remove_parent();
@@ -158,6 +160,7 @@ namespace trigger
 		void remove_child(size_t index);
 		void clear_child();
 		void clear_and_destroy_child();
+	
 
 		virtual ~transform();
 		virtual void update(float delta) noexcept;

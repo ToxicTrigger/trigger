@@ -33,6 +33,11 @@ public:
 	char *component_name;
 	char *new_component_name;
 	bool sel;
+	trigger::transform* current_target;
+	std::string* current_name;
+	std::vector<trigger::component*> current_target_components;
+	float thread_run;
+	std::string thread_msg;
 
 public:
 	virtual bool draw() noexcept override;
@@ -40,6 +45,7 @@ public:
 	void draw_objects();
 	void draw_inspector();
 	void draw_console();
+	void draw_child(trigger::transform* vec);
 
 	main_editor(trigger::world *world)
 	{
@@ -49,6 +55,8 @@ public:
 		lua_editor.SetLanguageDefinition(lang);
 		lua_editor.SetText(this->TEST);
 		this->world = world;
+		thread_msg = "-";
+		thread_run = 0;
 	}
 
 	bool new_component();

@@ -5,6 +5,7 @@
 #include <fstream>
 #include "../../tools/macros.h"
 #include "../../imgui/misc/cpp/imgui_stdlib.h"
+#include "../../../renderer/vk.h"
 
 bool trigger::edit::main_editor::draw() noexcept
 {
@@ -52,17 +53,16 @@ bool trigger::edit::main_editor::draw() noexcept
 
 	if (ImGui::BeginMenuBar())
 	{
+		if (ImGui::BeginMenu(this->thread_msg.c_str()))
+		{
+			ImGui::EndMenu();
+		}
 		if (ImGui::BeginMenu("Objects"))
 		{
-
 			if (ImGui::MenuItem("Create New Object"))
 			{
 				auto tmp = new trigger::transform();
 				this->world->add(tmp);
-			}
-			if (ImGui::MenuItem("Add Component"))
-			{
-				ImGui::OpenPopup("Select Component");
 			}
 			ImGui::EndMenu();
 		}
@@ -82,6 +82,7 @@ bool trigger::edit::main_editor::draw() noexcept
 		if (ImGui::BeginTabItem("Editor View"))
 		{
 			current_tab = windows::editor;
+			ImGui::Image((ImTextureID)&g_MainWindowData.Frames[g_MainWindowData.FrameIndex], ImGui::GetWindowSize());
 			ImGui::EndTabItem();
 		}
 		static bool hello;
@@ -89,16 +90,9 @@ bool trigger::edit::main_editor::draw() noexcept
 		if (ImGui::BeginTabItem("Game View"))
 		{
 			current_tab = windows::game_view;
-			ImGui::Checkbox("Hello", &hello);
 			ImGui::EndTabItem();
 		}
-		if (ImGui::BeginTabItem("Lua View"))
-		{
-			current_tab = windows::text_editor;
-			lua_editor.Render("TEST");
 
-			ImGui::EndTabItem();
-		}
 		ImGui::EndTabBar();
 		ImGui::End();
 	}
@@ -108,7 +102,52 @@ bool trigger::edit::main_editor::draw() noexcept
 
 void trigger::edit::main_editor::update(float delta) noexcept
 {
+	if (thread_run <= 4.0f)
+	{
+		thread_run += delta * 4;
+	}
+	else
+	{
+		thread_run = 0;
+	}
+	int cur = (int)(thread_run);
 
+	switch (cur)
+	{
+	case 0:
+		this->thread_msg = "-";
+		break;
+	case 1:
+		this->thread_msg = "\\";
+		break;
+	case 2:
+		this->thread_msg = "|";
+		break;
+	case 3:
+		this->thread_msg = "/";
+		break;
+
+	}
+}
+
+void trigger::edit::main_editor::draw_child(trigger::transform* vec)
+{
+	if (vec->get_childs().size() != 0 || vec->get_parent() == nullptr)
+	{
+		if (ImGui::TreeNode(vec->get_name()->c_str()))
+		{
+			this->current_id = vec->get_instance_id();
+			this->current_target = this->world->get_all()[current_id];
+			this->current_target_components = this->current_target->get_components();
+			this->current_name = this->current_target->get_name();
+
+			for (auto& item : vec->get_childs())
+			{
+				this->draw_child(item);
+			}
+			ImGui::TreePop();
+		}
+	}
 }
 
 void trigger::edit::main_editor::draw_objects()
@@ -116,9 +155,32 @@ void trigger::edit::main_editor::draw_objects()
 	ImGui::Begin("Objects");
 	for (auto& obj : this->world->get_objects<trigger::transform>())
 	{
-		if (ImGui::Selectable(obj->get_name()->c_str()))
+		if (obj->get_parent() == nullptr)
 		{
-			this->current_id = obj->get_instance_id();
+			draw_child(obj);
+
+			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+			{
+				ImGui::SetDragDropPayload("Transform", obj, sizeof(transform));
+				ImGui::EndDragDropSource();
+			}
+
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* data = ImGui::AcceptDragDropPayload("Transform"))
+				{
+					IM_ASSERT(data->DataSize == sizeof(transform));
+					transform tmp = *(const transform*)(data->Data);
+					for (auto& target : this->world->get_objects<trigger::transform>())
+					{
+						if (target->get_instance_id() == tmp.get_instance_id())
+						{
+							obj->set_parent(target);
+						}
+					}
+				}
+				ImGui::EndDragDropTarget();
+			}
 		}
 	}
 	ImGui::End();
@@ -161,14 +223,12 @@ void trigger::edit::main_editor::draw_inspector()
 				}
 				if (ImGui::Button("Add"))
 				{
-					auto objs = this->world->get_all();
 
 					if (this->current_id != 0)
 					{
-						auto comps = objs[this->current_id];
-						//auto coll = GET_CLASS(trigger::comp::collider).value();
 						auto tmp = new trigger::component(*trigger::manager::class_manager::get_instance()->get_class_array()->at(this->component_name));
-						comps->add_component(tmp);
+						this->current_target->add_component(tmp);
+						this->current_target_components = this->current_target->get_components();
 						ImGui::CloseCurrentPopup();
 					}
 				}
@@ -229,60 +289,61 @@ void trigger::edit::main_editor::draw_inspector()
 			}
 		}
 		
-		auto object = this->world->get_all()[current_id];
-		ImGui::InputText("", object->get_name());
-		ImGui::Text("Instance ID : %d", object->get_instance_id());
-		auto comps = object->get_components();
-		for (auto* c : comps)
+		ImGui::InputText("", this->current_name);
+		ImGui::Text("Instance ID : %d", this->current_target->get_instance_id());
+		for (auto&& c : this->current_target_components)
 		{
 			ImGui::Separator();
 			ImGui::Text(c->get_type_name().c_str());
 
-			for (auto p : c->properties)
+			for (auto& p : c->properties)
 			{
 				if (p.second.controllable)
 				{
-					ImGui::Text(p.second.get_name().c_str());
-					ImGui::SameLine();
 					if (p.second.type == trigger::property::data_type::Bool)
 					{
 						bool* b = std::any_cast<bool>(&p.second.value);
-						if (b != nullptr && ImGui::Checkbox("", b))
+						if (b != nullptr && ImGui::Checkbox(p.second.get_name().c_str(), b))
 						{
 							c->set_property(p.second.get_name(), *b);
 						}
+						continue;
 					}
-					else if (p.second.type == trigger::property::data_type::Double)
+					if (p.second.type == trigger::property::data_type::Double)
 					{
 						double* d = std::any_cast<double>(&p.second.value);
-						if (d != nullptr && ImGui::InputDouble("", d))
+						if (d != nullptr && ImGui::InputDouble(p.second.get_name().c_str(), d))
 						{
 							c->set_property(p.second.get_name(), *d);
 						}
+						continue;
 					}
-					else if (p.second.type == trigger::property::data_type::Float)
+					if (p.second.type == trigger::property::data_type::Float)
 					{
 						float* f = std::any_cast<float>(&p.second.value);
-						if (f != nullptr && ImGui::InputFloat("", f))
+						if (f != nullptr && ImGui::InputFloat(p.second.get_name().c_str(), f))
 						{
 							c->set_property(p.second.get_name(), *f);
 						}
+						continue;
 					}
-					else if (p.second.type == trigger::property::data_type::Int)
+					if (p.second.type == trigger::property::data_type::Int)
 					{
 						int* i = std::any_cast<int>(&p.second.value);
-						if (i != nullptr && ImGui::InputInt("", i))
+						if (i != nullptr && ImGui::InputInt(p.second.get_name().c_str(), i))
 						{
 							c->set_property(p.second.get_name(), *i);
 						}
+						continue;
 					}
-					else if (p.second.type == trigger::property::data_type::String)
+					if (p.second.type == trigger::property::data_type::String)
 					{
 						std::string* s = std::any_cast<std::string>(&p.second.value);
-						if (s != nullptr && ImGui::InputText("", s))
+						if (s != nullptr && ImGui::InputText(p.second.get_name().c_str(), s))
 						{
 							c->set_property(p.second.get_name(), *s);
 						}
+						continue;
 					}
 				}
 			}
