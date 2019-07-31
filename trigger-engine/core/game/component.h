@@ -187,6 +187,7 @@ public:
 
 	virtual ~component()
 	{
+		this->properties.clear();
 	}
 
 	size_t get_type_id()

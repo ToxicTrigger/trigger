@@ -8,6 +8,7 @@ typedef glm::fvec2 vec2;
 typedef glm::fvec3 vec3;
 typedef glm::fvec4 vec4;
 
+
 static int make_hash_code()
 {
 	auto t = std::chrono::system_clock::now();
@@ -34,6 +35,7 @@ namespace trigger
 		vec3 real_rotation;
 		std::vector<trigger::component*> components;
 		std::string name;
+		glm::fmat4x4 space;
 
 	public:
 		vec3 position;
@@ -100,11 +102,6 @@ namespace trigger
 			save();
 		}
 
-
-		virtual ~transform();
-
-		virtual void update(float delta) noexcept;
-
 		template<typename T>
 		T* get_component()
 		{
@@ -129,34 +126,41 @@ namespace trigger
 		template<typename T>
 		bool add_component()
 		{
-
 			T* com = new T();
 			this->components.push_back(com);
 			save();
-
 			return true;
 		}
 
 		template<typename T>
 		bool add_component(T* component)
 		{
-
 			this->components.push_back(component);
 			save();
-
 			return true;
 		}
 
 		template<typename T>
 		bool add_component(T component)
 		{
-
 			this->components.push_back(new T(component));
 			save();
-
 			return true;
 		}
 
+		transform* get_parent();
+		void set_parent(transform* target);
+		auto get_childs();
+		transform* get_child_at(size_t index);
+		void add_child(transform* child);
+		void remove_parent();
+		void remove_child(transform* child);
+		void remove_child(size_t index);
+		void clear_child();
+		void clear_and_destroy_child();
+
+		virtual ~transform();
+		virtual void update(float delta) noexcept;
 		const int get_instance_id() const;
 		std::vector<trigger::component*> get_components() const;
 	};
