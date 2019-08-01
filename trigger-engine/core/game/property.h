@@ -12,7 +12,7 @@ static TO cast(FROM v)
     return static_cast<TO>(static_cast<void *>(v));
 }
 
-using hash_id = unsigned int;
+using hash_id = int;
 
 #define PRI_A 54059   /* a prime */
 #define PRI_B 76963   /* another prime */
@@ -49,13 +49,16 @@ public:
         Bool,
         SizeT,
         HashID,
-        String
+        String,
+		FilePath,
+		List,
+		VectorStr,
+		VectorPath
     };
 
     std::any value;
     data_type type;
 	bool controllable = true;
-
 
     property()
     {

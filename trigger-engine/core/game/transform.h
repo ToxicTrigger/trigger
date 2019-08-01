@@ -33,7 +33,7 @@ namespace trigger
 		vec3 real_position;
 		vec3 real_scale;
 		vec3 real_rotation;
-		std::vector<trigger::component*> components;
+		std::map<hash_id, trigger::component*> components;
 		std::string name;
 		glm::fmat4x4 space;
 
@@ -59,7 +59,7 @@ namespace trigger
 				n += std::to_string(instance_id);
 			}
 			this->name = n;
-			this->components = std::vector<trigger::component*>();
+			this->components = std::map<hash_id, trigger::component*>();
 			parent = nullptr;
 			childs = std::vector<transform*>();
 		};
@@ -98,24 +98,26 @@ namespace trigger
 			return &this->name;
 		}
 
-		void set_instance_id(int code)
-		{
-			this->instance_id = code;
-			save();
-		}
 
 		template<typename T>
 		T* get_component()
 		{
 			for (auto i : this->components)
 			{
-				auto t = dynamic_cast<T*>(i);
+				auto t = dynamic_cast<T*>(i.second);
 				if(t != nullptr)
 				{
 					return t;
 				}
 			}
 			return nullptr;
+		};
+
+		template<typename T>
+		T* get_component(hash_id id)
+		{
+			auto t = dynamic_cast<T*>(this->components[id]);
+			return t;
 		};
 
 		template<typename T>
@@ -129,7 +131,9 @@ namespace trigger
 		bool add_component()
 		{
 			T* com = new T();
-			this->components.push_back(com);
+			this->components.insert(
+				std::pair<hash_id, trigger::component*>(com->get_instance_id(), com)
+			);
 			save();
 			return true;
 		}
@@ -137,7 +141,9 @@ namespace trigger
 		template<typename T>
 		bool add_component(T* component)
 		{
-			this->components.push_back(component);
+			this->components.insert(
+				std::pair<hash_id, trigger::component*>(component->get_instance_id(), component)
+			);
 			save();
 			return true;
 		}
@@ -145,7 +151,10 @@ namespace trigger
 		template<typename T>
 		bool add_component(T component)
 		{
-			this->components.push_back(new T(component));
+			T* com = new decltype(component)();
+			this->components.insert(
+				std::pair<hash_id, trigger::component*>(com->get_instance_id(), com)
+			);
 			save();
 			return true;
 		}
@@ -161,10 +170,16 @@ namespace trigger
 		void clear_child();
 		void clear_and_destroy_child();
 	
-
 		virtual ~transform();
-		virtual void update(float delta) noexcept;
-		const int get_instance_id() const;
-		std::vector<trigger::component*> get_components() const;
+		virtual void update(float delta);
+		virtual transform* clone() const
+		{
+			return new transform(*this);
+		}
+
+		std::map<hash_id, trigger::component*> get_components() const
+		{
+			return this->components;
+		}
 	};
 };

@@ -1,6 +1,6 @@
 #include "material.h"
 
-void material::update(float delta) noexcept
+void material::update(float delta)
 {
 }
 

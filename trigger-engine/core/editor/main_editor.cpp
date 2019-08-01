@@ -223,10 +223,10 @@ void trigger::edit::main_editor::draw_inspector()
 				}
 				if (ImGui::Button("Add"))
 				{
-
 					if (this->current_id != 0)
 					{
-						auto tmp = new trigger::component(*trigger::manager::class_manager::get_instance()->get_class_array()->at(this->component_name));
+						auto tmp = trigger::manager::class_manager::get_instance()->get_class_array()->at(this->component_name)->clone();
+						tmp->set_instance_id(make_hash_code());
 						this->current_target->add_component(tmp);
 						this->current_target_components = this->current_target->get_components();
 						ImGui::CloseCurrentPopup();
@@ -291,62 +291,103 @@ void trigger::edit::main_editor::draw_inspector()
 		
 		ImGui::InputText("", this->current_name);
 		ImGui::Text("Instance ID : %d", this->current_target->get_instance_id());
-		for (auto&& c : this->current_target_components)
+		for (auto& c : this->current_target_components)
 		{
 			ImGui::Separator();
-			ImGui::Text(c->get_type_name().c_str());
+			std::string comp_name(c.second->get_type_name());
+			comp_name.append(":" + std::to_string(c.second->get_instance_id()));
+			ImGui::Text(comp_name.c_str());
 
-			for (auto& p : c->properties)
+			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
 			{
+				ImGui::SetDragDropPayload("ComponentID", c.second, sizeof(component));
+				ImGui::EndDragDropSource();
+			}
+
+			for (auto& p : c.second->properties)
+			{
+				std::string p_name(p.second.get_name().c_str());
+				p_name.append(":");
+				p_name.append(std::to_string(c.second->get_instance_id()));
 				if (p.second.controllable)
 				{
 					if (p.second.type == trigger::property::data_type::Bool)
 					{
 						bool* b = std::any_cast<bool>(&p.second.value);
-						if (b != nullptr && ImGui::Checkbox(p.second.get_name().c_str(), b))
+						if (b != nullptr && ImGui::Checkbox(p_name.c_str(), b))
 						{
-							c->set_property(p.second.get_name(), *b);
+							c.second->set_property(p.second.get_name(), *b);
 						}
-						continue;
+						
 					}
-					if (p.second.type == trigger::property::data_type::Double)
+					else if (p.second.type == trigger::property::data_type::Double)
 					{
 						double* d = std::any_cast<double>(&p.second.value);
-						if (d != nullptr && ImGui::InputDouble(p.second.get_name().c_str(), d))
+						if (d != nullptr && ImGui::InputDouble(p_name.c_str(), d))
 						{
-							c->set_property(p.second.get_name(), *d);
+							c.second->set_property(p.second.get_name(), *d);
 						}
-						continue;
+						
 					}
-					if (p.second.type == trigger::property::data_type::Float)
+					else if (p.second.type == trigger::property::data_type::Float)
 					{
 						float* f = std::any_cast<float>(&p.second.value);
-						if (f != nullptr && ImGui::InputFloat(p.second.get_name().c_str(), f))
+						if (f != nullptr && ImGui::InputFloat(p_name.c_str(), f))
 						{
-							c->set_property(p.second.get_name(), *f);
+							c.second->set_property(p.second.get_name(), *f);
 						}
-						continue;
+						
 					}
-					if (p.second.type == trigger::property::data_type::Int)
+					else if (p.second.type == trigger::property::data_type::Int)
 					{
 						int* i = std::any_cast<int>(&p.second.value);
-						if (i != nullptr && ImGui::InputInt(p.second.get_name().c_str(), i))
+						if (i != nullptr && ImGui::InputInt(p_name.c_str(), i))
 						{
-							c->set_property(p.second.get_name(), *i);
+							c.second->set_property(p.second.get_name(), *i);
 						}
-						continue;
+						
 					}
-					if (p.second.type == trigger::property::data_type::String)
+					else if (p.second.type == trigger::property::data_type::HashID)
+					{
+						hash_id* i = std::any_cast<hash_id>(&p.second.value);
+						if (i != nullptr && ImGui::InputInt(p_name.c_str(), i,1,100,ImGuiInputTextFlags_NoMarkEdited))
+						{
+							c.second->set_property(p.second.get_name(), *i);
+						}
+
+						if (ImGui::BeginDragDropTarget())
+						{
+							if (const ImGuiPayload* data = ImGui::AcceptDragDropPayload("ComponentID"))
+							{
+								IM_ASSERT(data->DataSize == sizeof(component));
+								component tmp = *(const component*)(data->Data);
+								c.second->set_property(p.second.get_name(), tmp.get_instance_id());
+							}
+							ImGui::EndDragDropTarget();
+						}
+						
+					}
+					else if (p.second.type == trigger::property::data_type::String)
 					{
 						std::string* s = std::any_cast<std::string>(&p.second.value);
-						if (s != nullptr && ImGui::InputText(p.second.get_name().c_str(), s))
+						if (s != nullptr && ImGui::InputText(p_name.c_str(), s))
 						{
-							c->set_property(p.second.get_name(), *s);
+							c.second->set_property(p.second.get_name(), *s);
 						}
-						continue;
+						
+					}
+					else if (p.second.type == trigger::property::data_type::FilePath)
+					{
+						auto* ss = std::any_cast<trigger::core::file>(&p.second.value);
+						if (ss != nullptr && ImGui::InputText(p_name.c_str(), ss->get_path()))
+						{
+							c.second->set_property(p.second.get_name(), *ss);
+						}
+						
 					}
 				}
 			}
+			c.second->draw_editor();
 			ImGui::Separator();
 		}
 	}
@@ -388,17 +429,18 @@ bool trigger::edit::main_editor::new_component()
 	o << this->new_component_name;
 	o << " : public trigger::component\n{\npublic:\n\t";
 	o << this->new_component_name;
-	o << "() : trigger::component(T_CLASS)\n\t{\n\t}\n\nvirtual void update(float delta) noexcept;\nvirtual ~";
+	o << "() : trigger::component(T_CLASS)\n\t{\n\t}\n\n\tvirtual void update(float delta) noexcept;\n\tvirtual ~";
 	o << this->new_component_name;
-	o << "};";
+	o << "();\n};";
 	o.close();
 	o.open(new_name.c_str());
 	o << "#include \"";
 	o << new_component_name;
 	o << ".h";
 	o << "\"\n";
-	o << "void " << this->new_component_name << "::update(float delta) noexcept\n";
-	o << "{\n};";
+	o << "void " << this->new_component_name << "::update(float delta)\n";
+	o << "{\n};\n";
+	o << "virtual " << this->new_component_name << "* clone() const { return new " << this->new_component_name << "(*this); }\n";
 	o << this->new_component_name << "::~" << this->new_component_name << "()\n{\n};";
 	o.close();
 

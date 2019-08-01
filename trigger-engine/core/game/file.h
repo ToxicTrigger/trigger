@@ -48,7 +48,7 @@ namespace trigger::core
         };
 
     private:
-        std::string path;
+        std::string* path;
         file::type type;
 
     public:
@@ -57,10 +57,11 @@ namespace trigger::core
             this->type = type::unknown;
         }
 
-        file(std::string path) : path(path)
+        file(std::string path)
         {
-            std::string exec = this->path.substr(this->path.rfind(".")+1);
-            if(exec.compare("hlsl") == 0)
+			this->path = new std::string(path);
+            std::string exec = this->path->substr(this->path->rfind(".")+1);
+            if(exec.compare("hlsl") == 0 || exec.compare("vert") == 0 || exec.compare("frag") == 0)
             {
                 this->type = file::type::hlsl;
             }
@@ -94,7 +95,7 @@ namespace trigger::core
             }
         };
 
-        std::string const get_path()
+        std::string* get_path()
         {
             return this->path;
         }

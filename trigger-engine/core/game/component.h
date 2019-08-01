@@ -66,18 +66,17 @@ public:
 	static void regi_component(std::string type)
 	{
 		T *com = new T();
-		trigger::manager::class_manager::get_instance()->get_class_array()->insert(std::pair<std::string, trigger::component *>(type, dynamic_cast<trigger::component *>(com)));
+		trigger::manager::class_manager::get_instance()->get_class_array()->insert(
+			std::pair<std::string, trigger::component *>(
+				             type, dynamic_cast<trigger::component *>(com)
+				)
+		);
 	}
 
 	template <typename C>
-	std::optional<C *> get_class(std::string type)
+	std::optional<C> get_class(std::string type)
 	{
-		if (this->CLASS_ARRAY.find(type) == this->CLASS_ARRAY.end())
-		{
-			regi_component<C>();
-		}
-
-		return dynamic_cast<C *>(this->CLASS_ARRAY[type]);
+		return dynamic_cast<C>(this->CLASS_ARRAY[type]);
 	}
 };
 } // namespace manager
@@ -126,9 +125,10 @@ public:
 	template <typename T>
 	bool set_property(std::string name, T val)
 	{
-		if (this->properties.find(hash_str(name.c_str())) != this->properties.end())
+		auto key = hash_str(name.c_str());
+		if (this->properties.find(key) != this->properties.end())
 		{
-			this->properties[hash_str(name.c_str())].set<T>(val);
+			this->properties[key].set<T>(val);
 			return true;
 		}
 		return false;
@@ -205,7 +205,20 @@ public:
 		return _params;
 	}
 
-	virtual void update(float delta) noexcept {};
+	const hash_id get_instance_id() const
+	{
+		return this->instance_id;
+	}
+
+	void set_instance_id(hash_id code)
+	{
+		this->instance_id = code;
+		save();
+	}
+
+	virtual void update(float delta) {};
+	virtual void draw_editor() {};
+	virtual component* clone() const { return new component(*this); };
 };
 } // namespace trigger
 

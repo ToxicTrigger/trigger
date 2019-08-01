@@ -13,6 +13,7 @@ set( comps
 
 #DO NOT EDIT
 src/material/material.h src/material/material.cpp 
+src/Shader/Shader.h src/Shader/Shader.cpp 
 components.h components.cpp
 )
 

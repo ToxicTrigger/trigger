@@ -8,22 +8,13 @@ trigger::transform::~transform()
 	delete parent;
 }
 
-void trigger::transform::update(float delta) noexcept
+void trigger::transform::update(float delta)
 {
-	for (auto& i : this->components)
+	for (auto&& i : this->components)
 	{
-		if(i->active) i->update(delta);
+		if(i.second->active) 
+			i.second->update(delta);
 	}
-}
-
-const int trigger::transform::get_instance_id() const
-{
-	return this->instance_id;
-}
-
-std::vector<trigger::component*> trigger::transform::get_components() const
-{
-	return this->components;
 }
 
 trigger::transform *trigger::transform::get_parent()
@@ -38,7 +29,6 @@ void trigger::transform::set_parent(trigger::transform *target)
 		this->parent = target;
 		target->add_child(this);
 	}
-
 }
 
 trigger::transform *trigger::transform::get_child_at(size_t index)
