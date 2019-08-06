@@ -189,15 +189,6 @@ void trigger::rend::vk::draw_editors(VkDevice device, ImGui_ImplVulkanH_Window *
         {
             e->draw(device, wd);
         }
-        auto objs = this->engine->editors->get_all();
-        for (auto&& i : objs)
-        {
-
-            if (com != nullptr)
-            {
-                com->update(this->engine->editors->get_delta_time());
-            }
-        }
     }
 }
 

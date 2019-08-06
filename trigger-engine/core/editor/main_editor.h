@@ -41,8 +41,8 @@ public:
 	hash_id copied_component_id;
 
 public:
-	virtual bool draw() noexcept override;
-	virtual void update(float delta) noexcept override;
+	virtual bool draw(VkDevice device, ImGui_ImplVulkanH_Window *wd)  override;
+	virtual void update(float delta) override;
 	void draw_objects();
 	void draw_inspector();
 	void draw_console();

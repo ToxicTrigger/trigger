@@ -7,7 +7,7 @@
 #include "../../imgui/misc/cpp/imgui_stdlib.h"
 #include "../../../renderer/vk.h"
 
-bool trigger::edit::main_editor::draw() noexcept
+bool trigger::edit::main_editor::draw(VkDevice device, ImGui_ImplVulkanH_Window *wd)
 {
 	static bool opt_fullscreen_persistant = true;
 	bool opt_fullscreen = opt_fullscreen_persistant;
@@ -100,7 +100,7 @@ bool trigger::edit::main_editor::draw() noexcept
 	return true;
 };
 
-void trigger::edit::main_editor::update(float delta) noexcept
+void trigger::edit::main_editor::update(float delta) 
 {
 	if (thread_run <= 4.0f)
 	{
