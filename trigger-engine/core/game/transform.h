@@ -51,6 +51,9 @@ namespace trigger
 			this->real_position = pos;
 			this->real_scale = scale;
 			this->real_rotation = rot;
+			position = pos;
+			this->scale = scale;
+			this->rotation = rot;
 			this->instance_id = make_hash_code();
 			std::string n(name);
 			if (name.find("Object") != std::string::npos)
@@ -131,6 +134,7 @@ namespace trigger
 		bool add_component()
 		{
 			T* com = new T();
+			com->transform_ptr = (void*)this;
 			this->components.insert(
 				std::pair<hash_id, trigger::component*>(com->get_instance_id(), com)
 			);
@@ -141,6 +145,7 @@ namespace trigger
 		template<typename T>
 		bool add_component(T* component)
 		{
+			component->transform_ptr = (void*)this;
 			this->components.insert(
 				std::pair<hash_id, trigger::component*>(component->get_instance_id(), component)
 			);
@@ -152,6 +157,7 @@ namespace trigger
 		bool add_component(T component)
 		{
 			T* com = new decltype(component)();
+			com->transform_ptr = (void*)this;
 			this->components.insert(
 				std::pair<hash_id, trigger::component*>(com->get_instance_id(), com)
 			);

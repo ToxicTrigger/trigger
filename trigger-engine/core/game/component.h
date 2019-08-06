@@ -15,6 +15,7 @@ template <typename T>
 T *trigger::impl::impl_singletone<T>::_inst = 0;
 
 #define GET_CLASS(type) trigger::manager::class_manager::get_instance()->get_class<type>(#type)
+#define get_my_transform() ((trigger::transform*)transform_ptr)
 
 static hash_id make_hash_code_()
 {
@@ -73,6 +74,23 @@ public:
 		);
 	}
 
+	template <typename T>
+	auto clone(std::string name,T author)
+	{
+		auto com = this->CLASS_ARRAY.at(name);
+		com->transform_ptr = (void*)author;
+		com->set_instance_id(make_hash_code());
+		return com->clone();
+	}
+
+	template <typename T>
+	void clone_and_add(std::string name, T author)
+	{
+		auto com = this->CLASS_ARRAY.at(name);
+		com->transform_ptr = (void*)author;
+		author->add_component(com->clone());
+	}
+
 	template <typename C>
 	std::optional<C> get_class(std::string type)
 	{
@@ -90,10 +108,13 @@ protected:
 	hash_id type_code;
 	std::string type_name;
 	hash_id instance_id;
+	hash_id _transform;
+
 
 public:
 	std::map<hash_id, property> properties;
 	bool active = true;
+	void* transform_ptr;
 
 	component()
 	{
@@ -188,6 +209,8 @@ public:
 	virtual ~component()
 	{
 		this->properties.clear();
+		delete this->transform_ptr;
+		this->transform_ptr = nullptr;
 	}
 
 	size_t get_type_id()

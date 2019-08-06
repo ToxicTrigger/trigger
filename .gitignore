@@ -81,6 +81,6 @@ imgui.ini
 *.cmake
 *.tcl
 .vs/
-components.lib
 !trigger-engine/lib/vk/glslangValidator.exe
+!trigger-engine/lib/vk/glslc.exe
 

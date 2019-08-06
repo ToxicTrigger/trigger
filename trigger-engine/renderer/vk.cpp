@@ -5,6 +5,7 @@
 
 using namespace trigger::rend;
 
+std::map<std::string, VkPipelineShaderStageCreateInfo> trigger::rend::vk::SHADER_STAGES = std::map<std::string, VkPipelineShaderStageCreateInfo>();
 int vk::init()
 {
 	// Setup GLFW window
@@ -13,7 +14,7 @@ int vk::init()
 		return 1;
 
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	GLFWwindow* window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+Vulkan example", NULL, NULL);
+	window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+Vulkan example", NULL, NULL);
 
 	// Setup Vulkan
 	if (!glfwVulkanSupported())
@@ -148,7 +149,7 @@ int vk::init()
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-        this->draw_editors();
+        draw_editors(g_Device, wd);
 
 		// Rendering
 		ImGui::Render();
@@ -179,19 +180,19 @@ int vk::init()
     return 0;
 }
 
-void trigger::rend::vk::draw_editors()
+void trigger::rend::vk::draw_editors(VkDevice device, ImGui_ImplVulkanH_Window *wd)
 {
     if (this->edit_mode)
     {
         auto editor_list = this->engine->editors->get_objects<trigger::edit::impl_editor>();
         for (auto&& e : editor_list)
         {
-            e->draw();
+            e->draw(device, wd);
         }
         auto objs = this->engine->editors->get_all();
         for (auto&& i : objs)
         {
-            auto com = i.second->get_component<trigger::comp::object_renderer>();
+
             if (com != nullptr)
             {
                 com->update(this->engine->editors->get_delta_time());

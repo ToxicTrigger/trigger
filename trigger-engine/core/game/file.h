@@ -105,6 +105,46 @@ namespace trigger::core
             return this->type;
         };
 
+
+		void update_date()
+		{
+			auto dpath = get_real_path(*path);
+			*this->path = dpath;
+			std::string exec = this->path->substr(this->path->rfind(".") + 1);
+			if (exec.compare("hlsl") == 0 || exec.compare("vert") == 0 || exec.compare("frag") == 0)
+			{
+				this->type = file::type::hlsl;
+			}
+			else if (exec.compare("obj") == 0)
+			{
+				this->type = file::type::obj;
+			}
+			else if (exec.compare("fbx") == 0)
+			{
+				this->type = file::type::fbx;
+			}
+			else if (exec.compare("map") == 0)
+			{
+				this->type = file::type::map;
+			}
+			else if (exec.compare("pot") == 0)
+			{
+				this->type = file::type::pot;
+			}
+			else if (exec.compare("tps") == 0)
+			{
+				this->type = file::type::tps;
+			}
+			else if (exec.compare("spv") == 0)
+			{
+				this->type = file::type::spv;
+			}
+			else
+			{
+				this->type = file::type::unknown;
+			}
+		}
+
         bool is_usable()
         {
             if(this->type == type::unknown) return false;

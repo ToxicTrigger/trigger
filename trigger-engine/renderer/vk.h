@@ -198,6 +198,22 @@ static void SetupVulkan(const char** extensions, uint32_t extensions_count)
 	}
 };
 
+static VkShaderModule create_shader_module(VkDevice device,  const std::vector<char>& compiled_spv)
+{
+	VkShaderModuleCreateInfo info = {};
+	info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+	info.codeSize = compiled_spv.size();
+	info.pCode = reinterpret_cast<const uint32_t*>(compiled_spv.data());
+
+	VkShaderModule s_module = {};
+	if (vkCreateShaderModule(device, &info, nullptr, &s_module) != VK_SUCCESS)
+	{
+		throw std::runtime_error("Failed to Create Shader Module");
+	}
+
+	return s_module;
+}
+
 // All the ImGui_ImplVulkanH_XXX structures/functions are optional helpers used by the demo. 
 // Your real engine/app may not use them.
 static void SetupVulkanWindow(ImGui_ImplVulkanH_Window* wd, VkSurfaceKHR surface, int width, int height)
@@ -354,13 +370,16 @@ namespace trigger
             virtual void resize() override;
             virtual void draw() override;
             virtual int rendering() override;
-            void draw_editors();
+            void draw_editors(VkDevice device, ImGui_ImplVulkanH_Window *wd);
 
         public:
-            vk(int w, int h, bool edit, trigger::core::engine* engine) : renderer(w,h,edit, engine)
-            {
-                this->init();
-            }
+			static std::map < std::string, VkPipelineShaderStageCreateInfo > SHADER_STAGES;
+
+			vk(int w, int h, bool edit, trigger::core::engine* engine) : renderer(w, h, edit, engine)
+			{
+				this->init();
+			}
+
         };
     }
 }
