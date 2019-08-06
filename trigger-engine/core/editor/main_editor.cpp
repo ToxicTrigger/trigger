@@ -82,7 +82,6 @@ bool trigger::edit::main_editor::draw(VkDevice device, ImGui_ImplVulkanH_Window 
 		if (ImGui::BeginTabItem("Editor View"))
 		{
 			current_tab = windows::editor;
-			ImGui::Image((ImTextureID)&g_MainWindowData.Frames[g_MainWindowData.FrameIndex], ImGui::GetWindowSize());
 			ImGui::EndTabItem();
 		}
 		static bool hello;
