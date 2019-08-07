@@ -31,8 +31,6 @@ static int HEIGHT = 600;
 //that layers is need add more sub-party
 const static std::vector<const char*> validation_layers = 
 { 
-	//"VK_LAYER_LUNARG_standard_validation",
-	//"VK_LAYER_LUNARG_core_validation",
 	"VK_LAYER_KHRONOS_validation",
 };
 
@@ -198,8 +196,7 @@ namespace trigger
 			bool framebufferResized = false;
 
 			//imgui
-			VkPipelineCache          g_PipelineCache = VK_NULL_HANDLE;
-			VkDescriptorPool		 g_DescriptorPool;
+
 
 			vk(int w, int h, bool edit, trigger::core::engine* engine) : renderer(w, h, edit, engine)
 			{
