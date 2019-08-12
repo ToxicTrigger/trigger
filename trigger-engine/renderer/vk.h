@@ -107,7 +107,7 @@ namespace trigger
         private:
             virtual int init() override;
             virtual void set_up() override;
-            virtual void resize() override;
+
             virtual void draw() override;
             virtual int rendering() override;
             void draw_editors(VkDevice device, ImGui_ImplVulkanH_Window *wd);
@@ -140,18 +140,12 @@ namespace trigger
 			void createSurface();
 			void pickPhysicalDevice();
 			void createLogicalDevice();
-			void createSwapChain();
-			void createImageViews();
 			bool isDeviceSuitable(VkPhysicalDevice device);
-			void createGraphicsPipeline();
-			void createRenderPass();
+
 			void createCommandPool();
-			void cleanupSwapChain();
 			QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 			std::vector<const char*> getRequiredExtensions();
 			bool checkValidationLayerSupport();
-			void createFramebuffers();
-			void createCommandBuffers();
 			void createSemaphores();
 			void createSyncObjects();
 			bool checkDeviceExtensionSupport(VkPhysicalDevice device);
@@ -176,6 +170,7 @@ namespace trigger
 
 			VkQueue graphicsQueue;
 			VkQueue presentQueue;
+			VkQueue imguiQueue;
 			VkSwapchainKHR swapChain = VK_NULL_HANDLE;
 			std::vector<VkImage> swapChainImages;
 			VkFormat swapChainImageFormat;
@@ -196,7 +191,17 @@ namespace trigger
 			bool framebufferResized = false;
 
 			//imgui
+			void cleanupSwapChain();
+			void createSwapChain();
+			void createImageViews();
+			void createRenderPass();
+			void createGraphicsPipeline();
+			void createFramebuffers();
+			void createCommandBuffers();
 
+			void vk_clean();
+
+			virtual void resize() override;
 
 			vk(int w, int h, bool edit, trigger::core::engine* engine) : renderer(w, h, edit, engine)
 			{

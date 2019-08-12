@@ -28,7 +28,7 @@ namespace trigger
             virtual void set_up() = 0;
             virtual int rendering() = 0;
             virtual void draw() = 0;
-            virtual void resize() = 0;
+
 
         public:
             trigger::core::engine* engine;
@@ -38,6 +38,7 @@ namespace trigger
             mClientWidth(width), mClientHeight(height), edit_mode(edit_mode), engine(engine)
             {};
 
+			virtual void resize() = 0;
             virtual ~renderer() {}
             int mClientWidth, mClientHeight;
             bool edit_mode;

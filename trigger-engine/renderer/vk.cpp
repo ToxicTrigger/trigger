@@ -58,7 +58,7 @@ static void CleanupVulkanWindow()
 	ImGui_ImplVulkanH_DestroyWindow(g_Instance, g_Device, &g_MainWindowData, g_Allocator);
 }
 
-static void FrameRender(ImGui_ImplVulkanH_Window* wd)
+static void FrameRender(ImGui_ImplVulkanH_Window* wd, VkPipeline graphic_pipeline, ImVec2 pos, ImVec2 size)
 {
 	VkResult err;
 
@@ -98,9 +98,35 @@ static void FrameRender(ImGui_ImplVulkanH_Window* wd)
 
 	// Record Imgui Draw Data and draw funcs into command buffer
 	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), fd->CommandBuffer);
+	// End imGui Render Pass
+	vkCmdEndRenderPass(fd->CommandBuffer);
+
+	//Test
+	{
+		VkRenderPassBeginInfo renderPassInfo = {};
+		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassInfo.renderPass = wd->RenderPass;
+		renderPassInfo.framebuffer = fd->Framebuffer;
+		VkOffset2D offset = { (int)pos.x,(int)pos.y };
+		renderPassInfo.renderArea.offset = offset;
+		VkExtent2D extent = {};
+		extent.width = (int)size.x;
+		extent.height = (int)size.y;
+		renderPassInfo.renderArea.extent = extent;
+
+		VkClearValue clearColor = { 0.2f, 0.4f, 0.8f, 1.0f };
+		renderPassInfo.clearValueCount = 1;
+		renderPassInfo.pClearValues = &clearColor;
+
+		//New RenderPipe 
+		//vkCmdBeginRenderPass(fd->CommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+		vkCmdBindPipeline(fd->CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphic_pipeline);
+		vkCmdDraw(fd->CommandBuffer, 3, 1, 0, 0);
+		//vkCmdEndRenderPass(fd->CommandBuffer);
+	}
 
 	// Submit command buffer
-	vkCmdEndRenderPass(fd->CommandBuffer);
 	{
 		VkPipelineStageFlags wait_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		VkSubmitInfo info = {};
@@ -120,7 +146,7 @@ static void FrameRender(ImGui_ImplVulkanH_Window* wd)
 	}
 }
 
-static void FramePresent(ImGui_ImplVulkanH_Window* wd)
+static void FramePresent(ImGui_ImplVulkanH_Window* wd, VkQueue present, vk* vk)
 {
 	VkSemaphore render_complete_semaphore = wd->FrameSemaphores[wd->SemaphoreIndex].RenderCompleteSemaphore;
 	VkPresentInfoKHR info = {};
@@ -130,8 +156,14 @@ static void FramePresent(ImGui_ImplVulkanH_Window* wd)
 	info.swapchainCount = 1;
 	info.pSwapchains = &wd->Swapchain;
 	info.pImageIndices = &wd->FrameIndex;
-	VkResult err = vkQueuePresentKHR(g_Queue, &info);
+	VkResult err = vkQueuePresentKHR(present, &info);
+	if (err == VK_ERROR_OUT_OF_DATE_KHR)
+	{
+		vk->resize();
+		return;
+	}
 	check_vk_result(err);
+
 	wd->SemaphoreIndex = (wd->SemaphoreIndex + 1) % wd->ImageCount; // Now we can use the next set of semaphores
 }
 
@@ -336,10 +368,9 @@ int vk::init()
 	ImGui_ImplVulkanH_Window* wd = &g_MainWindowData;
 	g_Device = device;
 	g_PhysicalDevice = physicalDevice;
+	g_Instance = instance;
 	wd->Swapchain = swapChain;
-
-	SetupVulkanWindow(wd, surface, w, h);
-	wd->ImageCount = swapChainImages.size();
+	wd->ImageCount = swapChainImages.size() -1;
 	{
 		g_MainWindowData.Frames = new ImGui_ImplVulkanH_Frame[swapChainImages.size()];
 		for (int i = 0; i < this->swapChainImages.size(); i++)
@@ -359,6 +390,9 @@ int vk::init()
 			wd->FrameSemaphores[i].RenderCompleteSemaphore = this->renderFinishedSemaphores[i];
 		}
 	}
+	g_Queue = graphicsQueue;
+
+	wd->Surface = surface;
 
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
@@ -367,7 +401,7 @@ int vk::init()
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
-	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
+	//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
 	//io.ConfigViewportsNoAutoMerge = true;
 	//io.ConfigViewportsNoTaskBarIcon = true;
 
@@ -419,7 +453,7 @@ int vk::init()
 	init_info.DescriptorPool = g_DescriptorPool;
 	init_info.Allocator = g_Allocator;
 	init_info.MinImageCount = g_MinImageCount;
-	init_info.ImageCount = wd->ImageCount + 3;
+	init_info.ImageCount = wd->ImageCount + 2;
 	init_info.CheckVkResultFn = check_vk_result;
 	ImGui_ImplVulkan_Init(&init_info, renderPass);
 
@@ -453,10 +487,18 @@ int vk::init()
 		ImGui_ImplVulkan_DestroyFontUploadObjects();
 	}
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+	ImVec2 pos, size;
 	
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
+
+		if (wd->Width != swapChainExtent.width || wd->Height != swapChainExtent.height)
+		{
+			wd->Width = swapChainExtent.width;
+			wd->Height = swapChainExtent.height;
+		}
 
 		if (g_SwapChainRebuild)
 		{
@@ -465,17 +507,21 @@ int vk::init()
 			ImGui_ImplVulkanH_CreateWindow(g_Instance, g_PhysicalDevice, g_Device, &g_MainWindowData, g_QueueFamily, g_Allocator, g_SwapChainResizeWidth, g_SwapChainResizeHeight, g_MinImageCount);
 			g_MainWindowData.FrameIndex = 0;
 		}
+		//draw();
 
 		ImGui_ImplVulkan_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-		
-		ImGui::Begin("as5345d");
 
-		ImGui::End();
+		draw_editors(device, wd);
+
+		pos = ImGui::GetWindowPos();
+		size = ImGui::GetWindowSize();
+
 		ImGui::Render();
 		memcpy(&wd->ClearValue.color.float32[0], &clear_color, 4 * sizeof(float));
-		FrameRender(wd);
+		
+		FrameRender(wd, graphicsPipeline, pos, size);
 
 		//imgui draw
 		// Update and Render additional Platform Windows
@@ -484,14 +530,10 @@ int vk::init()
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
 		}
-		FramePresent(wd);
-		draw();
+		FramePresent(wd,presentQueue,this);
 	}
 
-	vkDeviceWaitIdle(device);
-	ImGui_ImplVulkan_Shutdown();
-	ImGui_ImplGlfw_Shutdown();
-	ImGui::DestroyContext();
+	vk_clean();
 
     return 0;
 }
@@ -582,10 +624,37 @@ void vk::resize()
 	createGraphicsPipeline();
 	createFramebuffers();
 	createCommandBuffers();
+
+	g_MainWindowData.Swapchain = swapChain;
+	g_MainWindowData.ImageCount = swapChainImages.size() - 1;
+	{
+		g_MainWindowData.Frames = new ImGui_ImplVulkanH_Frame[swapChainImages.size()];
+		for (int i = 0; i < this->swapChainImages.size(); i++)
+		{
+			g_MainWindowData.Frames[i].Backbuffer = this->swapChainImages[i];
+			g_MainWindowData.Frames[i].BackbufferView = this->swapChainImageViews[i];
+			g_MainWindowData.Frames[i].CommandBuffer = this->commandBuffers[i];
+			g_MainWindowData.Frames[i].CommandPool = this->commandPool;
+			g_MainWindowData.Frames[i].Framebuffer = this->swapChainFramebuffers[i];
+			g_MainWindowData.Frames[i].Fence = this->inFlightFences[0];
+		}
+		g_MainWindowData.RenderPass = renderPass;
+		g_MainWindowData.FrameSemaphores = new ImGui_ImplVulkanH_FrameSemaphores[this->imageAvailableSemaphores.size()];
+		for (int i = 0; i < imageAvailableSemaphores.size(); ++i)
+		{
+			g_MainWindowData.FrameSemaphores[i].ImageAcquiredSemaphore = this->imageAvailableSemaphores[i];
+			g_MainWindowData.FrameSemaphores[i].RenderCompleteSemaphore = this->renderFinishedSemaphores[i];
+		}
+	}
+	g_Queue = graphicsQueue;
+
+	g_MainWindowData.Surface = surface;
 }
 
 void vk::draw()
 {
+	vkQueueWaitIdle(presentQueue);
+
 	vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
 
 	uint32_t imageIndex;
@@ -607,7 +676,6 @@ void vk::draw()
 	submitInfo.waitSemaphoreCount = 1;
 	submitInfo.pWaitSemaphores = waitSemaphores;
 	submitInfo.pWaitDstStageMask = waitStages;
-
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
 
@@ -645,6 +713,8 @@ void vk::draw()
 	else if (result != VK_SUCCESS) {
 		throw std::runtime_error("failed to present swap chain image!");
 	}
+	//
+	vkQueueWaitIdle(presentQueue);
 
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
@@ -752,6 +822,7 @@ void trigger::rend::vk::createLogicalDevice()
 
 	vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
 	vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
+	//vkGetDeviceQueue(device, indices.)
 }
 
 void trigger::rend::vk::createSwapChain()
@@ -1190,6 +1261,35 @@ void trigger::rend::vk::createCommandBuffers()
 			throw std::runtime_error("failed to record command buffer!");
 		}
 	}
+}
+
+void trigger::rend::vk::vk_clean()
+{
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
+		vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
+		vkDestroyFence(device, inFlightFences[i], nullptr);
+	}
+
+	//vkDestroyCommandPool(device, commandPool, nullptr);
+	cleanupSwapChain();
+	for (auto imageView : swapChainImageViews)
+	{
+		vkDestroyImageView(device, imageView, nullptr);
+	}
+	vkDestroyDevice(device, nullptr);
+
+	if (enable_validation_layer)
+	{
+		destroy_debug_messenger_EXT(instance, debugMessenger, nullptr);
+	}
+
+	vkDestroySurfaceKHR(instance, surface, nullptr);
+	vkDestroyInstance(instance, nullptr);
+
+	glfwDestroyWindow(window);
+
+	glfwTerminate();
 }
 
 void trigger::rend::vk::createSemaphores()
