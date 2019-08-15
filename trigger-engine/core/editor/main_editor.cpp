@@ -364,7 +364,6 @@ void trigger::edit::main_editor::draw_inspector()
 							}
 							ImGui::EndDragDropTarget();
 						}
-						
 					}
 					else if (p.second.type == trigger::property::data_type::String)
 					{
@@ -428,7 +427,11 @@ bool trigger::edit::main_editor::new_component()
 	o << this->new_component_name;
 	o << " : public trigger::component\n{\npublic:\n\t";
 	o << this->new_component_name;
-	o << "() : trigger::component(T_CLASS)\n\t{\n\t}\n\n\tvirtual void update(float delta) noexcept;\n\tvirtual ~";
+	o << "() : trigger::component(T_CLASS)\n\t{\n\t}\n\n";
+	o << "\tvirtual " << this->new_component_name << "* clone() const \n\t{\n";
+	o << "\t\tauto cpy_" << this->new_component_name << " = new " << this->new_component_name << "(*this);\n";
+	o << "\t\treturn cpy_" << this->new_component_name << ";\n\t};";
+	o << "\n\n\tvirtual void update(float delta) override;\n\tvirtual ~";
 	o << this->new_component_name;
 	o << "();\n};";
 	o.close();
@@ -439,7 +442,6 @@ bool trigger::edit::main_editor::new_component()
 	o << "\"\n";
 	o << "void " << this->new_component_name << "::update(float delta)\n";
 	o << "{\n};\n";
-	o << "virtual " << this->new_component_name << "* clone() const { return new " << this->new_component_name << "(*this); }\n";
 	o << this->new_component_name << "::~" << this->new_component_name << "()\n{\n};";
 	o.close();
 

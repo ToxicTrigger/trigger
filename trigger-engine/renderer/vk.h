@@ -155,8 +155,6 @@ namespace trigger
 			VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 			static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 
-
-
         public:
 			const int MAX_FRAMES_IN_FLIGHT = 2;
 			static std::map < std::string, VkPipelineShaderStageCreateInfo > SHADER_STAGES;
@@ -190,7 +188,15 @@ namespace trigger
 			std::vector<VkFence> inFlightFences;
 			bool framebufferResized = false;
 
-			//imgui
+			std::vector<VkBuffer> vertexBuffers;
+			std::vector<VkDeviceMemory> vertexBufferMemorys;
+			std::vector<VkBuffer> indexBuffers;
+			std::vector<VkDeviceMemory> indexBufferMemorys;
+
+			//mesh render
+			std::map<std::string, mesh*> mesh_map;
+			std::map<hash_id, ::renderer*> mesh_renderers;
+
 			void cleanupSwapChain();
 			void createSwapChain();
 			void createImageViews();
@@ -198,7 +204,14 @@ namespace trigger
 			void createGraphicsPipeline();
 			void createFramebuffers();
 			void createCommandBuffers();
+			void createVertexBuffer(const std::vector<vertex> vertices);
+			void createIndexBuffer(const std::vector<uint16_t> indices);
 
+			void add_mesh(std::string name,  mesh *data);
+
+			void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+			void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+			uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 			void vk_clean();
 
 			virtual void resize() override;
@@ -211,6 +224,8 @@ namespace trigger
 			virtual ~vk()
 			{
 				cleanupSwapChain();
+
+
 				for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 					vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
 					vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);

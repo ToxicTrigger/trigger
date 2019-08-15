@@ -29,7 +29,32 @@ static bool                     g_SwapChainRebuild = false;
 static int                      g_SwapChainResizeWidth = 0;
 static int                      g_SwapChainResizeHeight = 0;
 
+const std::vector<vertex> vertices = {
+	{{-0.5f, 0.25f, 0.0f}, {1.0f, 0.0f, 0.0f}},
+	{{-0.25f, 0.5f, 0.0f}, {1.0f, 1.0f, 0.0f}},
+	{{0.0f, 0.25f, 0.0f}, {1.0f, 0.0f, 1.0f}},
+	{{0.25f, 0.5f, 0.0f}, {1.0f, .0f, 1.0f}},
+	{{0.5f, 0.25f, 0.0f}, {1.0f, 1.0f, 1.0f}},
+	{{0.5f, 0.0f, 0.0f}, {0.0f, 1.0f, 1.0f}},
+	{{0.25f, -0.25f, 0.0f}, {0.0f, 1.0f, 0.0f}},
+	{{0.0f, -0.50f, 0.0f}, {0.0f, 0.0f, 1.0f}},
+	{{-0.25f, -0.25f, 0.0f}, {0.5f, 1.0f, 0.0f}},
+	{{-0.5f, -0.0f, 0.0f}, {1.0f, 0.5f, 0.5f}}
+};
 
+const std::vector<uint16_t> indices = {
+	2,1,0,
+	4,3,2,
+	5,4,2,
+	6,5,2,
+	7,6,2,
+	7,2,8,
+	8,2,9,
+	2,0,9,
+};
+
+
+#pragma region Vulkan
 static void check_vk_result(VkResult err)
 {
 	if (err == 0) return;
@@ -37,7 +62,6 @@ static void check_vk_result(VkResult err)
 	if (err < 0)
 		abort();
 }
-
 
 static void CleanupVulkan()
 {
@@ -58,7 +82,7 @@ static void CleanupVulkanWindow()
 	ImGui_ImplVulkanH_DestroyWindow(g_Instance, g_Device, &g_MainWindowData, g_Allocator);
 }
 
-static void FrameRender(ImGui_ImplVulkanH_Window* wd, VkPipeline graphic_pipeline, ImVec2 pos, ImVec2 size)
+static void FrameRender(ImGui_ImplVulkanH_Window* wd, VkPipeline graphic_pipeline, ImVec2 pos, ImVec2 size, vk* vk)
 {
 	VkResult err;
 
@@ -121,9 +145,20 @@ static void FrameRender(ImGui_ImplVulkanH_Window* wd, VkPipeline graphic_pipelin
 		//New RenderPipe 
 		//vkCmdBeginRenderPass(fd->CommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-		vkCmdBindPipeline(fd->CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphic_pipeline);
-		vkCmdDraw(fd->CommandBuffer, 3, 1, 0, 0);
-		//vkCmdEndRenderPass(fd->CommandBuffer);
+		for (auto mesh : vk->mesh_renderers)
+		{
+			if (vk->mesh_map.find(mesh.second->properties[hash_str("Mesh")].get_string().value_or("")) != vk->mesh_map.end())
+			{
+				auto rend_mesh = vk->mesh_map[mesh.second->properties[hash_str("Mesh")].get_string().value_or("")];
+				vkCmdBindPipeline(fd->CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphic_pipeline);
+				VkBuffer vertexBuffer[] = { vk->vertexBuffers[rend_mesh->buffer_id] };
+				VkBuffer indexBuffer = vk->indexBuffers[rend_mesh->buffer_id];
+				VkDeviceSize offsets[] = { 0 };
+				vkCmdBindVertexBuffers(fd->CommandBuffer, 0, 1, vertexBuffer, offsets);
+				vkCmdBindIndexBuffer(fd->CommandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+				vkCmdDrawIndexed(fd->CommandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+			}
+		}
 	}
 
 	// Submit command buffer
@@ -339,6 +374,7 @@ static void SetupVulkanWindow(ImGui_ImplVulkanH_Window* wd, VkSurfaceKHR surface
 	ImGui_ImplVulkanH_CreateWindow(g_Instance, g_PhysicalDevice, g_Device, wd, g_QueueFamily, g_Allocator, width, height, g_MinImageCount);
 }
 //=================================================================
+#pragma endregion
 
 std::map<std::string, VkPipelineShaderStageCreateInfo> trigger::rend::vk::SHADER_STAGES = std::map<std::string, VkPipelineShaderStageCreateInfo>();
 
@@ -488,11 +524,36 @@ int vk::init()
 	}
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
+	add_mesh("heart", new mesh{ vertices, indices });
+	auto plane_vtx = std::vector<vertex>
+	{
+		{{-0.5f, -0.5f, 0.0f },{0.2f, 0.5f, 0.8f}},
+		{{0.5f, -0.5f, 0.0f },{0.5f, 0.2f, 0.8f}},
+		{{0.5f, 0.5f, 0.0f },{0.2f, 0.8f, 0.5f}},
+		{{-0.5f, 0.5f, 0.0f },{0.8f, 0.2f, 0.5f}}
+	};
+
+	auto plane_idx = std::vector<uint16_t>
+	{
+		0,1,2,
+		2,3,0
+	};
+
+	add_mesh("plane", new mesh{ plane_vtx, plane_idx });
 	ImVec2 pos, size;
 	
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
+
+		for (auto & rend : this->engine->object->get_all())
+		{
+			auto r = rend.second->get_component<::renderer>();
+			if (r != nullptr)
+			{
+				mesh_renderers.insert(std::pair<hash_id, ::renderer*>(r->get_instance_id(), r));
+			}
+		}
 
 		if (wd->Width != swapChainExtent.width || wd->Height != swapChainExtent.height)
 		{
@@ -521,7 +582,7 @@ int vk::init()
 		ImGui::Render();
 		memcpy(&wd->ClearValue.color.float32[0], &clear_color, 4 * sizeof(float));
 		
-		FrameRender(wd, graphicsPipeline, pos, size);
+		FrameRender(wd, graphicsPipeline, pos, size, this);
 
 		//imgui draw
 		// Update and Render additional Platform Windows
@@ -943,10 +1004,16 @@ void trigger::rend::vk::createGraphicsPipeline()
 
 	VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
+	//Buffer
+	auto bindingDes = vertex::get_binding_description();
+	auto attributeDes = vertex::get_attribute_descriptions();
+
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	vertexInputInfo.vertexBindingDescriptionCount = 0;
-	vertexInputInfo.vertexAttributeDescriptionCount = 0;
+	vertexInputInfo.vertexBindingDescriptionCount = 1;
+	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDes.size());
+	vertexInputInfo.pVertexBindingDescriptions = &bindingDes;
+	vertexInputInfo.pVertexAttributeDescriptions = attributeDes.data();
 
 	VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
 	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -1250,21 +1317,164 @@ void trigger::rend::vk::createCommandBuffers()
 		VkClearValue clearColor = { 0.2f, 0.4f, 0.8f, 1.0f };
 		renderPassInfo.clearValueCount = 1;
 		renderPassInfo.pClearValues = &clearColor;
-		vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+		//vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 		
-		
-		vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
-		vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
+		//vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
-		vkCmdEndRenderPass(commandBuffers[i]);
-		if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
-			throw std::runtime_error("failed to record command buffer!");
+		//VkBuffer vertexBuffer[] = { this->vertexBuffers[0] };
+		//VkDeviceSize offsets[] = { 0 };
+		//vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffer, offsets);
+
+		//vkCmdDraw(commandBuffers[i], static_cast<uint32_t>(vertices.size()), 1, 0, 0);
+
+		//vkCmdEndRenderPass(commandBuffers[i]);
+		//if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
+		//	throw std::runtime_error("failed to record command buffer!");
+		//}
+	}
+}
+
+void trigger::rend::vk::createVertexBuffer(const std::vector<vertex> vertices)
+{
+	VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+
+	VkBuffer stagingBuffer;
+	VkDeviceMemory stagingBufferMemory;
+	createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+	void* data;
+	vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
+	memcpy(data, vertices.data(), (size_t)bufferSize);
+	vkUnmapMemory(device, stagingBufferMemory);
+
+	vertexBuffers.push_back(stagingBuffer);
+	this->vertexBufferMemorys.push_back(stagingBufferMemory);
+	createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffers[vertexBuffers.size()-1], vertexBufferMemorys[vertexBufferMemorys.size()-1]);
+
+	copyBuffer(stagingBuffer, vertexBuffers[vertexBuffers.size() - 1], bufferSize);
+
+	vkDestroyBuffer(device, stagingBuffer, nullptr);
+	vkFreeMemory(device, stagingBufferMemory, nullptr);
+}
+
+void trigger::rend::vk::createIndexBuffer(const std::vector<uint16_t> indices)
+{
+	VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+
+	VkBuffer stagingBuffer;
+	VkDeviceMemory stagingBufferMemory;
+	indexBuffers.push_back(stagingBuffer);
+	indexBufferMemorys.push_back(stagingBufferMemory);
+	createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+	void* data;
+	vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
+	memcpy(data, indices.data(), (size_t)bufferSize);
+	vkUnmapMemory(device, stagingBufferMemory);
+
+	createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffers[indexBuffers.size() - 1], indexBufferMemorys[indexBufferMemorys.size() - 1]);
+
+	copyBuffer(stagingBuffer, indexBuffers[indexBuffers.size()-1], bufferSize);
+
+	vkDestroyBuffer(device, stagingBuffer, nullptr);
+	vkFreeMemory(device, stagingBufferMemory, nullptr);
+}
+
+void trigger::rend::vk::add_mesh(std::string name,  mesh *data)
+{
+	createVertexBuffer(data->vertices);
+	createIndexBuffer(data->indices);
+	data->buffer_id = this->vertexBuffers.size() - 1;
+	mesh_map.insert(std::pair<std::string, mesh*>(name, data));
+}
+
+void trigger::rend::vk::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+{
+	VkCommandBufferAllocateInfo allocInfo = {};
+	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	allocInfo.commandPool = commandPool;
+	allocInfo.commandBufferCount = 1;
+
+	VkCommandBuffer commandBuffer;
+	vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer);
+
+	VkCommandBufferBeginInfo beginInfo = {};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+	vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+	VkBufferCopy copyRegion = {};
+	copyRegion.size = size;
+	vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+
+	vkEndCommandBuffer(commandBuffer);
+
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &commandBuffer;
+
+	vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+	vkQueueWaitIdle(graphicsQueue);
+
+	vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
+}
+
+void trigger::rend::vk::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer & buffer, VkDeviceMemory & bufferMemory)
+{
+	VkBufferCreateInfo bufferInfo = {};
+	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bufferInfo.size = size;
+	bufferInfo.usage = usage;
+	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+	if (vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create buffer!");
+	}
+
+	VkMemoryRequirements memRequirements;
+	vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
+
+	VkMemoryAllocateInfo allocInfo = {};
+	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	allocInfo.allocationSize = memRequirements.size;
+	allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
+
+	if (vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
+		throw std::runtime_error("failed to allocate buffer memory!");
+	}
+
+	vkBindBufferMemory(device, buffer, bufferMemory, 0);
+}
+
+uint32_t trigger::rend::vk::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
+{
+	VkPhysicalDeviceMemoryProperties memProperties;
+	vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
+
+	for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+		if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+			return i;
 		}
 	}
+
+	throw std::runtime_error("failed to find suitable memory type!");
 }
 
 void trigger::rend::vk::vk_clean()
 {
+	for (size_t i = 0; i < vertexBuffers.size(); ++i)
+	{
+		vkDestroyBuffer(device, vertexBuffers[i], nullptr);
+		vkFreeMemory(device, vertexBufferMemorys[i], nullptr);
+
+		vkDestroyBuffer(device,	indexBuffers[i], nullptr);
+		vkFreeMemory(device, indexBufferMemorys[i], nullptr);
+	}
+
+
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 		vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
 		vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);

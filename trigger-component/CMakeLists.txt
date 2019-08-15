@@ -16,6 +16,7 @@ set( comps
 src/material/material.h src/material/material.cpp 
 src/Shader/Shader.h src/Shader/Shader.cpp 
 src/camera/camera.h src/camera/camera.cpp 
+src/renderer/renderer.h src/renderer/renderer.cpp 
 components.h components.cpp
 )
 
