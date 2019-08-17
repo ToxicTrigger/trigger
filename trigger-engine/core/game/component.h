@@ -209,7 +209,6 @@ public:
 	virtual ~component()
 	{
 		this->properties.clear();
-		delete this->transform_ptr;
 		this->transform_ptr = nullptr;
 	}
 
