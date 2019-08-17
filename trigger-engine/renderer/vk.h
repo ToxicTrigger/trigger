@@ -1,6 +1,4 @@
-#ifndef VK_H
-#define VK_H
-
+#pragma once
 #include "renderer.h"
 
 
@@ -23,11 +21,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <list>
-#include <algorithm>
 
 #include <stdexcept>
 #include <optional>
 #include <set>
+
 
 static int WIDTH = 800;
 static int HEIGHT = 600;
@@ -224,6 +222,21 @@ namespace trigger
 			VkDeviceMemory colorImageMemory;
 			VkImageView colorImageView;
 
+			//Camera
+			vec3 cam_pos{2.0f, 2.0f, 2.0f}; //w,a,s,d
+			vec3 cam_dir; // roll, pitch, yam
+			float horizontalAngle = 3.14f;
+			float verticalAngle = 0.0f;
+			float speed = 0.5f; // every 3 unitsl
+			float mouseSpeed = 0.1f;
+			glm::vec3 up{0.0f, 0.0f, 1.0f};
+			glm::vec3 right;
+			glm::vec3 direction{ 0.0f, 0.0f, 0.0f };
+
+
+			std::vector<vertex> vertices;
+			std::vector<uint32_t> indices;
+
 			void cleanupSwapChain();
 			void createSwapChain();
 			void createImageViews();
@@ -232,7 +245,7 @@ namespace trigger
 			void createFramebuffers();
 			void createCommandBuffers();
 			void createVertexBuffer(const std::vector<vertex> vertices);
-			void createIndexBuffer(const std::vector<uint16_t> indices);
+			void createIndexBuffer(const std::vector<uint32_t> indices);
 			void createDescriptorSetLayout();
 			void createUniformBuffers();
 			void updateUniformBuffer(uint32_t currentImage);
@@ -245,6 +258,8 @@ namespace trigger
 			VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 			VkFormat findDepthFormat();
 			void createImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+			mesh loadModel(trigger::core::file file);
+			void loadModel();
 			void createTextureImage();
 			bool hasStencilComponent(VkFormat format);
 			void generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
@@ -257,6 +272,8 @@ namespace trigger
 			void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 
 			void add_mesh(std::string name,  mesh *data);
+			void add_mesh(std::string name, trigger::core::file file);
+
 
 			void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 			void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
@@ -313,5 +330,5 @@ namespace trigger
         };
     }
 }
-#endif
+
 

@@ -2,13 +2,20 @@
 #include "../../../trigger-engine/core/game/component.h"
 #include "../../../trigger-engine/lib/vk/glm/glm.hpp"
 #include "../../../trigger-engine/lib/vk/include/vulkan/vulkan.h"
+#include <unordered_map>
 #include <array>
+#include "../../../trigger-engine/lib/vk/glm/gtx/hash.hpp"
 
 struct vertex
 {
 	glm::vec3 pos;
 	glm::vec3 color;
 	glm::vec2 uv;
+
+
+	bool operator==(const vertex& other) const {
+		return pos == other.pos && color == other.color && uv == other.uv;
+	}
 
 	static VkVertexInputBindingDescription get_binding_description()
 	{
@@ -41,6 +48,14 @@ struct vertex
 	}
 };
 
+namespace std {
+	template<> struct hash<::vertex> {
+		size_t operator()(::vertex const& vertex) const {
+			return ((hash<glm::vec3>()(vertex.pos) ^ (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^ (hash<glm::vec2>()(vertex.uv) << 1);
+		}
+	};
+}
+
 struct UniformBufferObject 
 {
 	alignas(16) glm::mat4 model;
@@ -51,7 +66,7 @@ struct UniformBufferObject
 struct mesh
 {
 	std::vector<vertex> vertices;
-	std::vector<uint16_t> indices;
+	std::vector<uint32_t> indices;
 	size_t buffer_id;
 };
 

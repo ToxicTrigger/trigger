@@ -1,5 +1,8 @@
 #include "vk.h"
 
+#define TINYOBJLOADER_IMPLEMENTATION
+#include "../lib/vk/include/tiny_obj_loader.h"
+
 #include "../core/editor/impl_editor.h"
 #include "../core/game/object_renderer.h"
 
@@ -28,30 +31,6 @@ static int                      g_MinImageCount = 2;
 static bool                     g_SwapChainRebuild = false;
 static int                      g_SwapChainResizeWidth = 0;
 static int                      g_SwapChainResizeHeight = 0;
-
-const std::vector<vertex> vertices = {
-	{{-0.5f, 0.25f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-	{{-0.25f, 0.5f, 0.0f}, {1.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-	{{0.0f, 0.25f, 0.0f}, {1.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-	{{0.25f, 0.5f, 0.0f}, {1.0f, .0f, 1.0f}, {0.0f, 1.0f}},
-	{{0.5f, 0.25f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}},
-	{{0.5f, 0.0f, 0.0f}, {0.0f, 1.0f, 1.0f}, {0.5f, 0.0f}},
-	{{0.25f, -0.25f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.5f}},
-	{{0.0f, -0.50f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.5f}},
-	{{-0.25f, -0.25f, 0.0f}, {0.5f, 1.0f, 0.0f}, {1.0f, 1.0f}},
-	{{-0.5f, -0.0f, 0.0f}, {1.0f, 0.5f, 0.5f}, {1.0f, 0.0f}}
-};
-
-const std::vector<uint16_t> indices = {
-	2,1,0,
-	4,3,2,
-	5,4,2,
-	6,5,2,
-	7,6,2,
-	7,2,8,
-	8,2,9,
-	2,0,9,
-};
 
 #pragma region Vulkan
 static void check_vk_result(VkResult err)
@@ -131,17 +110,6 @@ static void FrameRender(ImGui_ImplVulkanH_Window* wd, VkPipeline graphic_pipelin
 
 	//Test
 	{
-		VkRenderPassBeginInfo renderPassInfo = {};
-		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassInfo.renderPass = wd->RenderPass;
-		renderPassInfo.framebuffer = fd->Framebuffer;
-		VkOffset2D offset = { (int)pos.x,(int)pos.y };
-		renderPassInfo.renderArea.offset = offset;
-		VkExtent2D extent = {};
-		extent.width = (int)size.x;
-		extent.height = (int)size.y;
-		renderPassInfo.renderArea.extent = extent;
-
 		//New RenderPipe 
 		//vkCmdBeginRenderPass(fd->CommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 		for (auto mesh : vk->mesh_renderers)
@@ -151,12 +119,11 @@ static void FrameRender(ImGui_ImplVulkanH_Window* wd, VkPipeline graphic_pipelin
 				auto rend_mesh = vk->mesh_map[mesh.second->properties[hash_str("Mesh")].get_string().value_or("")];
 				vkCmdBindPipeline(fd->CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphic_pipeline);
 				VkBuffer vertexBuffer[] = { vk->vertexBuffers[rend_mesh->buffer_id] };
-				VkBuffer indexBuffer = vk->indexBuffers[rend_mesh->buffer_id];
 				VkDeviceSize offsets[] = { 0 };
 				vkCmdBindVertexBuffers(fd->CommandBuffer, 0, 1, vertexBuffer, offsets);
-				vkCmdBindIndexBuffer(fd->CommandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+				vkCmdBindIndexBuffer(fd->CommandBuffer, vk->indexBuffers[rend_mesh->buffer_id], 0, VK_INDEX_TYPE_UINT32);
 				vkCmdBindDescriptorSets(fd->CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vk->pipelineLayout, 0, 1, &vk->descriptorSets[wd->FrameIndex], 0, nullptr);
-				vkCmdDrawIndexed(fd->CommandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+				vkCmdDrawIndexed(fd->CommandBuffer, static_cast<uint32_t>(rend_mesh->indices.size()), 1, 0, 0, 0);
 			}
 		}
 	}
@@ -408,7 +375,7 @@ int vk::init()
 	g_PhysicalDevice = physicalDevice;
 	g_Instance = instance;
 	wd->Swapchain = swapChain;
-	wd->ImageCount = swapChainImages.size() -1;
+	wd->ImageCount = (uint32_t)swapChainImages.size() - 1;
 	{
 		g_MainWindowData.Frames = new ImGui_ImplVulkanH_Frame[swapChainImages.size()];
 		for (int i = 0; i < this->swapChainImages.size(); i++)
@@ -496,8 +463,8 @@ int vk::init()
 	ImGui_ImplVulkan_Init(&init_info, renderPass);
 
 	{
-	     // Upload Fonts
-		// Use any command queue
+		// Upload Fonts
+	   // Use any command queue
 		VkCommandPool command_pool = wd->Frames[wd->FrameIndex].CommandPool;
 		VkCommandBuffer command_buffer = wd->Frames[wd->FrameIndex].CommandBuffer;
 
@@ -526,7 +493,6 @@ int vk::init()
 	}
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-	add_mesh("heart", new mesh{ vertices, indices });
 	auto plane_vtx = std::vector<vertex>
 	{
 	{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
@@ -540,7 +506,7 @@ int vk::init()
 	{{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
 	};
 
-	auto plane_idx = std::vector<uint16_t>
+	auto plane_idx = std::vector<uint32_t>
 	{
 	0, 1, 2, 2, 3, 0,
 	4, 5, 6, 6, 7, 4
@@ -548,7 +514,10 @@ int vk::init()
 
 	add_mesh("plane", new mesh{ plane_vtx, plane_idx });
 	ImVec2 pos, size;
-	
+
+	loadModel();
+	//add_mesh("house", trigger::core::file("Assets/Resource/Mesh/chalet.obj"));
+
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
@@ -583,16 +552,12 @@ int vk::init()
 
 		draw_editors(device, wd);
 
-		ImGui::Begin("imga");
-		ImGui::Image((ImTextureID*)wd->Frames[wd->FrameIndex].BackbufferView, size);
-		ImGui::End();
-
 		pos = ImGui::GetWindowPos();
 		size = ImGui::GetWindowSize();
 
 		ImGui::Render();
 		memcpy(&wd->ClearValue.color.float32[0], &clear_color, 4 * sizeof(float));
-		
+
 		FrameRender(wd, graphicsPipeline, pos, size, this);
 
 		//imgui draw
@@ -602,24 +567,24 @@ int vk::init()
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
 		}
-		FramePresent(wd,presentQueue,this);
+		FramePresent(wd, presentQueue, this);
 	}
 
 	vk_clean();
 
-    return 0;
+	return 0;
 }
 
 void trigger::rend::vk::draw_editors(VkDevice device, ImGui_ImplVulkanH_Window *wd)
 {
-    if (this->edit_mode)
-    {
-        auto editor_list = this->engine->editors->get_objects<trigger::edit::impl_editor>();
-        for (auto&& e : editor_list)
-        {
-            e->draw(device, wd);
-        }
-    }
+	if (this->edit_mode)
+	{
+		auto editor_list = this->engine->editors->get_objects<trigger::edit::impl_editor>();
+		for (auto&& e : editor_list)
+		{
+			e->draw(device, wd);
+		}
+	}
 }
 
 //vulkan SetUp
@@ -717,7 +682,7 @@ void vk::resize()
 	createCommandBuffers();
 
 	g_MainWindowData.Swapchain = swapChain;
-	g_MainWindowData.ImageCount = swapChainImages.size() - 1;
+	g_MainWindowData.ImageCount = (uint32_t)swapChainImages.size() - 1;
 	{
 		g_MainWindowData.Frames = new ImGui_ImplVulkanH_Frame[swapChainImages.size()];
 		for (int i = 0; i < this->swapChainImages.size(); i++)
@@ -777,7 +742,7 @@ void vk::draw()
 	vkResetFences(device, 1, &inFlightFences[currentFrame]);
 
 	auto err = vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]);
-	if ( err != VK_SUCCESS) {
+	if (err != VK_SUCCESS) {
 		throw std::runtime_error("failed to submit draw command buffer!");
 	}
 
@@ -812,7 +777,7 @@ void vk::draw()
 
 int vk::rendering()
 {
-    return 0;
+	return 0;
 }
 
 void trigger::rend::vk::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT & createInfo)
@@ -831,7 +796,7 @@ void trigger::rend::vk::setupDebugMessenger()
 	VkDebugUtilsMessengerCreateInfoEXT createInfo;
 	populateDebugMessengerCreateInfo(createInfo);
 
-	if (create_debug_util_messenger_EXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) 
+	if (create_debug_util_messenger_EXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to set up debug messenger!");
 	}
@@ -1006,9 +971,9 @@ void trigger::rend::vk::createGraphicsPipeline()
 {
 	auto vert_code = Shader::read_spv("Assets/Shaders/vert.spv");
 	auto frag_code = Shader::read_spv("Assets/Shaders/frag.spv");
-	
-	auto vert_modu = Shader::create_shader_module(device , vert_code);
-	auto frag_modu = Shader::create_shader_module(device , frag_code);
+
+	auto vert_modu = Shader::create_shader_module(device, vert_code);
+	auto frag_modu = Shader::create_shader_module(device, frag_code);
 
 	VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
 	vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -1135,75 +1100,75 @@ void trigger::rend::vk::createGraphicsPipeline()
 void trigger::rend::vk::createRenderPass()
 {
 	VkAttachmentDescription colorAttachment = {};
-        colorAttachment.format = swapChainImageFormat;
-        colorAttachment.samples = msaaSamples;
-        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	colorAttachment.format = swapChainImageFormat;
+	colorAttachment.samples = msaaSamples;
+	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-        VkAttachmentDescription depthAttachment = {};
-        depthAttachment.format = findDepthFormat();
-        depthAttachment.samples = msaaSamples;
-        depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+	VkAttachmentDescription depthAttachment = {};
+	depthAttachment.format = findDepthFormat();
+	depthAttachment.samples = msaaSamples;
+	depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-        VkAttachmentDescription colorAttachmentResolve = {};
-        colorAttachmentResolve.format = swapChainImageFormat;
-        colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
-        colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	VkAttachmentDescription colorAttachmentResolve = {};
+	colorAttachmentResolve.format = swapChainImageFormat;
+	colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
+	colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-        VkAttachmentReference colorAttachmentRef = {};
-        colorAttachmentRef.attachment = 0;
-        colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	VkAttachmentReference colorAttachmentRef = {};
+	colorAttachmentRef.attachment = 0;
+	colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-        VkAttachmentReference depthAttachmentRef = {};
-        depthAttachmentRef.attachment = 1;
-        depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+	VkAttachmentReference depthAttachmentRef = {};
+	depthAttachmentRef.attachment = 1;
+	depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-        VkAttachmentReference colorAttachmentResolveRef = {};
-        colorAttachmentResolveRef.attachment = 2;
-        colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	VkAttachmentReference colorAttachmentResolveRef = {};
+	colorAttachmentResolveRef.attachment = 2;
+	colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-        VkSubpassDescription subpass = {};
-        subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        subpass.colorAttachmentCount = 1;
-        subpass.pColorAttachments = &colorAttachmentRef;
-        subpass.pDepthStencilAttachment = &depthAttachmentRef;
-        subpass.pResolveAttachments = &colorAttachmentResolveRef;
+	VkSubpassDescription subpass = {};
+	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpass.colorAttachmentCount = 1;
+	subpass.pColorAttachments = &colorAttachmentRef;
+	subpass.pDepthStencilAttachment = &depthAttachmentRef;
+	subpass.pResolveAttachments = &colorAttachmentResolveRef;
 
-        VkSubpassDependency dependency = {};
-        dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-        dependency.dstSubpass = 0;
-        dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        dependency.srcAccessMask = 0;
-        dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	VkSubpassDependency dependency = {};
+	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+	dependency.dstSubpass = 0;
+	dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependency.srcAccessMask = 0;
+	dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-        std::array<VkAttachmentDescription, 3> attachments = {colorAttachment, depthAttachment, colorAttachmentResolve };
-        VkRenderPassCreateInfo renderPassInfo = {};
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-        renderPassInfo.pAttachments = attachments.data();
-        renderPassInfo.subpassCount = 1;
-        renderPassInfo.pSubpasses = &subpass;
-        renderPassInfo.dependencyCount = 1;
-        renderPassInfo.pDependencies = &dependency;
+	std::array<VkAttachmentDescription, 3> attachments = { colorAttachment, depthAttachment, colorAttachmentResolve };
+	VkRenderPassCreateInfo renderPassInfo = {};
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+	renderPassInfo.pAttachments = attachments.data();
+	renderPassInfo.subpassCount = 1;
+	renderPassInfo.pSubpasses = &subpass;
+	renderPassInfo.dependencyCount = 1;
+	renderPassInfo.pDependencies = &dependency;
 
-        if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create render pass!");
-        }
+	if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create render pass!");
+	}
 }
 
 void trigger::rend::vk::createCommandPool()
@@ -1256,7 +1221,7 @@ QueueFamilyIndices trigger::rend::vk::findQueueFamilies(VkPhysicalDevice device)
 
 	int i = 0;
 	for (const auto& queueFamily : queueFamilies) {
-		if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) 
+		if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
 		{
 			indices.graphicsFamily = i;
 		}
@@ -1288,7 +1253,7 @@ std::vector<const char*> trigger::rend::vk::getRequiredExtensions()
 
 	std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
-	if (enable_validation_layer) 
+	if (enable_validation_layer)
 	{
 		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 	}
@@ -1304,11 +1269,11 @@ bool trigger::rend::vk::checkValidationLayerSupport()
 	std::vector<VkLayerProperties> availableLayers(layerCount);
 	vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-	for (const char* layerName : validation_layers) 
+	for (const char* layerName : validation_layers)
 	{
 		bool layerFound = false;
 
-		for (const auto& layerProperties : availableLayers) 
+		for (const auto& layerProperties : availableLayers)
 		{
 			if (strcmp(layerName, layerProperties.layerName) == 0)
 			{
@@ -1330,7 +1295,7 @@ void trigger::rend::vk::createFramebuffers()
 {
 	swapChainFramebuffers.resize(swapChainImageViews.size());
 
-	for (size_t i = 0; i < swapChainImageViews.size(); i++) 
+	for (size_t i = 0; i < swapChainImageViews.size(); i++)
 	{
 		std::array<VkImageView, 3> attachments = {
 			colorImageView,
@@ -1391,7 +1356,7 @@ void trigger::rend::vk::createCommandBuffers()
 		renderPassInfo.pClearValues = clearValues.data();
 
 		//vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-		
+
 		//vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
 		//VkBuffer vertexBuffer[] = { this->vertexBuffers[0] };
@@ -1422,7 +1387,7 @@ void trigger::rend::vk::createVertexBuffer(const std::vector<vertex> vertices)
 
 	vertexBuffers.push_back(stagingBuffer);
 	this->vertexBufferMemorys.push_back(stagingBufferMemory);
-	createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffers[vertexBuffers.size()-1], vertexBufferMemorys[vertexBufferMemorys.size()-1]);
+	createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffers[vertexBuffers.size() - 1], vertexBufferMemorys[vertexBufferMemorys.size() - 1]);
 
 	copyBuffer(stagingBuffer, vertexBuffers[vertexBuffers.size() - 1], bufferSize);
 
@@ -1430,7 +1395,7 @@ void trigger::rend::vk::createVertexBuffer(const std::vector<vertex> vertices)
 	vkFreeMemory(device, stagingBufferMemory, nullptr);
 }
 
-void trigger::rend::vk::createIndexBuffer(const std::vector<uint16_t> indices)
+void trigger::rend::vk::createIndexBuffer(const std::vector<uint32_t> indices)
 {
 	VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
 
@@ -1447,7 +1412,7 @@ void trigger::rend::vk::createIndexBuffer(const std::vector<uint16_t> indices)
 
 	createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffers[indexBuffers.size() - 1], indexBufferMemorys[indexBufferMemorys.size() - 1]);
 
-	copyBuffer(stagingBuffer, indexBuffers[indexBuffers.size()-1], bufferSize);
+	copyBuffer(stagingBuffer, indexBuffers[indexBuffers.size() - 1], bufferSize);
 
 	vkDestroyBuffer(device, stagingBuffer, nullptr);
 	vkFreeMemory(device, stagingBufferMemory, nullptr);
@@ -1510,14 +1475,56 @@ void trigger::rend::vk::createUniformBuffers()
 
 void trigger::rend::vk::updateUniformBuffer(uint32_t currentImage)
 {
-	static auto startTime = std::chrono::high_resolution_clock::now();
-
-	auto currentTime = std::chrono::high_resolution_clock::now();
-	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
+	float time = this->engine->editors->get_delta_time();
 	UniformBufferObject ubo = {};
-	ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	ubo.model = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT))
+	{
+		double xpos, ypos;
+		glfwGetCursorPos(window, &xpos, &ypos);
+		glfwSetCursorPos(window, swapChainExtent.width / 2, swapChainExtent.height / 2);
+		horizontalAngle += mouseSpeed * time * float(swapChainExtent.width / 2 - xpos);
+		verticalAngle += mouseSpeed * time * float(swapChainExtent.height / 2 - ypos);
+
+		direction = glm::vec3(
+			cos(verticalAngle) * sin(horizontalAngle),
+			sin(verticalAngle),
+			cos(verticalAngle) * cos(horizontalAngle)
+		);
+
+		// ¿À¸¥ÂÊ º¤ÅÍ 
+		right = glm::vec3(
+			sin(horizontalAngle - 3.14f / 2.0f),
+			0,
+			cos(horizontalAngle - 3.14f / 2.0f)
+		);
+
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		{
+			cam_pos += direction * time * speed;
+		}
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		{
+			cam_pos -= direction * time * speed;
+		}
+		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		{
+			cam_pos += right * time * speed;
+		}
+		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		{
+			cam_pos -= right * time * speed;
+		}
+
+		up = glm::cross(right, direction);
+	}
+
+
+	ubo.view = glm::lookAt(cam_pos, cam_pos + direction, up);
+	//ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	
+	
 	ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f);
 	ubo.proj[1][1] *= -1;
 
@@ -1539,7 +1546,7 @@ void trigger::rend::vk::createDescriptorPool()
 	poolInfo.pPoolSizes = &poolSize;
 	poolInfo.maxSets = static_cast<uint32_t>(swapChainImages.size());
 
-	if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) 
+	if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create descriptor pool!");
 	}
@@ -1655,7 +1662,7 @@ void trigger::rend::vk::createDepthResources()
 
 VkFormat trigger::rend::vk::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
 {
-	for (VkFormat format : candidates) 
+	for (VkFormat format : candidates)
 	{
 		VkFormatProperties props;
 		vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &props);
@@ -1718,15 +1725,106 @@ void trigger::rend::vk::createImage(uint32_t width, uint32_t height, uint32_t mi
 	vkBindImageMemory(device, image, imageMemory, 0);
 }
 
+
+
+mesh trigger::rend::vk::loadModel(trigger::core::file file)
+{
+	tinyobj::attrib_t attrib;
+	std::vector<tinyobj::shape_t> shapes;
+	std::vector<tinyobj::material_t> materials;
+	std::string warn, err;
+
+	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, file.get_path()->c_str())) {
+		throw std::runtime_error(warn + err);
+	}
+
+	mesh model;
+
+	std::unordered_map<::vertex, uint32_t> uniqueVertices = {};
+
+	for (const auto& shape : shapes) {
+		for (const auto& index : shape.mesh.indices) {
+			::vertex vertex = {};
+
+			vertex.pos = {
+				attrib.vertices[3 * index.vertex_index + 0],
+				attrib.vertices[3 * index.vertex_index + 1],
+				attrib.vertices[3 * index.vertex_index + 2]
+			};
+
+			vertex.uv = {
+				attrib.texcoords[2 * index.texcoord_index + 0],
+				1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
+			};
+
+			vertex.color = { 1.0f, 1.0f, 1.0f };
+
+			if (uniqueVertices.count(vertex) == 0) {
+				uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
+				model.vertices.push_back(vertex);
+			}
+
+			model.indices.push_back(uniqueVertices[vertex]);
+		}
+	}
+
+	return model;
+}
+
+void trigger::rend::vk::loadModel()
+{
+	mesh *model = new mesh();
+	tinyobj::attrib_t attrib;
+	std::vector<tinyobj::shape_t> shapes;
+	std::vector<tinyobj::material_t> materials;
+	std::string warn, err;
+
+	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, "Assets/Resource/Mesh/chalet.obj")) {
+		throw std::runtime_error(warn + err);
+	}
+
+	std::unordered_map<vertex, uint32_t> uniqueVertices = {};
+
+	for (const auto& shape : shapes) {
+		for (const auto& index : shape.mesh.indices) {
+			vertex vertex = {};
+
+			vertex.pos = {
+				attrib.vertices[3 * index.vertex_index + 0],
+				attrib.vertices[3 * index.vertex_index + 1],
+				attrib.vertices[3 * index.vertex_index + 2]
+			};
+
+			vertex.uv = {
+				attrib.texcoords[2 * index.texcoord_index + 0],
+				1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
+			};
+
+			vertex.color = { 1.0f, 1.0f, 1.0f };
+
+			if (uniqueVertices.count(vertex) == 0) {
+				uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
+				vertices.push_back(vertex);
+			}
+
+			indices.push_back(uniqueVertices[vertex]);
+		}
+	}
+
+	model->indices = indices;
+	model->vertices = vertices;
+	add_mesh("house", model);
+}
+
 void trigger::rend::vk::createTextureImage()
 {
 	int texWidth, texHeight, texChannels;
 
-	stbi_uc* pixels = stbi_load("Assets/Resource/Image/base_tile.png", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+	stbi_uc* pixels = stbi_load("Assets/Resource/Image/chalet.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 	VkDeviceSize imageSize = texWidth * texHeight * 4;
 
 	mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
-	
+
 	if (!pixels) {
 		throw std::runtime_error("failed to load texture image!");
 	}
@@ -2005,8 +2103,17 @@ void trigger::rend::vk::copyBufferToImage(VkBuffer buffer, VkImage image, uint32
 	endSingleTimeCommands(commandBuffer);
 }
 
-void trigger::rend::vk::add_mesh(std::string name,  mesh *data)
+void trigger::rend::vk::add_mesh(std::string name, mesh *data)
 {
+	createVertexBuffer(data->vertices);
+	createIndexBuffer(data->indices);
+	data->buffer_id = this->vertexBuffers.size() - 1;
+	mesh_map.insert(std::pair<std::string, mesh*>(name, data));
+}
+
+void trigger::rend::vk::add_mesh(std::string name, trigger::core::file file)
+{
+	auto data = new mesh(loadModel(file));
 	createVertexBuffer(data->vertices);
 	createIndexBuffer(data->indices);
 	data->buffer_id = this->vertexBuffers.size() - 1;
@@ -2073,7 +2180,7 @@ void trigger::rend::vk::vk_clean()
 
 	vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 
-	for (size_t i = 0; i < swapChainImages.size(); i++) 
+	for (size_t i = 0; i < swapChainImages.size(); i++)
 	{
 		vkDestroyBuffer(device, uniformBuffers[i], nullptr);
 		vkFreeMemory(device, uniformBuffersMemory[i], nullptr);
@@ -2086,7 +2193,7 @@ void trigger::rend::vk::vk_clean()
 		vkDestroyBuffer(device, vertexBuffers[i], nullptr);
 		vkFreeMemory(device, vertexBufferMemorys[i], nullptr);
 
-		vkDestroyBuffer(device,	indexBuffers[i], nullptr);
+		vkDestroyBuffer(device, indexBuffers[i], nullptr);
 		vkFreeMemory(device, indexBufferMemorys[i], nullptr);
 	}
 	vkDestroySampler(device, textureSampler, nullptr);
