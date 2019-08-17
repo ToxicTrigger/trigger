@@ -34,6 +34,13 @@ struct vertex
 	}
 };
 
+struct UniformBufferObject 
+{
+	glm::mat4 model;
+	glm::mat4 view;
+	glm::mat4 proj;
+};
+
 struct mesh
 {
 	std::vector<vertex> vertices;
