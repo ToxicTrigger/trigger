@@ -62,6 +62,8 @@ lib/vk/include/vulkan/vulkan.hpp
 lib/vk/include/vulkan/vulkan_core.h
 lib/vk/glfw-3.2.1.WIN64/include/
 lib/vk/glfw-3.2.1.WIN64/include/GLFW/glfw3.h
+lib/vk/include/stb/stb_image.h
+lib/vk/include/tiny_obj_loader.h
 renderer/vk.h 
 renderer/vk.cpp
 )

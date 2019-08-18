@@ -407,6 +407,19 @@ int main(int, char**)
     init_info.CheckVkResultFn = check_vk_result;
     ImGui_ImplVulkan_Init(&init_info, wd->RenderPass);
 
+    	{
+		g_MainWindowData.Frames = new ImGui_ImplVulkanH_Frame[swapChainImages.size()];
+		for (int i = 0; i < this->swapChainImages.size(); i++)
+		{
+			g_MainWindowData.Frames[i].Backbuffer = this->swapChainImages[i];
+			g_MainWindowData.Frames[i].BackbufferView = this->swapChainImageViews[i];
+			g_MainWindowData.Frames[i].CommandBuffer = this->commandBuffers[i];
+			g_MainWindowData.Frames[i].CommandPool = this->commandPool;
+			g_MainWindowData.Frames[i].Framebuffer = this->swapChainFramebuffers[i];
+
+		}
+	}
+
     // Load Fonts
     // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
     // - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.

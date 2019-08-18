@@ -3,21 +3,11 @@
 
 static bool enable_editor = true;
 
-class test
-{
-
-private :
-    int c = 2;
-
-public:
-    int a = 0;
-    int b = 0;  
-};
-
 #ifdef _WIN64
 #include <direct.h>
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, int showCmd)
 {
+
     char strBuffer[_MAX_PATH] = { 0, };
 	char *pstrBuffer = NULL;
     std::string path(_getcwd( strBuffer, _MAX_PATH ));
