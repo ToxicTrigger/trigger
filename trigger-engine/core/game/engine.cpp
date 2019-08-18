@@ -4,7 +4,7 @@
 
 #include "../../renderer/vk.h"
 
-bool trigger::core::engine::init(INSTANCE hInst, int w, int h, bool edit_mod)
+bool trigger::core::engine::init(int w, int h, bool edit_mod)
 {
     this->state = engine_state::not_inited;	
 

@@ -16,7 +16,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
     if(__argc > 1) 
     {
         enable_editor = false; 
-        engine = new trigger::core::engine(hInstance, 800, 600, enable_editor);
+        engine = new trigger::core::engine(800, 600, enable_editor);
         std::string save;
         save += __argv[2];
         
@@ -25,7 +25,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
     }
     else
     {
-        engine = new trigger::core::engine(hInstance, 800, 600, enable_editor);        
+        engine = new trigger::core::engine(800, 600, enable_editor);        
     }
 	return engine->renderer->rendering();
     //Save

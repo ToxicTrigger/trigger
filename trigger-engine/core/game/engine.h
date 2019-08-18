@@ -48,13 +48,13 @@ namespace trigger
 
         public:
 #ifdef _WIN64
-            engine(INSTANCE hInst, int w, int h, bool edit_mod)
+            engine(int w, int h, bool edit_mod)
             {
-                this->init(hInst, w, h, edit_mod);
+                this->init(w, h, edit_mod);
                 this->state = engine_state::inited;
                 this->run();
             }
-            bool init(INSTANCE hInst, int w, int h, bool edit_mod);
+            bool init(int w, int h, bool edit_mod);
 #else
             engine(int w, int h, bool edit_mod)
             {
