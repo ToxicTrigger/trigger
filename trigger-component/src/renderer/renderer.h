@@ -2,6 +2,7 @@
 #include "../../../trigger-engine/core/game/component.h"
 #include "../../../trigger-engine/lib/vk/glm/glm.hpp"
 #include "../../../trigger-engine/lib/vk/include/vulkan/vulkan.h"
+#include "../../../trigger-engine/lib/vk/include/vulkan/spirv.h"
 #include <unordered_map>
 #include <array>
 #include "../../../trigger-engine/lib/vk/glm/gtx/hash.hpp"

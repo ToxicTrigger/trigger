@@ -1477,7 +1477,7 @@ void trigger::rend::vk::updateUniformBuffer(uint32_t currentImage)
 {
 	float time = this->engine->editors->get_delta_time();
 	UniformBufferObject ubo = {};
-	ubo.model = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	ubo.model = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT))
 	{
@@ -1779,7 +1779,7 @@ void trigger::rend::vk::loadModel()
 	std::vector<tinyobj::material_t> materials;
 	std::string warn, err;
 
-	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, "Assets/Resource/Mesh/chalet.obj")) {
+	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, "Assets/Resource/Mesh/nightelf.obj")) {
 		throw std::runtime_error(warn + err);
 	}
 
@@ -1820,7 +1820,7 @@ void trigger::rend::vk::createTextureImage()
 {
 	int texWidth, texHeight, texChannels;
 
-	stbi_uc* pixels = stbi_load("Assets/Resource/Image/chalet.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+	stbi_uc* pixels = stbi_load("Assets/Resource/Image/nightelf.png", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 	VkDeviceSize imageSize = texWidth * texHeight * 4;
 
 	mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
