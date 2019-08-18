@@ -74,23 +74,6 @@ public:
 		);
 	}
 
-	template <typename T>
-	auto clone(std::string name,T author)
-	{
-		auto com = this->CLASS_ARRAY.at(name);
-		com->transform_ptr = (void*)author;
-		com->set_instance_id(make_hash_code());
-		return com->clone();
-	}
-
-	template <typename T>
-	void clone_and_add(std::string name, T author)
-	{
-		auto com = this->CLASS_ARRAY.at(name);
-		com->transform_ptr = (void*)author;
-		author->add_component(com->clone());
-	}
-
 	template <typename C>
 	std::optional<C> get_class(std::string type)
 	{

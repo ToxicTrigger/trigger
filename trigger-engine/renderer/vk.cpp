@@ -590,10 +590,12 @@ void trigger::rend::vk::draw_editors(VkDevice device, ImGui_ImplVulkanH_Window *
 //vulkan SetUp
 void vk::set_up()
 {
+#ifdef _WIN64
 	if (enable_validation_layer && !checkValidationLayerSupport())
 	{
 		throw std::runtime_error("Validation Layers Requested, But not Available..!");
 	}
+#endif
 
 	VkApplicationInfo appInfo = {};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -610,7 +612,7 @@ void vk::set_up()
 	auto extensions = getRequiredExtensions();
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 	createInfo.ppEnabledExtensionNames = extensions.data();
-
+#ifdef _WIN64
 	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
 	if (enable_validation_layer) {
 		createInfo.enabledLayerCount = static_cast<uint32_t>(validation_layers.size());
@@ -624,6 +626,7 @@ void vk::set_up()
 
 		createInfo.pNext = nullptr;
 	}
+#endif
 
 	if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create instance!");
@@ -652,6 +655,7 @@ void vk::set_up()
 	createUniformBuffers();
 	createDescriptorPool();
 	createDescriptorSets();
+
 
 	createCommandBuffers();
 	createSyncObjects();
@@ -1493,7 +1497,7 @@ void trigger::rend::vk::updateUniformBuffer(uint32_t currentImage)
 			cos(verticalAngle) * cos(horizontalAngle)
 		);
 
-		// ¿À¸¥ÂÊ º¤ÅÍ 
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ 
 		right = glm::vec3(
 			sin(horizontalAngle - 3.14f / 2.0f),
 			0,

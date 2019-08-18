@@ -32,7 +32,7 @@ void Shader::draw_editor()
 
 	if (ImGui::Button("Compile"))
 	{
-		auto& file = this->properties[hash_str("Shaders")].get<trigger::core::file>();
+		auto file = this->properties[hash_str("Shaders")].get<trigger::core::file>();
 		file.update_date();
 		this->set_property("Shaders", file);
 		if ( file.get_type() == trigger::core::file::hlsl)
@@ -53,7 +53,7 @@ void Shader::draw_editor()
 	ImGui::SameLine();
 	if (ImGui::Button("Load"))
 	{
-		auto& file = this->properties[hash_str("Shaders")].get<trigger::core::file>();
+		auto file = this->properties[hash_str("Shaders")].get<trigger::core::file>();
 		auto spv = std::string(*file.get_path());
 		spv.append(".spv");
 		Shader::COMPILED_SHADER.insert(std::pair < std::string, std::vector<char>>(spv, read_spv(spv)));
