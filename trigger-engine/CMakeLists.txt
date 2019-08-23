@@ -143,12 +143,13 @@ elseif(APPLE)
 	set_target_properties(trigger PROPERTIES
 			MACOSX_BUNDLE YES)
 	find_library(glfw3 NAMES glfw3.lib REQUIRED)
+	find_library(vulkan NAMES libvulkan)
 	find_library(glm REQUIRED)
 	LINK_LIBRARIES( ${glfw3} ${glm} )
 	target_link_libraries(trigger 
 	"/usr/local/lib/libglfw.3.3.dylib" 
 	"${CMAKE_SOURCE_DIR}/trigger-engine/lib/vk/libvulkan.1.dylib"
-	"${CMAKE_SOURCE_DIR}/trigger-engine/lib/vk/libvulkan.1.1.97.dylib"
+	"${CMAKE_SOURCE_DIR}/trigger-engine/lib/vk/libvulkan.1.1.114.dylib"
 	"${CMAKE_SOURCE_DIR}/build/build/libcomponents.a"
 	)
 elseif(UNIX)
