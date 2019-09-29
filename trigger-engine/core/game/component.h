@@ -171,6 +171,14 @@ public:
 				break;
 			case property::data_type::Unknown:
 				break;
+			case property::data_type::FilePath:
+				break;
+			case property::data_type::VectorStr:
+				break;
+			case property::data_type::List :
+				break;
+			case property::data_type::VectorPath :
+				break;
 			}
 			pro->insert(i.second.get_name(), std::string(ss.str()));
 		}

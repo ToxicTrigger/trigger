@@ -2,10 +2,10 @@
 #include "../../../trigger-engine/core/game/component.h"
 #include "../../../trigger-engine/lib/vk/glm/glm.hpp"
 #include "../../../trigger-engine/lib/vk/include/vulkan/vulkan.h"
-#include "../../../trigger-engine/lib/vk/include/vulkan/spirv.h"
+#include "../../../trigger-engine/lib/vk/include/SPIRV/spirv.hpp"
+#include "../../../trigger-engine/lib/vk/glm/gtx/hash.hpp"
 #include <unordered_map>
 #include <array>
-#include "../../../trigger-engine/lib/vk/glm/gtx/hash.hpp"
 
 struct vertex
 {
@@ -13,8 +13,8 @@ struct vertex
 	glm::vec3 color;
 	glm::vec2 uv;
 
-
-	bool operator==(const vertex& other) const {
+	bool operator==(const vertex& other) const 
+	{
 		return pos == other.pos && color == other.color && uv == other.uv;
 	}
 
@@ -49,9 +49,12 @@ struct vertex
 	}
 };
 
-namespace std {
-	template<> struct hash<::vertex> {
-		size_t operator()(::vertex const& vertex) const {
+namespace std 
+{
+	template<> struct hash<::vertex> 
+	{
+		size_t operator()(::vertex const& vertex) const 
+		{
 			return ((hash<glm::vec3>()(vertex.pos) ^ (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^ (hash<glm::vec2>()(vertex.uv) << 1);
 		}
 	};
@@ -79,7 +82,7 @@ public:
 		trigger::property(std::string(""), trigger::property::data_type::String, true ,"Mesh", &properties);
 	}
 	
-	virtual renderer* clone() const 
+	virtual renderer* clone() const override
 	{		
 		auto cpy_renderer = new renderer(*this);
 		return cpy_renderer;

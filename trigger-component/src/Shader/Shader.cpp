@@ -13,21 +13,21 @@ void Shader::draw_editor()
 	std::string text = init ? "Compiled" : "Nope";
 	if (init)
 	{
-		ImGui::TextColored(ImVec4(0.3f, 0.8f, 0.5f, 1.0f), text.c_str());
+		ImGui::TextColored(ImVec4(0.3f, 0.8f, 0.5f, 1.0f), "%s", text.c_str());
 	}
 	else
 	{
-		ImGui::TextDisabled(text.c_str());
+		ImGui::TextDisabled("%s",text.c_str());
 	}
 
 	std::string load_msg = init ? "Success" : "Nope";
 	if (load)
 	{
-		ImGui::TextColored(ImVec4(0.3f, 0.8f, 0.5f, 1.0f), load_msg.c_str());
+		ImGui::TextColored(ImVec4(0.3f, 0.8f, 0.5f, 1.0f), "%s",load_msg.c_str());
 	}
 	else
 	{
-		ImGui::TextDisabled(load_msg.c_str());
+		ImGui::TextDisabled("%s",load_msg.c_str());
 	}
 
 	if (ImGui::Button("Compile"))

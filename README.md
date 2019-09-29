@@ -58,7 +58,12 @@ Trigger Engine 은 imgui 와 DX12 & Vulkan 을 결합한 게임 엔진 입니다
 - [ ] Import Zinny & wget
 
 # Build?
-- Windows 10 + VS2017 + CMake + 64bit
+
+[Vulkan SDK Site](https://vulkan.lunarg.com/sdk/home)
+
+
+
+- Windows 10 + VS2017 || 2015 || 2019 + CMake + 64bit + VulkanSDK Setup
   1. `Clone Project`
   2. `cd trigger`
   3. `mkdir build`
@@ -84,12 +89,13 @@ Trigger Engine 은 imgui 와 DX12 & Vulkan 을 결합한 게임 엔진 입니다
 - MacOS
 
   1. Install Vulkan + GLFW3 + glm
-  2. Follow [Command Line](https://vulkan.lunarg.com/doc/sdk/1.1.92.1/mac/getting_started.html) setup!
-  3. `clone project `
-  4. `cd trigger`
-  5. `cmake .`
-  6. `cmake —build build —config Release`
-  7. Check `build/trigger.app `
+  2. vulkanSDK/install_vulkan.py
+  3. Follow [Command Line](https://vulkan.lunarg.com/doc/sdk/1.1.92.1/mac/getting_started.html) setup!
+  4. `clone project `
+  5. `cd trigger`
+  6. `cmake .`
+  7. `cmake —build build —config Release`
+  8. Check `build/trigger.app `
 
 ## Version Name
 

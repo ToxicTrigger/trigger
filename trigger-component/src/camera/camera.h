@@ -16,7 +16,7 @@ public:
 
 	}
 
-	virtual camera* clone() const 
+	virtual camera* clone() const override
 	{ 
 		auto copy_camera = new camera(*this);
 

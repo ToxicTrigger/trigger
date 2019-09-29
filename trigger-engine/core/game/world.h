@@ -173,19 +173,14 @@ namespace trigger
 				delta_time = std::chrono::duration_cast<std::chrono::duration<float>>(new_time - old_time);
 				run_time = std::chrono::duration_cast<std::chrono::duration<float>>(time::now() - start_time);
 
-				if (objects.size() != 0)
+				for (auto &&i : objects)
 				{
-					for (auto&& i : objects)
+					if (i.second != nullptr && i.second->active)
 					{
-						if (i.second != nullptr)
-						{
-							if (objects.size() != 0 && i.second->active)
-							{
-								i.second->update(this->delta_time.count() * time_scale * i.second->time_scale);
-							}
-						}
+						i.second->update(this->delta_time.count() * time_scale * i.second->time_scale);
 					}
 				}
+
 				this->lock.unlock();
 
 			} while (use_thread && this->active);

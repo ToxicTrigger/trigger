@@ -590,12 +590,11 @@ void trigger::rend::vk::draw_editors(VkDevice device, ImGui_ImplVulkanH_Window *
 //vulkan SetUp
 void vk::set_up()
 {
-#ifdef _WIN64
 	if (enable_validation_layer && !checkValidationLayerSupport())
 	{
 		throw std::runtime_error("Validation Layers Requested, But not Available..!");
 	}
-#endif
+
 
 	VkApplicationInfo appInfo = {};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -612,7 +611,7 @@ void vk::set_up()
 	auto extensions = getRequiredExtensions();
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 	createInfo.ppEnabledExtensionNames = extensions.data();
-#ifdef _WIN64
+
 	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
 	if (enable_validation_layer) {
 		createInfo.enabledLayerCount = static_cast<uint32_t>(validation_layers.size());
@@ -626,7 +625,7 @@ void vk::set_up()
 
 		createInfo.pNext = nullptr;
 	}
-#endif
+
 
 	if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create instance!");
@@ -971,10 +970,18 @@ bool trigger::rend::vk::isDeviceSuitable(VkPhysicalDevice device)
 	return indices.is_complete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
 }
 
+#include <unistd.h> 
 void trigger::rend::vk::createGraphicsPipeline()
 {
-	auto vert_code = Shader::read_spv("Assets/Shaders/vert.spv");
-	auto frag_code = Shader::read_spv("Assets/Shaders/frag.spv");
+	char cwd[1000];
+	std::string pat;
+	if(getcwd(cwd, sizeof(cwd)) != NULL)
+	{
+		pat = std::string(cwd);
+	}
+
+	auto vert_code = Shader::read_spv(pat + slash + "Assets/Shaders/vert.spv");
+	auto frag_code = Shader::read_spv(pat + slash + "Assets/Shaders/frag.spv");
 
 	auto vert_modu = Shader::create_shader_module(device, vert_code);
 	auto frag_modu = Shader::create_shader_module(device, frag_code);
@@ -1483,8 +1490,13 @@ void trigger::rend::vk::updateUniformBuffer(uint32_t currentImage)
 	UniformBufferObject ubo = {};
 	ubo.model = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
+	if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	
+	
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT))
 	{
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		double xpos, ypos;
 		glfwGetCursorPos(window, &xpos, &ypos);
 		glfwSetCursorPos(window, swapChainExtent.width / 2, swapChainExtent.height / 2);
@@ -1497,12 +1509,13 @@ void trigger::rend::vk::updateUniformBuffer(uint32_t currentImage)
 			cos(verticalAngle) * cos(horizontalAngle)
 		);
 
-		// ������ ���� 
 		right = glm::vec3(
 			sin(horizontalAngle - 3.14f / 2.0f),
 			0,
 			cos(horizontalAngle - 3.14f / 2.0f)
 		);
+
+		speed = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == 1 ? 2.5f : 0.5f;
 
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		{
@@ -1529,7 +1542,7 @@ void trigger::rend::vk::updateUniformBuffer(uint32_t currentImage)
 	//ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	
 	
-	ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f);
+	ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 100.0f);
 	ubo.proj[1][1] *= -1;
 
 	void* data;
@@ -1783,7 +1796,10 @@ void trigger::rend::vk::loadModel()
 	std::vector<tinyobj::material_t> materials;
 	std::string warn, err;
 
-	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, "Assets/Resource/Mesh/nightelf.obj")) {
+	char pa[1000];
+	std::string path(getcwd(pa, sizeof(pa)));
+
+	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err,  (path + slash +  "Assets/Resource/Mesh/box.obj").c_str())) {
 		throw std::runtime_error(warn + err);
 	}
 
@@ -1817,7 +1833,7 @@ void trigger::rend::vk::loadModel()
 
 	model->indices = indices;
 	model->vertices = vertices;
-	add_mesh("house", model);
+	add_mesh("box", model);
 }
 
 void trigger::rend::vk::createTextureImage()

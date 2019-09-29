@@ -138,8 +138,6 @@ if(MSVC) # Check if we are using the Visual Studio compiler
 		message(SEND_ERROR "You are using an unsupported Windows compiler! (Not MSVC or GCC)")
 	endif(MSVC)
 elseif(APPLE)
-	set(VK_ICD_FILENAMES "${CMAKE_SOURCE_DIR}/trigger-engine/lib/vk/icd.d/MoltenVK_icd.json")
-	set(VK_LAYER_PATH "${CMAKE_SOURCE_DIR}/trigger-engine/lib/vk/explicit_layer.d")
 	set_target_properties(trigger PROPERTIES
 			MACOSX_BUNDLE YES)
 	find_library(glfw3 NAMES glfw3.lib REQUIRED)

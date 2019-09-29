@@ -41,7 +41,6 @@ namespace trigger
 		vec3 position;
 		vec3 scale;
 		vec3 rotation;
-		bool active;
 		float time_scale = 1.0f;
 		transform* parent;
 		std::vector<transform*> childs;

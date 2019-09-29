@@ -17,13 +17,17 @@ inline std::string methodName(const std::string& prettyFunction)
 
 inline std::string className(const std::string& prettyFunction)
 {
+#ifndef _WIN64
+	return prettyFunction;
+#else
 	size_t colons = prettyFunction.rfind("::");
 	if (colons == std::string::npos)
-		return "::";
+		return prettyFunction;
 	size_t begin = prettyFunction.substr(0, colons).rfind(" ") + 1;
 	size_t end = colons - begin;
 
 	return prettyFunction.substr(begin, end);
+#endif
 }
 
 #endif

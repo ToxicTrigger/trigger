@@ -61,7 +61,7 @@ public:
 
 	virtual void update(float delta) override;
 	virtual void draw_editor() override;
-	virtual Shader* clone() const { return new Shader(*this); }
+	virtual Shader* clone() const override { return new Shader(*this); }
 
 	virtual ~Shader();
 };
