@@ -95,7 +95,7 @@ static void FrameRender(ImGui_ImplVulkanH_Window* wd, VkPipeline graphic_pipelin
 		info.renderArea.extent.height = wd->Height;
 		//
 		std::array<VkClearValue, 2> clearValues = {};
-		clearValues[0].color = { 0.0f, 0.0f, 0.0f, 1.0f };
+		clearValues[0].color = { 0.0f, 0.f, 0.0f, 1.0f };
 		clearValues[1].depthStencil = { 1.0f, 0 };
 
 		info.clearValueCount = static_cast<uint32_t>(clearValues.size());
@@ -107,11 +107,9 @@ static void FrameRender(ImGui_ImplVulkanH_Window* wd, VkPipeline graphic_pipelin
 	// Record Imgui Draw Data and draw funcs into command buffer
 	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), fd->CommandBuffer);
 
-
 	//Test
 	{
 		//New RenderPipe 
-		//vkCmdBeginRenderPass(fd->CommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 		for (auto mesh : vk->mesh_renderers)
 		{
 			if (vk->mesh_map.find(mesh.second->properties[hash_str("Mesh")].get_string().value_or("")) != vk->mesh_map.end())
@@ -127,8 +125,11 @@ static void FrameRender(ImGui_ImplVulkanH_Window* wd, VkPipeline graphic_pipelin
 			}
 		}
 	}
+
+
 	// End imGui Render Pass
 	vkCmdEndRenderPass(fd->CommandBuffer);
+
 	// Submit command buffer
 	{
 		vk->updateUniformBuffer(wd->FrameIndex);
@@ -460,6 +461,7 @@ int vk::init()
 	init_info.MinImageCount = g_MinImageCount;
 	init_info.ImageCount = wd->ImageCount + 2;
 	init_info.CheckVkResultFn = check_vk_result;
+	init_info.mmsaSample = this->msaaSamples;
 	ImGui_ImplVulkan_Init(&init_info, renderPass);
 
 	{
@@ -543,6 +545,7 @@ int vk::init()
 			ImGui_ImplVulkan_SetMinImageCount(g_MinImageCount);
 			ImGui_ImplVulkanH_CreateWindow(g_Instance, g_PhysicalDevice, g_Device, &g_MainWindowData, g_QueueFamily, g_Allocator, g_SwapChainResizeWidth, g_SwapChainResizeHeight, g_MinImageCount);
 			g_MainWindowData.FrameIndex = 0;
+			resize();
 		}
 		//draw();
 
@@ -829,8 +832,8 @@ void trigger::rend::vk::pickPhysicalDevice()
 		if (isDeviceSuitable(device)) {
 			physicalDevice = device;
 			//build mode & play mode 
-			//msaaSamples = getMaxUsableSampleCount();
-			msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+			msaaSamples = getMaxUsableSampleCount();
+			//msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 
 			break;
 		}
@@ -1553,14 +1556,16 @@ void trigger::rend::vk::updateUniformBuffer(uint32_t currentImage)
 
 void trigger::rend::vk::createDescriptorPool()
 {
-	VkDescriptorPoolSize poolSize = {};
-	poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSize.descriptorCount = static_cast<uint32_t>(swapChainImages.size());
+	std::array<VkDescriptorPoolSize, 2> poolSizes = {};
+	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	poolSizes[0].descriptorCount = static_cast<uint32_t>(swapChainImages.size());
+	poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	poolSizes[1].descriptorCount = static_cast<uint32_t>(swapChainImages.size());
 
 	VkDescriptorPoolCreateInfo poolInfo = {};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	poolInfo.poolSizeCount = 1;
-	poolInfo.pPoolSizes = &poolSize;
+	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+	poolInfo.pPoolSizes = poolSizes.data();
 	poolInfo.maxSets = static_cast<uint32_t>(swapChainImages.size());
 
 	if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS)

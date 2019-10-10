@@ -217,7 +217,7 @@ namespace trigger
 			uint32_t mipLevels;
 
 			//msaa
-			VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+			VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_16_BIT;
 			VkImage colorImage;
 			VkDeviceMemory colorImageMemory;
 			VkImageView colorImageView;

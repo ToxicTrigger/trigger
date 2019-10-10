@@ -274,9 +274,9 @@ void trigger::edit::main_editor::draw_inspector()
 #ifdef _WIN64
 						command.append("cd ..");
 						command.append(slash);
-						command.append("trigger-component & cmake --build . --config Debug");
+						command.append("trigger-component & cmake CMakeLists.txt & cmake --build . --config Debug");
 #else
-						command.append("cd trigger-component & cmake --build . --config Debug");
+						command.append("cd trigger-component & cmake CMakeLists.txt & cmake --build . --config Debug");
 #endif
 						system(command.c_str());
 						//RELOAD!
