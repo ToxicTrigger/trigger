@@ -7,6 +7,8 @@
 #include "../../imgui/misc/cpp/imgui_stdlib.h"
 #include "../../../renderer/vk.h"
 
+static bool is_open_editor;
+
 bool trigger::edit::main_editor::draw(VkDevice device, ImGui_ImplVulkanH_Window *wd)
 {
 	static bool opt_fullscreen_persistant = true;
@@ -75,24 +77,20 @@ bool trigger::edit::main_editor::draw(VkDevice device, ImGui_ImplVulkanH_Window 
 	draw_objects();
 	draw_console();
 
+
 	{
-		ImGui::Begin("Finally!");
-
-		ImGui::BeginTabBar("Test");
-		if (ImGui::BeginTabItem("Editor View"))
+		if (ImGui::Begin("Editor View", &is_open_editor))
 		{
-			current_tab = windows::editor;
-			ImGui::EndTabItem();
+			wd->editor_window_pos = ImGui::GetWindowPos();
+			wd->editor_window_rect = ImGui::GetWindowSize();
 		}
-		static bool hello;
-
-		if (ImGui::BeginTabItem("Game View"))
+		else
 		{
-			current_tab = windows::game_view;
-			ImGui::EndTabItem();
+			wd->editor_window_rect = {0,0};
 		}
-
-		ImGui::EndTabBar();
+		ImGui::End();
+	
+		ImGui::Begin("Game View");
 		ImGui::End();
 	}
 
@@ -394,6 +392,10 @@ void trigger::edit::main_editor::draw_inspector()
 
 void trigger::edit::main_editor::draw_console()
 {
+	if (ImGui::Begin("Console"))
+	{
+	}
+	ImGui::End();
 }
 
 bool trigger::edit::main_editor::new_component()

@@ -106,8 +106,30 @@ static void FrameRender(ImGui_ImplVulkanH_Window* wd, VkPipeline graphic_pipelin
 
 	// Record Imgui Draw Data and draw funcs into command buffer
 	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), fd->CommandBuffer);
+	// End imGui Render Pass
+	vkCmdEndRenderPass(fd->CommandBuffer);
 
-	//Test
+
+	{
+		VkRenderPassBeginInfo info = {};
+		info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		info.renderPass = wd->RenderPass;
+		info.framebuffer = fd->Framebuffer;
+		info.renderArea.extent.width = size.x;
+		info.renderArea.extent.height = size.y;
+		info.renderArea.offset.x = pos.x;
+		info.renderArea.offset.y = pos.y;
+
+		//
+		std::array<VkClearValue, 2> clearValues = {};
+		clearValues[0].color = { 0.4f, 0.5f, 0.76f, 1.0f };
+		clearValues[1].depthStencil = { 1.0f, 0 };
+
+		info.clearValueCount = static_cast<uint32_t>(clearValues.size());
+		info.pClearValues = clearValues.data();
+
+		vkCmdBeginRenderPass(fd->CommandBuffer, &info, VK_SUBPASS_CONTENTS_INLINE);
+	}
 	{
 		//New RenderPipe 
 		for (auto mesh : vk->mesh_renderers)
@@ -124,11 +146,8 @@ static void FrameRender(ImGui_ImplVulkanH_Window* wd, VkPipeline graphic_pipelin
 				vkCmdDrawIndexed(fd->CommandBuffer, static_cast<uint32_t>(rend_mesh->indices.size()), 1, 0, 0, 0);
 			}
 		}
+		vkCmdEndRenderPass(fd->CommandBuffer);
 	}
-
-
-	// End imGui Render Pass
-	vkCmdEndRenderPass(fd->CommandBuffer);
 
 	// Submit command buffer
 	{
@@ -355,7 +374,7 @@ int vk::init()
 	glfwInit();
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-	window = glfwCreateWindow(WIDTH, HEIGHT, "Trigger Editor", nullptr, nullptr);
+	window = glfwCreateWindow(mClientWidth, mClientHeight, "Trigger Editor", nullptr, nullptr);
 	glfwSetWindowUserPointer(window, this);
 	glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 
@@ -555,13 +574,15 @@ int vk::init()
 
 		draw_editors(device, wd);
 
-		pos = ImGui::GetWindowPos();
-		size = ImGui::GetWindowSize();
-
 		ImGui::Render();
 		memcpy(&wd->ClearValue.color.float32[0], &clear_color, 4 * sizeof(float));
 
-		FrameRender(wd, graphicsPipeline, pos, size, this);
+		auto window_height = wd->editor_window_rect;
+		window_height.y -= 20;
+		auto window_pos = wd->editor_window_pos;
+		window_pos.y += 20;
+
+		FrameRender(wd, graphicsPipeline, window_pos, window_height, this);
 
 		//imgui draw
 		// Update and Render additional Platform Windows
@@ -973,7 +994,13 @@ bool trigger::rend::vk::isDeviceSuitable(VkPhysicalDevice device)
 	return indices.is_complete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
 }
 
+#ifdef _WIN64
+#include <direct.h>
+#define getcwd _getcwd
+#else
 #include <unistd.h> 
+#defin getcwd getcwd
+#endif
 void trigger::rend::vk::createGraphicsPipeline()
 {
 	char cwd[1000];
@@ -1545,7 +1572,7 @@ void trigger::rend::vk::updateUniformBuffer(uint32_t currentImage)
 	//ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	
 	
-	ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 100.0f);
+	ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 100000.0f);
 	ubo.proj[1][1] *= -1;
 
 	void* data;
@@ -1804,8 +1831,8 @@ void trigger::rend::vk::loadModel()
 	char pa[1000];
 	std::string path(getcwd(pa, sizeof(pa)));
 
-	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err,  (path + slash +  "Assets/Resource/Mesh/box.obj").c_str())) {
-		throw std::runtime_error(warn + err);
+	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err,  (path + slash +  "Assets/Resource/Mesh/deer.obj").c_str())) {
+		return;
 	}
 
 	std::unordered_map<vertex, uint32_t> uniqueVertices = {};

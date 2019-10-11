@@ -117,6 +117,8 @@ struct ImGui_ImplVulkanH_Window
     uint32_t            SemaphoreIndex;         // Current set of swapchain wait semaphores we're using (needs to be distinct from per frame data)
     ImGui_ImplVulkanH_Frame*            Frames;
     ImGui_ImplVulkanH_FrameSemaphores*  FrameSemaphores;
+	ImVec2 editor_window_pos;
+	ImVec2 editor_window_rect;
 
     ImGui_ImplVulkanH_Window() 
     { 
