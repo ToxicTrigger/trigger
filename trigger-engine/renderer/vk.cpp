@@ -999,7 +999,7 @@ bool trigger::rend::vk::isDeviceSuitable(VkPhysicalDevice device)
 #define getcwd _getcwd
 #else
 #include <unistd.h> 
-#defin getcwd getcwd
+#define getcwd getcwd
 #endif
 void trigger::rend::vk::createGraphicsPipeline()
 {
