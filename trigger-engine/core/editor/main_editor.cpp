@@ -76,6 +76,18 @@ bool trigger::edit::main_editor::draw(VkDevice device, ImGui_ImplVulkanH_Window 
 	draw_inspector();
 	draw_objects();
 	draw_console();
+	{
+		ImGui::Begin("Disket");
+		auto pos = ImGui::GetWindowPos();
+		auto rad = (ImGui::GetWindowSize().x + ImGui::GetWindowSize().y) / 2;
+		pos.x +=  ImGui::GetWindowSize().x / 2 - rad * 0.2f;
+		pos.y += ImGui::GetWindowSize().y / 2;
+		ImGui::GetWindowDrawList()->AddCircle(pos, rad * 0.2f, ImColor{0.5f, 0.4f, 0.3f},24);
+		ImGui::GetWindowDrawList()->AddText(pos, ImColor{1.f, 1.f, 1.f}, "disket::start()");
+		ImGui::GetWindowDrawList()->AddTriangleFilled(ImVec2(pos.x + 150 + 10, pos.y),ImVec2(pos.x + 150 + 15, pos.y + 5),ImVec2(pos.x + 150 + 15, pos.y -5),ImColor{0.5f, 0.4f, 0.3f});
+		ImGui::GetWindowDrawList()->AddRect(ImVec2(pos.x + 150 + 15, pos.y - 5),ImVec2(pos.x + 150 + ImGui::GetWindowSize().x/2, pos.y +5+ ImGui::GetWindowSize().y / 2),ImColor{0.5f, 0.4f, 0.3f});
+		ImGui::End();
+	}
 
 
 	{

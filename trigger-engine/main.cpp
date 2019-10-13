@@ -55,7 +55,7 @@ int main(int in, char **argv)
         
     }
 
-    auto engine = new trigger::core::engine(800, 600, enable_editor);
-    
+    auto engine = new trigger::core::engine(1280, 1080, enable_editor);
+    return 0;
 }
 #endif
