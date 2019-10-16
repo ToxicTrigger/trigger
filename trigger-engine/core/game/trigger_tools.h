@@ -15,6 +15,33 @@ inline std::string methodName(const std::string& prettyFunction)
 	return prettyFunction.substr(colons + 2, prettyFunction.size()) + "()";
 }
 
+
+// Free Casting 
+template <class TO, class FROM>
+static TO cast(FROM v)
+{
+    return static_cast<TO>(static_cast<void *>(v));
+}
+
+using hash_id = int;
+
+#define PRI_A 54059   /* a prime */
+#define PRI_B 76963   /* another prime */
+#define PRI_C 86969   /* yet another prime */
+#define PRI_FIRSTH 37 /* also prime */
+// for Make String hashed 
+static hash_id hash_str(const char *s)
+{
+	unsigned h = PRI_FIRSTH;
+	while (*s)
+	{
+		h = (h * PRI_A) ^ (s[0] * PRI_B);
+		s++;
+	}
+	return h % PRI_C; // or return h % C;
+}
+
+
 inline std::string className(const std::string& prettyFunction)
 {
 #ifndef _WIN64

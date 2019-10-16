@@ -2,12 +2,11 @@
 #define MAIN_EDITOR_H
 
 #include "impl_editor.h"
-#include "../../ImGuiColorTextEdit/TextEditor.h"
 #include <string>
 #include <glm/glm.hpp>
 #include "../core/game/world.h"
+#include "console.h"
 
-static TextEditor lua_editor;
 namespace trigger::edit
 {
 class main_editor : public impl_editor
@@ -25,7 +24,6 @@ public:
 	ImVec2 window_size;
 	ImVec2 window_pos;
 	bool is_draw_insfector = false;
-	TextEditor::LanguageDefinition lang;
 	std::string TEST;
 	trigger::world *world;
 	int current_id = 0;
@@ -51,13 +49,30 @@ public:
 	main_editor(trigger::world *world)
 	{
 		this->new_component_name = new char();
-		this->component_name = "Please Select!";
-		lang = TextEditor::LanguageDefinition::Lua();
-		lua_editor.SetLanguageDefinition(lang);
-		lua_editor.SetText(this->TEST);
+		this->component_name = (char*)"Please Select!";
 		this->world = world;
 		thread_msg = "-";
 		thread_run = 0;
+		trigger::tools::console::get_instance()->log("Gen");
+				trigger::tools::console::get_instance()->log("Gen");
+						trigger::tools::console::get_instance()->error("Gen");
+								trigger::tools::console::get_instance()->warning("Gen");
+												trigger::tools::console::get_instance()->log("Gen");
+						trigger::tools::console::get_instance()->error("Gen");
+								trigger::tools::console::get_instance()->warning("Gen");
+												trigger::tools::console::get_instance()->log("Gen");
+						trigger::tools::console::get_instance()->error("Gen");
+								trigger::tools::console::get_instance()->warning("Gen");
+			trigger::tools::console::get_instance()->log("Gen");
+				trigger::tools::console::get_instance()->log("Gen");
+						trigger::tools::console::get_instance()->error("Gen");
+								trigger::tools::console::get_instance()->warning("Gen");
+												trigger::tools::console::get_instance()->log("Gen");
+						trigger::tools::console::get_instance()->error("Gen");
+								trigger::tools::console::get_instance()->warning("Gen");
+												trigger::tools::console::get_instance()->log("Gen");
+						trigger::tools::console::get_instance()->error("Gen");
+								trigger::tools::console::get_instance()->warning("Gen");
 	}
 
 	bool new_component();

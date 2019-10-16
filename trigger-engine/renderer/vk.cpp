@@ -4,7 +4,6 @@
 #include "../lib/vk/include/tiny_obj_loader.h"
 
 #include "../core/editor/impl_editor.h"
-#include "../core/game/object_renderer.h"
 
 #ifdef max
 #undef max
@@ -374,7 +373,7 @@ int vk::init()
 	glfwInit();
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-	window = glfwCreateWindow(mClientWidth, mClientHeight, "Trigger Editor", nullptr, nullptr);
+	window = glfwCreateWindow(1280, 1080, "Trigger Editor", nullptr, nullptr);
 	glfwSetWindowUserPointer(window, this);
 	glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 

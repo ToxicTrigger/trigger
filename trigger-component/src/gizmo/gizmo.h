@@ -8,7 +8,7 @@ public:
 	{
 	}
 
-	virtual gizmo* clone() const 
+	virtual gizmo* clone()  const override
 	{
 		auto cpy_gizmo = new gizmo(*this);
 		return cpy_gizmo;

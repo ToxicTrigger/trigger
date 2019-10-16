@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <fstream>
 #include "../../../trigger-engine/lib/vk/include/vulkan/vulkan.h"
+#include "../../../trigger-engine/core/editor/console.h"
 
 class Shader : public trigger::component
 {
@@ -21,14 +22,21 @@ public:
 		load = false;
 		init = false;
 	}
+	/*
+		how can I handle Exception?
+		1. Use trigger::tools::console::ErrorLog(Msg)
+		2. Use trigger::editor::show_error_window("Error Name")
 
+		when Components Execption are Rising then that components update() are stop!
+	*/
 	static std::vector<char> read_spv(const std::string& filename) 
 	{
 		std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
 		if (!file.is_open())
 		{
-			throw std::runtime_error("failed to open file!");
+			trigger::tools::console::get_instance()->log("failed to Open File, " + filename);
+			return std::vector<char>();
 		}
 
 		size_t fileSize = (size_t)file.tellg();
@@ -52,7 +60,7 @@ public:
 		VkShaderModule s_module = {};
 		if (vkCreateShaderModule(device, &info, nullptr, &s_module) != VK_SUCCESS)
 		{
-			throw std::runtime_error("Failed to Create Shader Module");
+			trigger::tools::console::get_instance()->log("Failed to Create Shader Module");
 		}
 
 		return s_module;

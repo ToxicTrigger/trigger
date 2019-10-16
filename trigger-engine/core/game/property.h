@@ -5,29 +5,8 @@
 #include <optional>
 #include <fstream>
 #include "component.h"
-
-template <class TO, class FROM>
-static TO cast(FROM v)
-{
-    return static_cast<TO>(static_cast<void *>(v));
-}
-
-using hash_id = int;
-
-#define PRI_A 54059   /* a prime */
-#define PRI_B 76963   /* another prime */
-#define PRI_C 86969   /* yet another prime */
-#define PRI_FIRSTH 37 /* also prime */
-static hash_id hash_str(const char *s)
-{
-	unsigned h = PRI_FIRSTH;
-	while (*s)
-	{
-		h = (h * PRI_A) ^ (s[0] * PRI_B);
-		s++;
-	}
-	return h % PRI_C; // or return h % C;
-}
+#include <type_traits>
+#include "file.h"
 
 namespace trigger
 {
@@ -42,6 +21,7 @@ private:
 public:
     enum data_type
     {
+        // maybe void*
         Unknown,
         Int, 
         Float,
@@ -55,6 +35,7 @@ public:
 		VectorStr,
 		VectorPath
     };
+
 
     std::any value;
     data_type type;
@@ -121,7 +102,6 @@ public:
         }
         return {};
     }
-
     
     static std::optional<int> get_int(property property)
     {
@@ -198,6 +178,84 @@ public:
 	{
 		this->value = val;
 	}
+
+    template <typename T>
+    std::string to_string()
+    {
+        std::stringstream ss;
+        ss << value.type().name() << " : " << std::any_cast<T>(value);
+        return ss.str();
+    }
+
+    std::string to_string()
+    {
+        std::stringstream ss;
+        if(!this->controllable)
+        {
+            return this->name + " !is privated";
+        }
+
+        switch(this->type)
+        {
+            case data_type::Int:
+            ss << "int::" << this->name << " " << std::any_cast<int>(value);
+            break;
+            case data_type::Bool :
+            ss << "bool::" << this->name << " " << std::any_cast<bool>(value);
+            break;
+            case data_type::Double :
+            ss << "double::" << this->name << " " << std::any_cast<double>(value);
+            break;
+            case data_type::FilePath :
+            ss << value.type().name() << "::" << this->name << " " << std::any_cast<trigger::core::file>(value).get_path();
+            break;
+            case data_type::Float :
+            ss << "float::" << this->name << " " << std::any_cast<float>(value);
+            break;
+            case data_type::HashID :
+            ss << "hash_id::" << this->name << " " << std::any_cast<hash_id>(value);
+            break;
+            case data_type::List :
+            ss << value.type().name() << "::" << this->name << " " << "List";
+            break;
+            case data_type::SizeT :
+            ss << "size_t::" << this->name << " " << std::any_cast<size_t>(value);
+            break;
+            case data_type::String :
+            ss << "std::string::" << this->name << " " << std::any_cast<std::string>(value);
+            break;
+            default:
+            ss << value.type().name() << "::" << this->name << " ?";
+            break;
+        }
+        return ss.str();
+    }
+
+    template<typename T>
+    static std::optional<T> parse(std::string& str)
+    {
+        std::string token = str.substr(str.find(" ")+1);
+        if(token.empty()) 
+            return {};              // empty!
+        else if(token.at(0) == '!')
+            return {};              // privated
+        else if(token.at(0) == '?')
+            return {};              // unknown type
+
+        if constexpr(std::is_arithmetic<T>::value)
+        {
+            std::optional<T> num = static_cast<T>(std::stod(token));
+            return num;
+        }
+        else if(std::is_same<T, std::string>::value || std::is_same<T, trigger::core::file>::value )
+        {
+            std::optional<std::string> str = (token);
+            return str;
+        }
+        return {};
+    }
+
+    
 
     template<typename T> static auto get(property property) -> decltype(auto)
     {

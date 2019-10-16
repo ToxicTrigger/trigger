@@ -1,5 +1,4 @@
 #include "main_editor.h"
-#include "../core/game/object_renderer.h"
 #include <list>
 #include <stdlib.h>
 #include <fstream>
@@ -293,7 +292,7 @@ void trigger::edit::main_editor::draw_inspector()
 			ImGui::Separator();
 			std::string comp_name(c.second->get_type_name());
 			comp_name.append(":" + std::to_string(c.second->get_instance_id()));
-			ImGui::Text(comp_name.c_str());
+			ImGui::Text("%s",comp_name.c_str());
 
 			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
 			{
@@ -392,8 +391,49 @@ void trigger::edit::main_editor::draw_inspector()
 
 void trigger::edit::main_editor::draw_console()
 {
-	if (ImGui::Begin("Console"))
+	if (ImGui::Begin("Console",(bool*)__null, ImGuiWindowFlags_MenuBar))
 	{
+		if(ImGui::BeginMenuBar())
+		{
+			if(ImGui::MenuItem("Clear"))
+			{
+				trigger::tools::console::get_instance()->clear_log();
+			}
+			if(ImGui::MenuItem("Log"))
+			{
+				trigger::tools::console::get_instance()->log("log");
+			}
+			if(ImGui::MenuItem("Error"))
+			{
+				trigger::tools::console::get_instance()->error("error");
+			}
+			if(ImGui::MenuItem("Warning"))
+			{
+				trigger::tools::console::get_instance()->warning("warning");
+			}
+			ImGui::EndMenuBar();
+		}
+
+		for(auto& log : trigger::tools::console::get_instance()->get_logs())
+		{
+			switch (log.log_type)
+			{
+				case trigger::tools::log::type::Log:
+					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{1.f, 1.f,1.f, 1.0f});
+					break;
+				case trigger::tools::log::type::Error :
+					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{1.f, 0.2f,0.2f, 1.0f});
+					break;
+				case trigger::tools::log::type::Warning :
+					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.7f, 0.5f,0.3f, 1.0f});
+					break;
+			}
+			if(ImGui::Selectable(log.message.c_str()))
+			{
+				ImGui::Text("Show Call Stack");
+			}
+			ImGui::PopStyleColor();
+		}
 	}
 	ImGui::End();
 }
@@ -430,7 +470,7 @@ bool trigger::edit::main_editor::new_component()
 	o << " : public trigger::component\n{\npublic:\n\t";
 	o << this->new_component_name;
 	o << "() : trigger::component(T_CLASS)\n\t{\n\t}\n\n";
-	o << "\tvirtual " << this->new_component_name << "* clone() const \n\t{\n";
+	o << "\tvirtual " << this->new_component_name << "* clone() const override\n\t{\n";
 	o << "\t\tauto cpy_" << this->new_component_name << " = new " << this->new_component_name << "(*this);\n";
 	o << "\t\treturn cpy_" << this->new_component_name << ";\n\t};";
 	o << "\n\n\tvirtual void update(float delta) override;\n\tvirtual ~";
@@ -686,7 +726,7 @@ bool trigger::edit::main_editor::del_component()
 	ou.close();
 
 	trigger::manager::class_manager::get_instance()->get_class_array()->erase(this->new_component_name);
-	this->new_component_name = "";
+	this->new_component_name = (char*)"";
 	return true;
 }
 ;

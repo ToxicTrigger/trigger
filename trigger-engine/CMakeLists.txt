@@ -74,6 +74,7 @@ lib/vk/glm/ext/matrix_clip_space.hpp
 core/game/property.h
 core/game/component.h 
 core/impl/impl_singleton.h
+core/editor/console.h
 core/game/world.h 
 core/game/fsm.h 
 core/game/trigger_tools.h 
