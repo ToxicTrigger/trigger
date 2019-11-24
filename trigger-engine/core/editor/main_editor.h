@@ -53,26 +53,23 @@ public:
 		this->world = world;
 		thread_msg = "-";
 		thread_run = 0;
-		trigger::tools::console::get_instance()->log("Gen");
-				trigger::tools::console::get_instance()->log("Gen");
-						trigger::tools::console::get_instance()->error("Gen");
-								trigger::tools::console::get_instance()->warning("Gen");
-												trigger::tools::console::get_instance()->log("Gen");
-						trigger::tools::console::get_instance()->error("Gen");
-								trigger::tools::console::get_instance()->warning("Gen");
-												trigger::tools::console::get_instance()->log("Gen");
-						trigger::tools::console::get_instance()->error("Gen");
-								trigger::tools::console::get_instance()->warning("Gen");
-			trigger::tools::console::get_instance()->log("Gen");
-				trigger::tools::console::get_instance()->log("Gen");
-						trigger::tools::console::get_instance()->error("Gen");
-								trigger::tools::console::get_instance()->warning("Gen");
-												trigger::tools::console::get_instance()->log("Gen");
-						trigger::tools::console::get_instance()->error("Gen");
-								trigger::tools::console::get_instance()->warning("Gen");
-												trigger::tools::console::get_instance()->log("Gen");
-						trigger::tools::console::get_instance()->error("Gen");
-								trigger::tools::console::get_instance()->warning("Gen");
+		trigger::tools::console::get_instance()->insert_func("clear", [](const std::string& d)->std::string { trigger::tools::console::get_instance()->clear_log(); return ""; }, "Clear Console...");
+
+		trigger::tools::console::get_instance()->insert_func("hello", [](const std::string& d)->std::string { return "World! " + d; }, "Hello World!");
+		trigger::tools::console::get_instance()->insert_func("error", [](const std::string& d)->std::string { trigger::tools::console::get_instance()->error(d); return ""; }, "Send Error Message");
+		trigger::tools::console::get_instance()->insert_func("warn", [](const std::string& d)->std::string { trigger::tools::console::get_instance()->warning(d); return ""; }, "Send Warning Message");
+		trigger::tools::console::get_instance()->insert_func("help", [](const std::string& d)->std::string 
+			{ 
+				auto fs = trigger::tools::console::get_instance()->funcs;
+				std::string msg;
+				for (auto f : fs)
+				{
+					trigger::tools::console::get_instance()->log("TRIGGER : " + f.second.name + " : " + f.second.comment);
+				}
+				return ""; 
+			}, "Show All Function");
+
+
 	}
 
 	bool new_component();

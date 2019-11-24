@@ -2,6 +2,7 @@
 #include <list>
 #include <stdlib.h>
 #include <fstream>
+#include <ctime>
 #include "../../tools/macros.h"
 #include "../../imgui/misc/cpp/imgui_stdlib.h"
 #include "../../../renderer/vk.h"
@@ -391,7 +392,7 @@ void trigger::edit::main_editor::draw_inspector()
 
 void trigger::edit::main_editor::draw_console()
 {
-	if (ImGui::Begin("Console",(bool*)__null, ImGuiWindowFlags_MenuBar))
+	if (ImGui::Begin("Console",(bool*)nullptr, ImGuiWindowFlags_MenuBar))
 	{
 		if(ImGui::BeginMenuBar())
 		{
@@ -399,38 +400,83 @@ void trigger::edit::main_editor::draw_console()
 			{
 				trigger::tools::console::get_instance()->clear_log();
 			}
-			if(ImGui::MenuItem("Log"))
+
+			ImGui::Checkbox("Show Log", &trigger::tools::console::get_instance()->view_log);
+			ImGui::Checkbox("Show Err", &trigger::tools::console::get_instance()->view_err);
+			ImGui::Checkbox("Show Warn", &trigger::tools::console::get_instance()->view_warn);
+			if (ImGui::InputText("cmd", &trigger::tools::console::get_instance()->cmd, ImGuiInputTextFlags_EnterReturnsTrue))
 			{
-				trigger::tools::console::get_instance()->log("log");
+				auto cmd = trigger::tools::console::get_instance()->cmd;
+				//if cmd == func call
+				if (cmd.at(0) == '>')
+				{
+					auto func = cmd.substr(1, cmd.find(" ")-1);
+					auto parm = cmd.substr(cmd.find(" ")+1, cmd.npos);
+					if (cmd.find(" ") == cmd.npos)
+					{
+						parm.clear();
+					}
+					auto f = trigger::tools::console::get_instance()->funcs.find(func);
+					if (f != trigger::tools::console::get_instance()->funcs.end())
+					{
+						auto tmp = trigger::tools::console::get_instance()->funcs[func].func(parm);
+						if(!tmp.empty())
+						trigger::tools::console::get_instance()->log(tmp);
+					}
+					else
+					{
+						trigger::tools::console::get_instance()->error("Can't Find Func -> " + func);
+					}
+				}
+				else
+				{
+					trigger::tools::console::get_instance()->log(trigger::tools::console::get_instance()->cmd);
+				}
+				trigger::tools::console::get_instance()->cmd.clear();
 			}
-			if(ImGui::MenuItem("Error"))
+			if (ImGui::IsItemHovered())
 			{
-				trigger::tools::console::get_instance()->error("error");
-			}
-			if(ImGui::MenuItem("Warning"))
-			{
-				trigger::tools::console::get_instance()->warning("warning");
+				ImGui::SetTooltip("Send Normal Message!\n'>' is call function in trigger::tools::console::get_instance()->funcs\n----------example----------\n >hello 123 or >help");
 			}
 			ImGui::EndMenuBar();
+
+			ImGui::InputText("Filter", &trigger::tools::console::get_instance()->filter);
+
 		}
 
-		for(auto& log : trigger::tools::console::get_instance()->get_logs())
+		auto logs = trigger::tools::console::get_instance()->get_logs();
+
+		for(unsigned long i = 0; i < logs.size(); ++i)
 		{
-			switch (log.log_type)
+			auto log = logs[i];
+			if (!trigger::tools::console::get_instance()->filter.empty() && log->message.find(trigger::tools::console::get_instance()->filter) == log->message.npos)
+			{
+				continue;
+			}
+			
+			switch (log->log_type)
 			{
 				case trigger::tools::log::type::Log:
+					if (!trigger::tools::console::get_instance()->view_log) continue;
 					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{1.f, 1.f,1.f, 1.0f});
 					break;
 				case trigger::tools::log::type::Error :
+					if (!trigger::tools::console::get_instance()->view_err) continue;
 					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{1.f, 0.2f,0.2f, 1.0f});
 					break;
 				case trigger::tools::log::type::Warning :
+					if (!trigger::tools::console::get_instance()->view_warn) continue;
 					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.7f, 0.5f,0.3f, 1.0f});
 					break;
 			}
-			if(ImGui::Selectable(log.message.c_str()))
+
+			std::time_t t = std::chrono::system_clock::to_time_t(log->rising_time);
+
+			ImGui::Text("%s", std::ctime(&t));
+			ImGui::SameLine();
+			if (ImGui::Selectable(log->message.c_str()))
 			{
-				ImGui::Text("Show Call Stack");
+				trigger::tools::console::get_instance()->set_current_log(log);
 			}
 			ImGui::PopStyleColor();
 		}

@@ -16,6 +16,7 @@ public:
 	bool load;
 	Shader() : trigger::component(T_CLASS)
 	{
+
 		trigger::property(trigger::core::file(""), trigger::property::data_type::FilePath, "Shaders", &this->properties);
 		trigger::property(false, trigger::property::data_type::Bool, false, "Compiled", &this->properties);
 		trigger::property(false, trigger::property::data_type::Bool, false , "Loaded", &this->properties);
@@ -35,7 +36,7 @@ public:
 
 		if (!file.is_open())
 		{
-			trigger::tools::console::get_instance()->log("failed to Open File, " + filename);
+			trigger::tools::console::get_instance()->error("failed to Open File, " + filename);
 			return std::vector<char>();
 		}
 
