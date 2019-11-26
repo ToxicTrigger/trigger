@@ -27,7 +27,7 @@ namespace trigger
 	class transform : public trigger::component
 	{
 	private:
-		int instance_id;
+		hash_id instance_id;
 
 	protected:
 		vec3 real_position;
@@ -56,11 +56,8 @@ namespace trigger
 			this->rotation = rot;
 			this->instance_id = make_hash_code();
 			std::string n(name);
-			if (name.find("Object") != std::string::npos)
-			{
-				n += ":";
-				n += std::to_string(instance_id);
-			}
+			n += ":" + std::to_string(instance_id);
+			
 			real_name = n;
 			this->name = name;
 			this->components = std::map<hash_id, trigger::component*>();
@@ -88,6 +85,7 @@ namespace trigger
 		void set_name(std::string name)
 		{
 			this->name = name;
+			real_name = name + ":" + std::to_string(instance_id);
 			save();
 		}
 
@@ -99,6 +97,7 @@ namespace trigger
 		void set_name(char* const name)
 		{
 			this->name = name;
+			real_name = this->name + ":" + std::to_string(instance_id);
 			save();
 		}
 

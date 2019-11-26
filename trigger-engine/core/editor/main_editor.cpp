@@ -308,9 +308,14 @@ void trigger::edit::main_editor::draw_inspector()
 			}
 		}
 		
-		ImGui::InputText("", this->current_name);
+		if (ImGui::InputText("name", this->current_name))
+		{
+			this->current_target->set_name(*this->current_name);
+		}
+
 		for (auto& c : this->current_target_components)
 		{
+			if (c.second == nullptr) continue;
 			ImGui::Separator();
 			std::string comp_name(c.second->get_type_name());
 			ImGui::Text("%s",comp_name.c_str());
@@ -343,7 +348,7 @@ void trigger::edit::main_editor::draw_inspector()
 						if (!p_name.compare("active"))
 						{
 							ImGui::SameLine();
-							if (b != nullptr && ImGui::Checkbox("", b))
+							if (b != nullptr && ImGui::Checkbox("active", b))
 							{
 								c.second->set_property(p_name, *b);
 							}
@@ -372,7 +377,6 @@ void trigger::edit::main_editor::draw_inspector()
 						{
 							c.second->set_property(p.second.get_name(), *f);
 						}
-						
 					}
 					else if (p.second.type == trigger::property::data_type::Int)
 					{
