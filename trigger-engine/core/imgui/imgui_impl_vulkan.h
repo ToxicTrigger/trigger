@@ -119,6 +119,7 @@ struct ImGui_ImplVulkanH_Window
     ImGui_ImplVulkanH_FrameSemaphores*  FrameSemaphores;
 	ImVec2 editor_window_pos;
 	ImVec2 editor_window_rect;
+	bool editor_window_hover;
 
     ImGui_ImplVulkanH_Window() 
     { 

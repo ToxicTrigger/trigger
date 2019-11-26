@@ -164,6 +164,11 @@ namespace trigger
 			return true;
 		}
 
+		void del_component(hash_id id)
+		{
+			components.erase(id);
+		}
+
 		transform* get_parent();
 		void set_parent(transform* target);
 		std::vector<transform*> get_childs();

@@ -117,13 +117,11 @@ namespace trigger
 			return i->second;
 		}
 
-		inline constexpr bool delete_object(transform *target) noexcept
+		inline constexpr bool delete_object(transform *target)
 		{
 			if (target != nullptr && objects.size() != 0)
 			{
-				lock.lock();
 				objects.erase(target->get_instance_id());
-				lock.unlock();
 				return true;
 			}
 			return false;

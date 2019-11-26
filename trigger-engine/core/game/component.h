@@ -201,6 +201,7 @@ public:
 	{
 		this->properties.clear();
 		this->transform_ptr = nullptr;
+		delete transform_ptr;
 	}
 
 	size_t get_type_id()
@@ -228,6 +229,7 @@ public:
 		this->instance_id = code;
 		save();
 	}
+
 
 	virtual void update(float delta) {};
 	virtual void draw_editor() {};

@@ -72,17 +72,23 @@ bool trigger::edit::main_editor::draw(VkDevice device, ImGui_ImplVulkanH_Window 
 	}
 	ImGui::End();
 
-
 	draw_inspector();
 	draw_objects();
 	draw_console();
-
 
 	{
 		if (ImGui::Begin("Editor View", &is_open_editor))
 		{
 			wd->editor_window_pos = ImGui::GetWindowPos();
 			wd->editor_window_rect = ImGui::GetWindowSize();
+			if (ImGui::IsWindowHovered())
+			{
+				wd->editor_window_hover = true;
+			}
+			else
+			{
+				wd->editor_window_hover = false;
+			}
 		}
 		else
 		{
@@ -131,6 +137,21 @@ void trigger::edit::main_editor::draw_child(trigger::transform* vec)
 {
 	if (vec->get_childs().size() != 0 || vec->get_parent() == nullptr)
 	{
+		if (ImGui::BeginPopupContextWindow())
+		{
+			if (ImGui::Selectable("Remove This"))
+			{
+				this->world->delete_object(vec);
+				this->current_id = 0;
+				this->current_target = nullptr;
+				this->current_target_components.clear();
+				this->current_name = nullptr;
+				ImGui::EndPopup();
+				return;
+			}
+			ImGui::EndPopup();
+		}
+
 		if (ImGui::TreeNode(vec->get_name()->c_str()))
 		{
 			this->current_id = vec->get_instance_id();
@@ -287,12 +308,10 @@ void trigger::edit::main_editor::draw_inspector()
 		}
 		
 		ImGui::InputText("", this->current_name);
-		ImGui::Text("Instance ID : %d", this->current_target->get_instance_id());
 		for (auto& c : this->current_target_components)
 		{
 			ImGui::Separator();
 			std::string comp_name(c.second->get_type_name());
-			comp_name.append(":" + std::to_string(c.second->get_instance_id()));
 			ImGui::Text("%s",comp_name.c_str());
 
 			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
@@ -301,21 +320,40 @@ void trigger::edit::main_editor::draw_inspector()
 				ImGui::EndDragDropSource();
 			}
 
+			if (ImGui::BeginPopupContextWindow())
+			{
+				if (ImGui::Selectable("Remove This"))
+				{
+					this->current_target->del_component(c.first);
+					ImGui::EndPopup();
+					continue;
+				}
+				ImGui::EndPopup();
+			}
+
 			for (auto& p : c.second->properties)
 			{
 				std::string p_name(p.second.get_name().c_str());
-				p_name.append(":");
-				p_name.append(std::to_string(c.second->get_instance_id()));
 				if (p.second.controllable)
 				{
 					if (p.second.type == trigger::property::data_type::Bool)
 					{
 						bool* b = std::any_cast<bool>(&p.second.value);
-						if (b != nullptr && ImGui::Checkbox(p_name.c_str(), b))
+						if (!p_name.compare("active"))
 						{
-							c.second->set_property(p.second.get_name(), *b);
+							ImGui::SameLine();
+							if (b != nullptr && ImGui::Checkbox("", b))
+							{
+								c.second->set_property(p_name, *b);
+							}
 						}
-						
+						else
+						{
+							if (b != nullptr && ImGui::Checkbox(p_name.c_str(), b))
+							{
+								c.second->set_property(p.second.get_name(), *b);
+							}
+						}
 					}
 					else if (p.second.type == trigger::property::data_type::Double)
 					{
@@ -384,7 +422,6 @@ void trigger::edit::main_editor::draw_inspector()
 				}
 			}
 			c.second->draw_editor();
-			ImGui::Separator();
 		}
 	}
 	ImGui::End();

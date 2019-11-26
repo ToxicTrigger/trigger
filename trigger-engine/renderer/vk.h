@@ -233,7 +233,6 @@ namespace trigger
 			glm::vec3 right;
 			glm::vec3 direction{ 0.0f, 0.0f, 0.0f };
 
-
 			std::vector<vertex> vertices;
 			std::vector<uint32_t> indices;
 
@@ -248,7 +247,7 @@ namespace trigger
 			void createIndexBuffer(const std::vector<uint32_t> indices);
 			void createDescriptorSetLayout();
 			void createUniformBuffers();
-			void updateUniformBuffer(uint32_t currentImage);
+			void updateUniformBuffer(uint32_t currentImage, bool is_editor_window);
 			void createDescriptorPool();
 			void createDescriptorSets();
 			void createTextureImageView();

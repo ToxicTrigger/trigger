@@ -2,6 +2,8 @@
 
 trigger::transform::~transform()
 {
+	clear_child();
+	 
 	this->components.clear();
 	this->parent = nullptr;
 	this->childs.clear();

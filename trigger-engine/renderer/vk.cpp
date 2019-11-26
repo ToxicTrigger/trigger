@@ -150,7 +150,7 @@ static void FrameRender(ImGui_ImplVulkanH_Window* wd, VkPipeline graphic_pipelin
 
 	// Submit command buffer
 	{
-		vk->updateUniformBuffer(wd->FrameIndex);
+		vk->updateUniformBuffer(wd->FrameIndex, wd->editor_window_hover);
 		VkPipelineStageFlags wait_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		VkSubmitInfo info = {};
 		info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -1513,7 +1513,7 @@ void trigger::rend::vk::createUniformBuffers()
 	}
 }
 
-void trigger::rend::vk::updateUniformBuffer(uint32_t currentImage)
+void trigger::rend::vk::updateUniformBuffer(uint32_t currentImage, bool is_editor_window)
 {
 	float time = this->engine->editors->get_delta_time();
 	UniformBufferObject ubo = {};
@@ -1522,8 +1522,7 @@ void trigger::rend::vk::updateUniformBuffer(uint32_t currentImage)
 	if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	
-	
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT))
+	if (is_editor_window && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT))
 	{
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		double xpos, ypos;
