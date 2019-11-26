@@ -189,6 +189,7 @@ void trigger::edit::main_editor::draw_objects()
 				{
 					IM_ASSERT(data->DataSize == sizeof(transform));
 					transform tmp = *(const transform*)(data->Data);
+
 					for (auto& target : this->world->get_objects<trigger::transform>())
 					{
 						if (target->get_instance_id() == tmp.get_instance_id())
@@ -429,7 +430,7 @@ void trigger::edit::main_editor::draw_inspector()
 
 void trigger::edit::main_editor::draw_console()
 {
-	if (ImGui::Begin("Console",(bool*)nullptr, ImGuiWindowFlags_MenuBar))
+	if (ImGui::Begin("Console",(bool*)nullptr, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_HorizontalScrollbar))
 	{
 		if(ImGui::BeginMenuBar())
 		{
@@ -445,7 +446,7 @@ void trigger::edit::main_editor::draw_console()
 			{
 				auto cmd = trigger::tools::console::get_instance()->cmd;
 				//if cmd == func call
-				if (cmd.at(0) == '>')
+				if (!cmd.empty() && cmd.at(0) == '>')
 				{
 					auto func = cmd.substr(1, cmd.find(" ")-1);
 					auto parm = cmd.substr(cmd.find(" ")+1, cmd.npos);
@@ -456,6 +457,7 @@ void trigger::edit::main_editor::draw_console()
 					auto f = trigger::tools::console::get_instance()->funcs.find(func);
 					if (f != trigger::tools::console::get_instance()->funcs.end())
 					{
+						//Run Func
 						auto tmp = trigger::tools::console::get_instance()->funcs[func].func(parm);
 						if(!tmp.empty())
 						trigger::tools::console::get_instance()->log(tmp);

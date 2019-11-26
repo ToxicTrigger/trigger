@@ -6,33 +6,32 @@
 #include <map>
 #include <functional>
 #include "../impl/impl_singleton.h"
-#include "../game/trigger_tools.h"
 
 namespace trigger::tools
 {
-    struct log
-    {
-        using time_stamp = std::chrono::time_point<std::chrono::system_clock>;
+	struct log
+	{
+		using time_stamp = std::chrono::time_point<std::chrono::system_clock>;
 
-        enum type
-        {
-            Log,
-            Warning,
-            Error
-        };  
+		enum type
+		{
+			Log,
+			Warning,
+			Error
+		};
 
-        type log_type;
-        time_stamp rising_time;
-        std::string message;
-        bool open = false;
-        
-        explicit log(type log_type, std::string message)
-        {
-            this->log_type = log_type;
-            this->message = message;
-            this->rising_time = std::chrono::system_clock::now();
-        }
-    };
+		type log_type;
+		time_stamp rising_time;
+		std::string message;
+		bool open = false;
+
+		explicit log(type log_type, std::string message)
+		{
+			this->log_type = log_type;
+			this->message = message;
+			this->rising_time = std::chrono::system_clock::now();
+		}
+	};
 
 	struct trigger_func
 	{
@@ -41,41 +40,43 @@ namespace trigger::tools
 		std::string comment;
 	};
 
-    class console : public trigger::impl::impl_singletone<console>
-    {
-		public:
-			bool view_err;
-			bool view_warn;
-			bool view_log;
-			std::string cmd;
-			std::map<std::string, trigger::tools::trigger_func > funcs;
-			std::string filter = "";
+	class console : public trigger::impl::impl_singletone<console>
+	{
+	public:
+		bool view_err;
+		bool view_warn;
+		bool view_log;
+		std::string cmd;
+		std::map<std::string, trigger::tools::trigger_func > funcs;
+		std::string filter = "";
 
-        private:
-        std::vector<trigger::tools::log*> logs;
+	private:
+		std::vector<trigger::tools::log*> logs;
 		trigger::tools::log* current_log = nullptr;
 
-        public:
-        void log(std::string message)
-        {   
+	public:
+		void log(std::string message)
+		{
 			trigger::tools::log* tmp = new trigger::tools::log(trigger::tools::log::type::Log, message);
-            logs.insert(logs.begin(), tmp );
-        };
-        void warning(std::string message)
-        {   
+			logs.insert(logs.begin(), tmp);
+		};
+		void warning(std::string message)
+		{
 			trigger::tools::log* tmp = new trigger::tools::log(trigger::tools::log::type::Warning, message);
 			logs.insert(logs.begin(), tmp);
-        };
-        void error(std::string message)
-        {   
+		};
+		void error(std::string message)
+		{
 			trigger::tools::log* tmp = new trigger::tools::log(trigger::tools::log::type::Error, message);
 			logs.insert(logs.begin(), tmp);
-        };
-        
-        void clear_log()
-        {
-            logs.clear();
-        }
+		};
+
+		void clear_log()
+		{
+			for (auto l : logs)
+				delete l;
+			logs.clear();
+		}
 
 		trigger::tools::log* get_current_log()
 		{
@@ -89,18 +90,18 @@ namespace trigger::tools
 
 		void insert_func(std::string name, std::function<std::string(const std::string&)> func)
 		{
-			this->funcs.insert({ name, trigger::tools::trigger_func{ func , name, ""}});
+			this->funcs.insert({ name, trigger::tools::trigger_func{ func , name, ""} });
 		}
 
-		void insert_func(std::string name, std::function<std::string(const std::string&)> func , std::string comment)
+		void insert_func(std::string name, std::function<std::string(const std::string&)> func, std::string comment)
 		{
 			this->funcs.insert({ name, trigger::tools::trigger_func{ func , name, comment} });
 		}
 
-        std::vector<trigger::tools::log*> get_logs()
-        {
-            return logs;
-        }
+		std::vector<trigger::tools::log*> get_logs()
+		{
+			return logs;
+		}
 
-    };
+	};
 }

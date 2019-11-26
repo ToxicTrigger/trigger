@@ -54,6 +54,19 @@ public:
 		thread_msg = "-";
 		thread_run = 0;
 		trigger::tools::console::get_instance()->insert_func("clear", [](const std::string& d)->std::string { trigger::tools::console::get_instance()->clear_log(); return ""; }, "Clear Console...");
+		trigger::tools::console::get_instance()->insert_func("who", [&](const std::string& d)->std::string 
+			{ 
+				for (auto name : this->world->get_all())
+				{
+					std::string n;
+					n = name.second->get_real_name ();
+					if (n.find(d) != n.npos)
+					{
+						T_WARN("Console : [" + name.second->get_real_name() + ", " + name.second->get_type_name() + ":" + std::to_string(name.second->get_type_id()) + "] ");
+					}
+				}
+				return "";
+			}, "Print GameObject Information");
 
 		trigger::tools::console::get_instance()->insert_func("hello", [](const std::string& d)->std::string { return "World! " + d; }, "Hello World!");
 		trigger::tools::console::get_instance()->insert_func("error", [](const std::string& d)->std::string { trigger::tools::console::get_instance()->error(d); return ""; }, "Send Error Message");
@@ -68,8 +81,6 @@ public:
 				}
 				return ""; 
 			}, "Show All Function");
-
-
 	}
 
 	bool new_component();

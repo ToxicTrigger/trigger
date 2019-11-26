@@ -36,6 +36,7 @@ namespace trigger
 		std::map<hash_id, trigger::component*> components;
 		std::string name;
 		glm::fmat4x4 space;
+		std::string real_name;
 
 	public:
 		vec3 position;
@@ -60,7 +61,8 @@ namespace trigger
 				n += ":";
 				n += std::to_string(instance_id);
 			}
-			this->name = n;
+			real_name = n;
+			this->name = name;
 			this->components = std::map<hash_id, trigger::component*>();
 			parent = nullptr;
 			childs = std::vector<transform*>();
@@ -87,6 +89,11 @@ namespace trigger
 		{
 			this->name = name;
 			save();
+		}
+
+		std::string get_real_name()
+		{
+			return real_name;
 		}
 
 		void set_name(char* const name)
@@ -166,7 +173,17 @@ namespace trigger
 
 		void del_component(hash_id id)
 		{
+			delete components.at(id);
 			components.erase(id);
+		}
+
+		void clear_components()
+		{
+			for (auto c : components)
+			{
+				delete c.second;
+			}
+			components.clear();
 		}
 
 		transform* get_parent();

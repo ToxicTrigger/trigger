@@ -4,6 +4,11 @@
 #include <string>
 #include <memory>
 #include <map>
+#include "../editor/console.h"
+
+#define T_LOG(x) trigger::tools::console::get_instance()->log(x)
+#define T_ERR(x) trigger::tools::console::get_instance()->error(x)
+#define T_WARN(x) trigger::tools::console::get_instance()->warning(x)
 
 #define T_METHOD methodName(__FUNCTION__).c_str()
 #define T_CLASS className(__FUNCTION__).c_str()

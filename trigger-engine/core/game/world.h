@@ -122,6 +122,7 @@ namespace trigger
 			if (target != nullptr && objects.size() != 0)
 			{
 				objects.erase(target->get_instance_id());
+				delete target;
 				return true;
 			}
 			return false;

@@ -8,6 +8,7 @@ trigger::transform::~transform()
 	this->parent = nullptr;
 	this->childs.clear();
 	delete parent;
+	T_LOG("transform : Delete " + this->name + ":" + std::to_string(this->get_instance_id()));
 }
 
 void trigger::transform::update(float delta)
@@ -61,8 +62,11 @@ void trigger::transform::add_child(trigger::transform *child)
 
 void trigger::transform::remove_parent()
 {
-	this->parent->remove_child(this);
-	this->parent = nullptr;
+	if (this->parent != nullptr)
+	{
+		this->parent->remove_child(this);
+		this->parent = nullptr;
+	}
 }
 
 // disconnect parent
@@ -95,7 +99,7 @@ void trigger::transform::clear_child()
 // Delete All Child
 void trigger::transform::clear_and_destroy_child()
 {
-	for(auto& i : this->childs)
+	for(auto i : this->childs)
 	{
 		delete i;
 		i = nullptr;
