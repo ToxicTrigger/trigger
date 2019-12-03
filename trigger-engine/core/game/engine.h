@@ -107,6 +107,7 @@ namespace trigger
 					{
 						if (!objects[i].use)
 						{
+							this->size += 1;
 							objects[i].use = true;
 							objects[i].p_ptr = this;
 							objects[i].data = &objs_data[i];
@@ -131,6 +132,8 @@ namespace trigger
 					objects[i].data = &objs_data[i];
 					objs_data[i] = init;
 
+					lvalue.data->~T();
+
 					lvalue.p_ptr = nullptr;
 					lvalue.data = nullptr;
 					lvalue.use = false;
@@ -139,6 +142,7 @@ namespace trigger
 				}
 				return false;
 			}
+
 
 			size_t get_using_count() const
 			{
