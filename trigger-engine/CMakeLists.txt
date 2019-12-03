@@ -81,7 +81,7 @@ core/game/trigger_tools.h
 core/game/engine.h core/game/engine.cpp
 core/game/file.h
 core/game/mini_core.h
-
+core/game/pool.h
 core/game/transform.h core/game/transform.cpp
 )
 
@@ -106,11 +106,6 @@ INCLUDE_DIRECTORIES(${DX_HEADER} ${VK_HEADER} ${REND_HEADER} ${TOOLS} ${CORE_HEA
 	${CORE_HEADER}
 	${EDITOR_MAIN}
 	)
-
-
-set(CPACK_PROJECT_NAME ${PROJECT_NAME})
-set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
-include(CPack)
 
 target_compile_features(trigger PRIVATE cxx_range_for)
 

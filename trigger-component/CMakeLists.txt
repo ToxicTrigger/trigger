@@ -46,8 +46,4 @@ else()
 	message(SEND_ERROR "You are on an unsupported platform! (Not Win32, Mac OS X or Unix)")
 endif(WIN32)
 
-set(CPACK_PROJECT_NAME ${PROJECT_NAME})
-set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
-include(CPack)
-
 target_compile_features(components PRIVATE cxx_range_for)

@@ -1,5 +1,4 @@
 #include "transform.h"
-
 trigger::transform::~transform()
 {
 	clear_child();

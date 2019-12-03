@@ -114,10 +114,10 @@ static void FrameRender(ImGui_ImplVulkanH_Window* wd, VkPipeline graphic_pipelin
 		info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		info.renderPass = wd->RenderPass;
 		info.framebuffer = fd->Framebuffer;
-		info.renderArea.extent.width = size.x;
-		info.renderArea.extent.height = size.y;
-		info.renderArea.offset.x = pos.x;
-		info.renderArea.offset.y = pos.y;
+		info.renderArea.extent.width = static_cast<size_t>(size.x);
+		info.renderArea.extent.height = static_cast<size_t>(size.y);
+		info.renderArea.offset.x = static_cast<size_t>(pos.x);
+		info.renderArea.offset.y = static_cast<size_t>(pos.y);
 
 		//
 		std::array<VkClearValue, 2> clearValues = {};
