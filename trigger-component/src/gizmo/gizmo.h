@@ -6,6 +6,7 @@ class gizmo : public trigger::component
 public:
 	gizmo() : trigger::component(T_CLASS)
 	{
+		trigger::property(.0f, trigger::property::data_type::Float, true, "TEST", &this->properties);
 	}
 
 	virtual gizmo* clone()  const override

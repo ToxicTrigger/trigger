@@ -38,6 +38,7 @@ public:
 	std::string thread_msg;
 	hash_id copied_component_id;
 
+
 public:
 	virtual bool draw(VkDevice device, ImGui_ImplVulkanH_Window *wd)  override;
 	virtual void update(float delta) override;
@@ -56,7 +57,7 @@ public:
 		trigger::tools::console::get_instance()->insert_func("clear", [](const std::string& d)->std::string { trigger::tools::console::get_instance()->clear_log(); return ""; }, "Clear Console...");
 		trigger::tools::console::get_instance()->insert_func("who", [&](const std::string& d)->std::string 
 			{ 
-				for (auto name : this->world->get_all())
+				for (auto && name : this->world->using_transforms)
 				{
 					std::string n;
 					n = name.second->get_real_name ();

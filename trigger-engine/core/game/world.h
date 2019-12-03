@@ -8,9 +8,15 @@
 #include <mutex>
 #include <fstream>
 #include <map>
+
+
 #include "../tools/macros.h"
 #include "transform.h"
+
+#include "pool.h"
+
 #include "../../../trigger-component/components.h"
+
 using namespace trigger;
 
 namespace trigger
@@ -21,7 +27,6 @@ namespace trigger
 		typedef std::chrono::time_point<std::chrono::steady_clock> Time;
 
 	private:
-		std::map<hash_id, transform*> objects;
 		Time start_time;
 		std::chrono::duration<float> delta_time;
 		Time old_time;
@@ -36,6 +41,12 @@ namespace trigger
 		glm::fmat4x4 world_space;
 
 	public:
+		bool execute = false;
+		bool pause = false;
+		trigger::tools::pool<transform> transforms;
+		std::map<hash_id, trigger::tools::pool_obj<transform> > using_transforms;
+		std::map<hash_id, transform> _cpy_using_transforms;
+
 		float gravity = -9.8f;
 		bool use_thread;
 		std::string name;
@@ -44,7 +55,6 @@ namespace trigger
 		//Build a new World
 		explicit inline world(bool UseThread, std::string name)
 		{
-			objects = std::map<hash_id, transform*>();
 			start_time = time::now();
 			delta_time = std::chrono::duration<float>();
 			old_time = time::now();
@@ -53,6 +63,23 @@ namespace trigger
 
 			use_thread = UseThread;
 			if (UseThread)
+			{
+				main_thread = std::thread(&world::update_all, this);
+			}
+			trigger::manager::class_manager::get_instance()->get_class_array()->clear();
+			reload();
+		}
+
+		explicit inline world()
+		{
+			start_time = time::now();
+			delta_time = std::chrono::duration<float>();
+			old_time = time::now();
+			set_name("World");
+			fixed_time = 20;
+
+			use_thread = true;
+			if (use_thread)
 			{
 				main_thread = std::thread(&world::update_all, this);
 			}
@@ -77,9 +104,9 @@ namespace trigger
 		template<typename T>
 		inline T* get() const
 		{
-			for (auto i : objects)
+			for (auto&& i : this->using_transforms)
 			{
-				auto t = dynamic_cast<T*>(i);
+				auto t = dynamic_cast<T*>(i.second.data);
 				if (t != nullptr)
 				{
 					return t;
@@ -88,18 +115,13 @@ namespace trigger
 			return nullptr;
 		};
 
-		inline std::map<hash_id, transform*> get_all() const
-		{
-			return this->objects;
-		}
-
 		template<typename T>
 		inline std::list<T*> get_objects()
 		{
 			std::list<T*> tmp = std::list<T*>();
-			for (auto i : objects)
+			for (auto&& i : this->using_transforms)
 			{
-				auto t = dynamic_cast<T*>(i.second);
+				auto t = dynamic_cast<T*>(i.second.data);
 				if (t != nullptr)
 				{
 					tmp.push_back(t);
@@ -110,82 +132,137 @@ namespace trigger
 
 		inline transform* get(hash_id index) noexcept
 		{
-			if (index >= objects.size()) return nullptr;
+			if (index >= using_transforms.size()) return nullptr;
 
-			auto i = objects.begin();
+			auto i = using_transforms.begin();
 			std::advance(i, index);
-			return i->second;
+			return i->second.data;
 		}
 
-		inline constexpr bool delete_object(transform *target)
+		inline constexpr bool delete_object(transform* target)
 		{
-			if (target != nullptr && objects.size() != 0)
+			if (target != nullptr && using_transforms.size() != 0)
 			{
-				objects.erase(target->get_instance_id());
+				using_transforms.erase(target->get_instance_id());
 				delete target;
 				return true;
 			}
 			return false;
 		}
 
-		//add component in world-component-list
-		inline constexpr transform* add(transform * com) noexcept
+		inline bool delete_object(hash_id id)
 		{
+			auto i = using_transforms.begin();
+			std::advance(i, id);
+			if (i->second.use)
+			{
+				transforms.free(std::move(i->second));
+				return true;
+			}
+			return false;
+		}
+
+		//add component in world-component-list
+		inline transform* add(transform* com) noexcept
+		{
+			hash_id id;
 			if (com != nullptr)
-				objects.insert
+			{
+				auto tmp = transforms.use();
+				*tmp.data = *com;
+
+				id = tmp->get_instance_id();
+				using_transforms.insert
 				(
-					std::pair<int, transform*>(com->get_instance_id(), com)
+					std::pair<int, trigger::tools::pool_obj<transform>>(com->get_instance_id(), std::move(tmp))
 				);
-			return com;
+			}
+
+			return using_transforms[id].data;
+		}
+
+		//add component in world-component-list
+		inline transform* add() noexcept
+		{
+			hash_id id = make_hash_code();
+			auto tmp = transforms.use();
+			tmp->set_instance_id(id);
+			
+			using_transforms.insert
+			(
+				std::pair<int, trigger::tools::pool_obj<transform>>(tmp->get_instance_id(), std::move(tmp))
+			);
+
+
+			return using_transforms[id].data;
 		}
 
 		inline void clean_world() noexcept
 		{
-			if (objects.size() != 0)
+			if (using_transforms.size() != 0)
 			{
-				auto delete_list = std::list<transform*>();
-				for (auto i : objects)
+				for (auto&& i : using_transforms)
 				{
-					if (!i.second->active) delete_list.push_back(i.second);
-				}
-
-				for (auto i : delete_list)
-				{
-					objects.erase(i->get_instance_id());
+					if (!i.second->active) this->transforms.free(std::move(i.second));
 				}
 			}
 		}
 
 		inline void empty_world() noexcept
 		{
-			this->objects.clear();
+			this->using_transforms.clear();
+		}
+
+		void backup()
+		{
+			_cpy_using_transforms.clear();
+			for (auto&& i : this->using_transforms)
+			{
+				//components are pointer so it just Copy Address..
+				//We need Component's DeepCopy! 
+				//Also play() function..
+				_cpy_using_transforms.insert({i.second->get_instance_id(), *i.second.data});
+			}
+		}
+
+		void restore()
+		{
+			for (auto&& i : this->using_transforms)
+			{
+				this->lock.lock();
+				transforms.get_raw_data()->at(i.second.index) = transform(_cpy_using_transforms[i.second->get_instance_id()]);
+				this->lock.unlock();
+			}
 		}
 
 		void update_all()
 		{
 			do
 			{
-				this->lock.lock();
-				std::this_thread::sleep_for(std::chrono::milliseconds(this->fixed_time));
-				this->old_time = new_time;
-				this->new_time = time::now();
-				delta_time = std::chrono::duration_cast<std::chrono::duration<float>>(new_time - old_time);
-				run_time = std::chrono::duration_cast<std::chrono::duration<float>>(time::now() - start_time);
-
-				for (auto &&i : objects)
+				if (execute)
 				{
-					if (i.second != nullptr && i.second->active)
+					this->lock.lock();
+					std::this_thread::sleep_for(std::chrono::milliseconds(this->fixed_time));
+					this->old_time = new_time;
+					this->new_time = time::now();
+					delta_time = std::chrono::duration_cast<std::chrono::duration<float>>(new_time - old_time);
+					run_time = std::chrono::duration_cast<std::chrono::duration<float>>(time::now() - start_time);
+
+					// go back execute State!
+					for (auto&& i : using_transforms)
 					{
-						i.second->update(this->delta_time.count() * time_scale * i.second->time_scale);
+						if (i.second.data != nullptr && i.second->active)
+						{
+							i.second->update(this->delta_time.count() * time_scale * i.second->time_scale);
+						}
 					}
+
+					this->lock.unlock();
 				}
-
-				this->lock.unlock();
-
 			} while (use_thread && this->active);
 		}
 
-		static bool save_world(std::string p, std::string n, world *w)
+		static bool save_world(std::string p, std::string n, world* w)
 		{
 			std::ofstream o(p + slash + n);
 			if (!o.is_open()) return false;
@@ -227,24 +304,24 @@ namespace trigger
 
 			auto world = new trigger::world(set->get_as<bool>("use_thread").value_or(true), set->get_as<std::string>("name").value_or("World"));
 			world->gravity = (float)set->get_as<double>("gravity").value_or(-9.8f);
-			world->name = set->get_as<std::string>("name").value_or("untitled");	
-			
-			for(const auto& i : *scene_objs)
+			world->name = set->get_as<std::string>("name").value_or("untitled");
+
+			for (const auto& i : *scene_objs)
 			{
 				auto tmp = new trigger::transform
 				(
-					vec3((0.0F), (0.0F), (0.0F)), 
-					vec3((1.0F), (1.0F), (1.0F)), 
-					vec3((0.0F), (0.0F), (0.0F)), 
+					vec3((0.0F), (0.0F), (0.0F)),
+					vec3((1.0F), (1.0F), (1.0F)),
+					vec3((0.0F), (0.0F), (0.0F)),
 					i.first
 				);
 
 				auto tab = scene_objs->get_table(i.first);
-				for(auto ii : *tab)
+				for (auto ii : *tab)
 				{
 					auto dd = tab->get_table(ii.first);
 					tmp->set_name(get_data<std::string>(dd, "name"));
-					tmp->set_instance_id(get_data<int>(dd,"instance_id"));
+					tmp->set_instance_id(get_data<int>(dd, "instance_id"));
 				}
 				world->add(tmp);
 			}
@@ -254,7 +331,6 @@ namespace trigger
 
 		~world()
 		{
-			objects.clear();
 			main_thread.join();
 		}
 	};

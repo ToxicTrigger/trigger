@@ -149,6 +149,16 @@ namespace trigger
 				return false;
 			}
 
+			std::vector< pool_obj<T> >* get_data()
+			{
+				return &this->objects;
+			}
+
+			std::vector< T >* get_raw_data()
+			{
+				return &this->objs_data;
+			}
+
 			size_t get_using_count() const
 			{
 				return this->size;

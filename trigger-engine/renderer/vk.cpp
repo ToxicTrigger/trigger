@@ -542,7 +542,8 @@ int vk::init()
 	{
 		glfwPollEvents();
 
-		for (auto & rend : this->engine->object->get_all())
+		//Add when created renderer it self
+		for (auto && rend : this->engine->world.using_transforms)
 		{
 			auto r = rend.second->get_component<::renderer>();
 			if (r != nullptr)
@@ -602,11 +603,7 @@ void trigger::rend::vk::draw_editors(VkDevice device, ImGui_ImplVulkanH_Window *
 {
 	if (this->edit_mode)
 	{
-		auto editor_list = this->engine->editors->get_objects<trigger::edit::impl_editor>();
-		for (auto&& e : editor_list)
-		{
-			e->draw(device, wd);
-		}
+		this->engine->main_editor->draw(device, wd);
 	}
 }
 
@@ -1515,7 +1512,7 @@ void trigger::rend::vk::createUniformBuffers()
 
 void trigger::rend::vk::updateUniformBuffer(uint32_t currentImage, bool is_editor_window)
 {
-	float time = this->engine->editors->get_delta_time();
+	float time = this->engine->world.get_delta_time();
 	UniformBufferObject ubo = {};
 	ubo.model = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 

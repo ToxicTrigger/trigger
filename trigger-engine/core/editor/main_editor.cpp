@@ -63,11 +63,34 @@ bool trigger::edit::main_editor::draw(VkDevice device, ImGui_ImplVulkanH_Window 
 		{
 			if (ImGui::MenuItem("Create New Object"))
 			{
-				auto tmp = new trigger::transform();
-				this->world->add(tmp);
+				this->world->add();
 			}
 			ImGui::EndMenu();
 		}
+
+		//TODO :: Build 
+		if (!world->execute)
+		{
+			if (ImGui::Button(">"))
+			{
+				world->execute = true;
+				world->backup();
+			}
+		}
+		else
+		{
+			if (ImGui::Button("[]"))
+			{
+				world->execute = false;
+				world->restore();
+			}
+		}
+
+		if (ImGui::Button("||"))
+		{
+			world->pause = world->pause ? false : true;
+		}
+
 		ImGui::EndMenuBar();
 	}
 	ImGui::End();
@@ -155,7 +178,7 @@ void trigger::edit::main_editor::draw_child(trigger::transform* vec)
 		if (ImGui::TreeNode(vec->get_name()->c_str()))
 		{
 			this->current_id = vec->get_instance_id();
-			this->current_target = this->world->get_all()[current_id];
+			this->current_target = this->world->using_transforms[current_id].data;
 			this->current_target_components = this->current_target->get_components();
 			this->current_name = this->current_target->get_name();
 
@@ -312,6 +335,12 @@ void trigger::edit::main_editor::draw_inspector()
 		{
 			this->current_target->set_name(*this->current_name);
 		}
+
+		ImGui::InputFloat3("Position", this->current_target->position.data.data);
+		ImGui::InputFloat3("Rotation", this->current_target->rotation.data.data);
+		ImGui::InputFloat3("Scale", this->current_target->scale.data.data);
+
+
 
 		for (auto& c : this->current_target_components)
 		{
@@ -571,6 +600,7 @@ bool trigger::edit::main_editor::new_component()
 	o << new_component_name;
 	o << ".h";
 	o << "\"\n";
+	o << "#include \"../../../trigger-engine/core/game/transform.h\"\m\n\n";
 	o << "void " << this->new_component_name << "::update(float delta)\n";
 	o << "{\n};\n";
 	o << this->new_component_name << "::~" << this->new_component_name << "()\n{\n};";

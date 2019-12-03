@@ -20,8 +20,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
         std::string save;
         save += __argv[2];
         
-        engine->object = trigger::world::load_world(path+"\\Assets\\Scene\\" + save);
-        engine->editors->empty_world();
     }
     else
     {

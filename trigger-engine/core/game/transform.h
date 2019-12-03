@@ -9,16 +9,6 @@ typedef glm::fvec3 vec3;
 typedef glm::fvec4 vec4;
 
 
-static int make_hash_code()
-{
-	auto t = std::chrono::system_clock::now();
-	auto hash = static_cast<int>(t.time_since_epoch().count());
-	std::srand(hash);
-	hash += std::rand() % 999;
-	hash *= std::rand() >= RAND_MAX / 2 ? 1 : -1;
-	return hash;
-}
-
 namespace trigger
 {
 	class transform;
@@ -26,8 +16,6 @@ namespace trigger
 	/// component head
 	class transform : public trigger::component
 	{
-	private:
-		hash_id instance_id;
 
 	protected:
 		vec3 real_position;

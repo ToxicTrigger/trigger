@@ -46,10 +46,8 @@ namespace trigger
 		public:
 			trigger::rend::renderer *renderer;
 			trigger::tools::pool<trigger::transform> pool;
-			trigger::world *editors;
-			trigger::world *object;
 			trigger::edit::main_editor *main_editor;
-
+			trigger::world world;
 		public:
 #ifdef _WIN64
 			engine(int w, int h, bool edit_mod)
