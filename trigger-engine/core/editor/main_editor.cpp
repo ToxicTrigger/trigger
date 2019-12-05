@@ -120,6 +120,14 @@ bool trigger::edit::main_editor::draw(VkDevice device, ImGui_ImplVulkanH_Window 
 		ImGui::End();
 	
 		ImGui::Begin("Game View");
+		if (camera::Main_Camera != nullptr)
+		{
+
+		}
+		else
+		{
+			ImGui::Text("No Camera or camera::Main_Camera == nullptr!");
+		}
 		ImGui::End();
 	}
 
@@ -164,13 +172,15 @@ void trigger::edit::main_editor::draw_child(trigger::transform* vec)
 		{
 			if (ImGui::Selectable("Remove This"))
 			{
-				this->world->delete_object(vec);
-				this->current_id = 0;
-				this->current_target = nullptr;
-				this->current_target_components.clear();
-				this->current_name = nullptr;
-				ImGui::EndPopup();
-				return;
+				if (vec->get_name()->compare("Main Editor") != 0)
+				{
+					this->world->delete_object(vec);
+					this->current_id = 0;
+					this->current_target = nullptr;
+					this->current_name = nullptr;
+					ImGui::EndPopup();
+					return;
+				}
 			}
 			ImGui::EndPopup();
 		}
@@ -179,7 +189,6 @@ void trigger::edit::main_editor::draw_child(trigger::transform* vec)
 		{
 			this->current_id = vec->get_instance_id();
 			this->current_target = this->world->using_transforms[current_id].data;
-			this->current_target_components = this->current_target->get_components();
 			this->current_name = this->current_target->get_name();
 
 			for (auto& item : vec->get_childs())
@@ -202,6 +211,7 @@ void trigger::edit::main_editor::draw_objects()
 
 			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
 			{
+				ImGui::Text("%s", obj->get_name()->c_str());
 				ImGui::SetDragDropPayload("Transform", obj, sizeof(transform));
 				ImGui::EndDragDropSource();
 			}
@@ -230,232 +240,252 @@ void trigger::edit::main_editor::draw_objects()
 
 void trigger::edit::main_editor::draw_inspector()
 {
-	ImGui::Begin("inspector");
+	ImGui::Begin("inspector" , 0 , ImGuiWindowFlags_MenuBar);
+	if (ImGui::BeginMenuBar())
+	{
+		if (current_id != 0)
+		{
+			if (ImGui::Button("Add"))
+			{
+				ImGui::OpenPopup("Select Component");
+			}
+			if (ImGui::Button("New Component"))
+			{
+				ImGui::OpenPopup("Make a New Component");
+			}
+
+			if (ImGui::Button("Delete Component"))
+			{
+				ImGui::OpenPopup("Delete Component");
+			}
+
+			{
+				if (ImGui::BeginPopup("Select Component"))
+				{
+					if (ImGui::BeginCombo("", this->component_name))
+					{
+						for (auto& i : *trigger::manager::class_manager::get_instance()->get_class_array())
+						{
+							if (ImGui::Selectable(i.first.c_str(), &this->sel))
+							{
+								this->component_name = const_cast<char*>(i.first.c_str());
+							}
+						}
+						ImGui::EndCombo();
+					}
+					if (ImGui::Button("Add"))
+					{
+						if (this->current_id != 0)
+						{
+							auto tmp = trigger::manager::class_manager::get_instance()->get_class_array()->at(this->component_name)->clone();
+							tmp->set_instance_id(make_hash_code());
+							this->current_target->add_component(tmp);
+
+							//if is Camera?
+							if (tmp->get_type_name().compare("camera") == 0)
+							{
+								if (camera::Main_Camera == nullptr)
+								{
+									camera::Main_Camera = tmp;
+								}
+							}
+
+							ImGui::CloseCurrentPopup();
+						}
+					}
+					ImGui::EndPopup();
+				}
+
+				if (ImGui::BeginPopup("Delete Component"))
+				{
+					if (ImGui::BeginCombo("", this->new_component_name))
+					{
+						for (auto& i : *trigger::manager::class_manager::get_instance()->get_class_array())
+						{
+							if (ImGui::Selectable(i.first.c_str(), &this->sel))
+							{
+								this->new_component_name = const_cast<char*>(i.first.c_str());
+							}
+						}
+						ImGui::EndCombo();
+					}
+					if (ImGui::Button("Delete"))
+					{
+						this->del_component();
+					}
+					ImGui::EndPopup();
+				}
+
+				if (ImGui::BeginPopup("Make a New Component"))
+				{
+					ImGui::InputText("Component Name", this->new_component_name, 30);
+					ImGui::TextColored(ImVec4(1.0f, 0.2f, 0.2f, 1.0f), "This action will cause the program to restart!");
+					ImGui::TextColored(ImVec4(1.0f, 0.2f, 0.2f, 1.0f), "Name cannot be blank.");
+
+					if (ImGui::Button("Let's GO!"))
+					{
+						auto re = std::strcmp(this->new_component_name, "");
+						if (re == 0)
+						{
+
+						}
+						else
+						{
+							this->new_component();
+							std::string command;
+#ifdef _WIN64
+							command.append("cd ..");
+							command.append(slash);
+							command.append("trigger-component & cmake CMakeLists.txt & cmake --build . --config Debug");
+#else
+							command.append("cd trigger-component & cmake CMakeLists.txt & cmake --build . --config Debug");
+#endif
+							system(command.c_str());
+							//RELOAD!
+							//std::exit(42);
+							ImGui::CloseCurrentPopup();
+						}
+					}
+					ImGui::EndPopup();
+				}
+			}
+		}
+		ImGui::EndMenuBar();
+	}
 
 	if (this->current_id != 0)
 	{
-		if (ImGui::Button("Add Component"))
-		{
-			ImGui::OpenPopup("Select Component");
-		}
 
-		if (ImGui::Button("New Component"))
-		{
-			ImGui::OpenPopup("Make a New Component");
-		}
-
-		if (ImGui::Button("Delete Component"))
-		{
-			ImGui::OpenPopup("Delete Component");
-		}
-
-		{
-			if (ImGui::BeginPopup("Select Component"))
-			{
-				if (ImGui::BeginCombo("", this->component_name))
-				{
-					for (auto& i : *trigger::manager::class_manager::get_instance()->get_class_array())
-					{
-						if (ImGui::Selectable(i.first.c_str(), &this->sel))
-						{
-							this->component_name = const_cast<char*>(i.first.c_str());
-						}
-					}
-					ImGui::EndCombo();
-				}
-				if (ImGui::Button("Add"))
-				{
-					if (this->current_id != 0)
-					{
-						auto tmp = trigger::manager::class_manager::get_instance()->get_class_array()->at(this->component_name)->clone();
-						tmp->set_instance_id(make_hash_code());
-						this->current_target->add_component(tmp);
-						this->current_target_components = this->current_target->get_components();
-						ImGui::CloseCurrentPopup();
-					}
-				}
-				ImGui::EndPopup();
-			}
-
-			if (ImGui::BeginPopup("Delete Component"))
-			{
-				if (ImGui::BeginCombo("", this->new_component_name))
-				{
-					for (auto& i : *trigger::manager::class_manager::get_instance()->get_class_array())
-					{
-						if (ImGui::Selectable(i.first.c_str(), &this->sel))
-						{
-							this->new_component_name = const_cast<char*>(i.first.c_str());
-						}
-					}
-					ImGui::EndCombo();
-				}
-				if (ImGui::Button("Delete"))
-				{
-					this->del_component();
-				}
-				ImGui::EndPopup();
-			}
-
-			if (ImGui::BeginPopup("Make a New Component"))
-			{
-				ImGui::InputText("Component Name", this->new_component_name, 30);
-				ImGui::TextColored(ImVec4(1.0f, 0.2f, 0.2f, 1.0f), "This action will cause the program to restart!");
-				ImGui::TextColored(ImVec4(1.0f, 0.2f, 0.2f, 1.0f), "Name cannot be blank.");
-
-				if (ImGui::Button("Let's GO!"))
-				{
-					auto re = std::strcmp(this->new_component_name, "");
-					if (re == 0)
-					{
-
-					}
-					else
-					{
-						this->new_component();
-						std::string command;
-#ifdef _WIN64
-						command.append("cd ..");
-						command.append(slash);
-						command.append("trigger-component & cmake CMakeLists.txt & cmake --build . --config Debug");
-#else
-						command.append("cd trigger-component & cmake CMakeLists.txt & cmake --build . --config Debug");
-#endif
-						system(command.c_str());
-						//RELOAD!
-						//std::exit(42);
-						ImGui::CloseCurrentPopup();
-					}
-				}
-				ImGui::EndPopup();
-			}
-		}
-		
 		if (ImGui::InputText("name", this->current_name))
 		{
 			this->current_target->set_name(*this->current_name);
 		}
 
+		ImGui::Separator();
 		ImGui::InputFloat3("Position", this->current_target->position.data.data);
 		ImGui::InputFloat3("Rotation", this->current_target->rotation.data.data);
 		ImGui::InputFloat3("Scale", this->current_target->scale.data.data);
-
-
-
-		for (auto& c : this->current_target_components)
+		
+		auto ptr_comps = current_target->get_components();
+		if (ptr_comps->size() > 0)
 		{
-			if (c.second == nullptr) continue;
-			ImGui::Separator();
-			std::string comp_name(c.second->get_type_name());
-			ImGui::Text("%s",comp_name.c_str());
-
-			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+			for (auto&& c : *ptr_comps)
 			{
-				ImGui::SetDragDropPayload("ComponentID", c.second, sizeof(component));
-				ImGui::EndDragDropSource();
-			}
+				if (c.second == nullptr) continue;
+				ImGui::Separator();
+				std::string comp_name(c.second->get_type_name());
+				ImGui::Text("%s", comp_name.c_str());
 
-			if (ImGui::BeginPopupContextWindow())
-			{
-				if (ImGui::Selectable("Remove This"))
+				if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
 				{
-					this->current_target->del_component(c.first);
+					ImGui::Text("%s", c.second->get_type_name().c_str());
+					ImGui::SetDragDropPayload("ComponentID", c.second, sizeof(component));
+					ImGui::EndDragDropSource();
+				}
+
+				if (ImGui::BeginPopupContextWindow())
+				{
+					if (ImGui::Selectable("Remove This"))
+					{
+						this->current_target->del_component(c.first);
+						ImGui::EndPopup();
+						ImGui::End();
+						return;
+					}
 					ImGui::EndPopup();
-					continue;
 				}
-				ImGui::EndPopup();
-			}
 
-			for (auto& p : c.second->properties)
-			{
-				std::string p_name(p.second.get_name().c_str());
-				if (p.second.controllable)
+				for (auto& p : c.second->properties)
 				{
-					if (p.second.type == trigger::property::data_type::Bool)
+					std::string p_name(p.second.get_name().c_str());
+					if (p.second.controllable)
 					{
-						bool* b = std::any_cast<bool>(&p.second.value);
-						if (!p_name.compare("active"))
+						if (p.second.type == trigger::property::data_type::Bool)
 						{
-							ImGui::SameLine();
-							if (b != nullptr && ImGui::Checkbox("active", b))
+							bool* b = std::any_cast<bool>(&p.second.value);
+							if (!p_name.compare("active"))
 							{
-								c.second->set_property(p_name, *b);
+								ImGui::SameLine();
+								if (b != nullptr && ImGui::Checkbox("active", b))
+								{
+									c.second->set_property(p_name, *b);
+								}
+							}
+							else
+							{
+								if (b != nullptr && ImGui::Checkbox(p_name.c_str(), b))
+								{
+									c.second->set_property(p.second.get_name(), *b);
+								}
 							}
 						}
-						else
+						else if (p.second.type == trigger::property::data_type::Double)
 						{
-							if (b != nullptr && ImGui::Checkbox(p_name.c_str(), b))
+							double* d = std::any_cast<double>(&p.second.value);
+							if (d != nullptr && ImGui::InputDouble(p_name.c_str(), d))
 							{
-								c.second->set_property(p.second.get_name(), *b);
+								c.second->set_property(p.second.get_name(), *d);
 							}
-						}
-					}
-					else if (p.second.type == trigger::property::data_type::Double)
-					{
-						double* d = std::any_cast<double>(&p.second.value);
-						if (d != nullptr && ImGui::InputDouble(p_name.c_str(), d))
-						{
-							c.second->set_property(p.second.get_name(), *d);
-						}
-						
-					}
-					else if (p.second.type == trigger::property::data_type::Float)
-					{
-						float* f = std::any_cast<float>(&p.second.value);
-						if (f != nullptr && ImGui::InputFloat(p_name.c_str(), f))
-						{
-							c.second->set_property(p.second.get_name(), *f);
-						}
-					}
-					else if (p.second.type == trigger::property::data_type::Int)
-					{
-						int* i = std::any_cast<int>(&p.second.value);
-						if (i != nullptr && ImGui::InputInt(p_name.c_str(), i))
-						{
-							c.second->set_property(p.second.get_name(), *i);
-						}
-						
-					}
-					else if (p.second.type == trigger::property::data_type::HashID)
-					{
-						hash_id* i = std::any_cast<hash_id>(&p.second.value);
-						if (i != nullptr && ImGui::InputInt(p_name.c_str(), i,1,100,ImGuiInputTextFlags_NoMarkEdited))
-						{
-							c.second->set_property(p.second.get_name(), *i);
-						}
 
-						if (ImGui::BeginDragDropTarget())
+						}
+						else if (p.second.type == trigger::property::data_type::Float)
 						{
-							if (const ImGuiPayload* data = ImGui::AcceptDragDropPayload("ComponentID"))
+							float* f = std::any_cast<float>(&p.second.value);
+							if (f != nullptr && ImGui::InputFloat(p_name.c_str(), f))
 							{
-								IM_ASSERT(data->DataSize == sizeof(component));
-								component tmp = *(const component*)(data->Data);
-								c.second->set_property(p.second.get_name(), tmp.get_instance_id());
+								c.second->set_property(p.second.get_name(), *f);
 							}
-							ImGui::EndDragDropTarget();
 						}
-					}
-					else if (p.second.type == trigger::property::data_type::String)
-					{
-						std::string* s = std::any_cast<std::string>(&p.second.value);
-						if (s != nullptr && ImGui::InputText(p_name.c_str(), s))
+						else if (p.second.type == trigger::property::data_type::Int)
 						{
-							c.second->set_property(p.second.get_name(), *s);
+							int* i = std::any_cast<int>(&p.second.value);
+							if (i != nullptr && ImGui::InputInt(p_name.c_str(), i))
+							{
+								c.second->set_property(p.second.get_name(), *i);
+							}
+
 						}
-						
-					}
-					else if (p.second.type == trigger::property::data_type::FilePath)
-					{
-						auto* ss = std::any_cast<trigger::core::file>(&p.second.value);
-						if (ss != nullptr && ImGui::InputText(p_name.c_str(), ss->get_path()))
+						else if (p.second.type == trigger::property::data_type::HashID)
 						{
-							c.second->set_property(p.second.get_name(), *ss);
+							hash_id* i = std::any_cast<hash_id>(&p.second.value);
+							if (i != nullptr && ImGui::InputInt(p_name.c_str(), i, 1, 100, ImGuiInputTextFlags_NoMarkEdited))
+							{
+								c.second->set_property(p.second.get_name(), *i);
+							}
+
+							if (ImGui::BeginDragDropTarget())
+							{
+								if (const ImGuiPayload* data = ImGui::AcceptDragDropPayload("ComponentID"))
+								{
+									IM_ASSERT(data->DataSize == sizeof(component));
+									component tmp = *(const component*)(data->Data);
+									c.second->set_property(p.second.get_name(), tmp.get_instance_id());
+								}
+								ImGui::EndDragDropTarget();
+							}
 						}
-						
+						else if (p.second.type == trigger::property::data_type::String)
+						{
+							std::string* s = std::any_cast<std::string>(&p.second.value);
+							if (s != nullptr && ImGui::InputText(p_name.c_str(), s))
+							{
+								c.second->set_property(p.second.get_name(), *s);
+							}
+
+						}
+						else if (p.second.type == trigger::property::data_type::FilePath)
+						{
+							auto* ss = std::any_cast<trigger::core::file>(&p.second.value);
+							if (ss != nullptr && ImGui::InputText(p_name.c_str(), ss->get_path()))
+							{
+								c.second->set_property(p.second.get_name(), *ss);
+							}
+
+						}
 					}
 				}
+				c.second->draw_editor();
 			}
-			c.second->draw_editor();
 		}
 	}
 	ImGui::End();

@@ -33,7 +33,6 @@ public:
 	bool sel;
 	trigger::transform* current_target;
 	std::string* current_name;
-	std::map<hash_id, trigger::component*> current_target_components;
 	float thread_run;
 	std::string thread_msg;
 	hash_id copied_component_id;

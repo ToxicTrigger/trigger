@@ -144,7 +144,7 @@ namespace trigger
 			if (target != nullptr && using_transforms.size() != 0)
 			{
 				using_transforms.erase(target->get_instance_id());
-				delete target;
+				//delete target;
 				return true;
 			}
 			return false;
@@ -218,11 +218,19 @@ namespace trigger
 			_cpy_using_transforms.clear();
 			for (auto&& i : this->using_transforms)
 			{
-				//components are pointer so it just Copy Address..
-				//We need Component's DeepCopy! 
-				//Also play() function..
-				_cpy_using_transforms.insert({i.second->get_instance_id(), *i.second.data});
+				auto tmp = transform(*i.second.data);
+				tmp.clear_components();
+				//Component Copy
+				for (auto&& k : *i.second->get_components())
+				{
+					tmp.add_component(*k.second);
+				}
+
+				tmp.set_instance_id(i.first);
+
+				_cpy_using_transforms.insert({i.second->get_instance_id(), tmp});
 			}
+			this->new_time = time::now();
 		}
 
 		void restore()
@@ -230,7 +238,9 @@ namespace trigger
 			for (auto&& i : this->using_transforms)
 			{
 				this->lock.lock();
-				transforms.get_raw_data()->at(i.second.index) = transform(_cpy_using_transforms[i.second->get_instance_id()]);
+				auto tmp = _cpy_using_transforms[i.first];
+				transforms.get_raw_data()->at(i.second.index) = tmp;
+				
 				this->lock.unlock();
 			}
 		}

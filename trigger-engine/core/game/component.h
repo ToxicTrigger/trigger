@@ -201,7 +201,6 @@ namespace trigger
 		{
 			this->properties.clear();
 			this->transform_ptr = nullptr;
-			delete transform_ptr;
 		}
 
 		size_t get_type_id()

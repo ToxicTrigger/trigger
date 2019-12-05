@@ -6,7 +6,7 @@ trigger::transform::~transform()
 	this->components.clear();
 	this->parent = nullptr;
 	this->childs.clear();
-	delete parent;
+	//delete parent;
 	T_LOG("transform : Delete " + this->name + ":" + std::to_string(this->get_instance_id()));
 }
 

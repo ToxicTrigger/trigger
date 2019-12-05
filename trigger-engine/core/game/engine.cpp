@@ -10,6 +10,7 @@ bool trigger::core::engine::init(int w, int h, bool edit_mod)
 	if (edit_mod)
 	{
 		this->main_editor = new trigger::edit::main_editor(&this->world);
+		this->main_editor->set_name("Main Editor");
 		world.add(main_editor);
 	}
     this->renderer = new trigger::rend::REND(w, h, edit_mod, this);

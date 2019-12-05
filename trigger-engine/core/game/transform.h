@@ -147,9 +147,10 @@ namespace trigger
 		}
 
 		template<typename T>
-		bool add_component(T component)
+		bool add_component(T& component)
 		{
-			T* com = new decltype(component)();
+			auto com = trigger::manager::class_manager::get_instance()->get_class_array()->at(component.get_type_name())->clone();
+			*com = component;
 			com->transform_ptr = (void*)this;
 			this->components.insert(
 				std::pair<hash_id, trigger::component*>(com->get_instance_id(), com)
@@ -168,7 +169,7 @@ namespace trigger
 		{
 			for (auto c : components)
 			{
-				delete c.second;
+				//delete c.second;
 			}
 			components.clear();
 		}
@@ -191,9 +192,9 @@ namespace trigger
 			return new transform(*this);
 		}
 
-		std::map<hash_id, trigger::component*> get_components() const
+		std::map<hash_id, trigger::component*>* get_components()
 		{
-			return this->components;
+			return &this->components;
 		}
 	};
 };
