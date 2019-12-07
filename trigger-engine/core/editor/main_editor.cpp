@@ -630,7 +630,7 @@ bool trigger::edit::main_editor::new_component()
 	o << new_component_name;
 	o << ".h";
 	o << "\"\n";
-	o << "#include \"../../../trigger-engine/core/game/transform.h\"\m\n\n";
+	o << "#include \"../../../trigger-engine/core/game/transform.h\"\n\n\n";
 	o << "void " << this->new_component_name << "::update(float delta)\n";
 	o << "{\n};\n";
 	o << this->new_component_name << "::~" << this->new_component_name << "()\n{\n};";
