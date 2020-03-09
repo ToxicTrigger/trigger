@@ -3,178 +3,190 @@
 
 namespace trigger
 {
-	namespace tools
-	{
-		template <class T>
-		class pool;
+    namespace tools
+    {
+        template <class T>
+        class pool;
 
-		template <class T>
-		class pool_obj
-		{
-		public:
-			bool use;
-			T* data;
-			pool<T>* p_ptr;
-			size_t index;
+        template <class T>
+        class pool_obj
+        {
+            //access private member
+            friend class pool<T>;
 
-			T* operator*() = delete;
+        private:
+            bool use;
+            T* data;
+            pool<T>* p_ptr;
+            size_t index;
 
-			T* operator->()
-			{
-				return data;
-			}
+        public:
+            T operator*()
+            {
+                return clone();
+            }
 
-			pool_obj<T>& operator=(pool_obj<T> val)
-			{
-				index = val.index;
-				this->data = val.data;
-				this->p_ptr = val.p_ptr;
-				this->use = val.use;
+            T* operator->()
+            {
+                return data;
+            }
 
-				val.p_ptr = nullptr;
-				val.data = nullptr;
-				val.use = true;
-				val.index = 0;
-				return *this;
-			}
+            pool_obj<T>& operator=(pool_obj<T> val)
+            {
+                index = val.index;
+                this->data = val.data;
+                this->p_ptr = val.p_ptr;
+                this->use = val.use;
 
-			pool_obj()
-			{
-				index = 0;
-				this->data = nullptr;
-				this->p_ptr = nullptr;
-				this->use = false;
-			}
+                val.p_ptr = nullptr;
+                val.data = nullptr;
+                val.use = true;
+                val.index = 0;
+                return *this;
+            }
 
-			pool_obj(pool_obj<T>&& val)
-			{
-				index = val.index;
-				this->data = val.data;
-				this->p_ptr = val.p_ptr;
-				this->use = val.use;
+            pool_obj()
+            {
+                index = 0;
+                this->data = nullptr;
+                this->p_ptr = nullptr;
+                this->use = false;
+            }
 
-				val.p_ptr = nullptr;
-				val.data = nullptr;
-				val.use = true;
-				val.index = 0;
-			}
+            pool_obj(pool_obj<T>&& val) noexcept
+            {
+                index = val.index;
+                this->data = val.data;
+                this->p_ptr = val.p_ptr;
+                this->use = val.use;
 
-			~pool_obj()
-			{
-				if (this->p_ptr != nullptr && this->data != nullptr)
-				{
-					this->p_ptr->free(std::move(*this));
-				}
-			}
-		};
+                val.p_ptr = nullptr;
+                val.data = nullptr;
+                val.use = true;
+                val.index = 0;
+            }
 
-		template <class T>
-		class pool
-		{
-		public:
-			pool()
-			{
-				this->size = 0;
-				objects = std::vector< pool_obj<T> >(10000);
-				this->capacity = objects.capacity();
-				init = T();
+            T clone()
+            {
+                return *this->data;
+            }
 
-				objs_data = std::vector< T >(capacity, init);
-				for (int i = 0; i < capacity; ++i)
-				{
-					objects[i].index = i;
-					objects[i].use = false;
-					objects[i].p_ptr = nullptr;
-					objects[i].data = &objs_data[i];
-				}
-			}
+            ~pool_obj()
+            {
+                if (this->p_ptr != nullptr && this->data != nullptr)
+                {
+                    this->p_ptr->free(std::move(*this));
+                }
+            }
+        };
 
-			template <class ... _Tval>
-			pool(size_t capacity, _Tval&&... inits)
-			{
-				this->size = 0;
-				objects = std::vector< pool_obj<T> >(capacity);
-				this->capacity = objects.capacity();
-				objs_data = std::vector< T >(capacity, std::forward<_Tval>(inits)...);
-				init = T(std::forward<_Tval>(inits)...);
-				for (int i = 0; i < capacity; ++i)
-				{
-					objects[i].index = i;
-					objects[i].use = false;
-					objects[i].p_ptr = nullptr;
-					objects[i].data = &objs_data[i];
-				}
-			}
+        template <class T>
+        class pool
+        {
+        public:
+            pool()
+            {
+                this->size = 0;
+                objects = std::vector< pool_obj<T> >(10000);
+                this->capacity = objects.capacity();
+                init = T();
 
-			pool_obj<T> use()
-			{
-				if (this->size < this->capacity)
-				{
-					for (size_t i = 0; i < capacity; ++i)
-					{
-						if (!objects[i].use)
-						{
-							this->size += 1;
-							objects[i].use = true;
-							objects[i].p_ptr = this;
-							objects[i].data = &objs_data[i];
-							objects[i].index = i;
-							return std::move(objects[i]);
-						}
-					}
-				}
-				return {};
-			}
+                objs_data = std::vector< T >(capacity, init);
+                for (int i = 0; i < capacity; ++i)
+                {
+                    objects[i].index = i;
+                    objects[i].use = false;
+                    objects[i].p_ptr = nullptr;
+                    objects[i].data = &objs_data[i];
+                }
+            }
 
-			bool free(pool_obj<T>&& lvalue)
-			{
-				if (lvalue.p_ptr == this)
-				{
-					size_t i = lvalue.index;
-					this->size -= 1;
-					objects[i].use = false;
-					objects[i].index = i;
-					objects[i].p_ptr = nullptr;
-					objects[i].data = &objs_data[i];
-					objs_data[i] = init;
+            template <class ... _Tval>
+            pool(size_t capacity, _Tval&&... inits)
+            {
+                this->size = 0;
+                objects = std::vector< pool_obj<T> >(capacity);
+                this->capacity = objects.capacity();
+                objs_data = std::vector< T >(capacity, std::forward<_Tval>(inits)...);
+                init = T(std::forward<_Tval>(inits)...);
+                for (int i = 0; i < capacity; ++i)
+                {
+                    objects[i].index = i;
+                    objects[i].use = false;
+                    objects[i].p_ptr = nullptr;
+                    objects[i].data = &objs_data[i];
+                }
+            }
 
-					lvalue.data->~T();
+            pool_obj<T> use()
+            {
+                if (this->size < this->capacity)
+                {
+                    for (size_t i = 0; i < capacity; ++i)
+                    {
+                        if (!objects[i].use)
+                        {
+                            this->size += 1;
+                            objects[i].use = true;
+                            objects[i].p_ptr = this;
+                            objects[i].data = &objs_data[i];
+                            objects[i].index = i;
+                            return std::move(objects[i]);
+                        }
+                    }
+                }
+                return {};
+            }
 
-					lvalue.p_ptr = nullptr;
-					lvalue.data = nullptr;
-					lvalue.use = false;
-					lvalue.index = i;
-					return true;
-				}
-				return false;
-			}
+            bool free(pool_obj<T>&& lvalue)
+            {
+                if (lvalue.p_ptr == this)
+                {
+                    size_t i = lvalue.index;
+                    this->size -= 1;
+                    objects[i].use = false;
+                    objects[i].index = i;
+                    objects[i].p_ptr = nullptr;
+                    objects[i].data = &objs_data[i];
+                    objs_data[i] = init;
 
-			std::vector< pool_obj<T> >* get_data()
-			{
-				return &this->objects;
-			}
+                    lvalue.data->~T();
 
-			std::vector< T >* get_raw_data()
-			{
-				return &this->objs_data;
-			}
+                    lvalue.p_ptr = nullptr;
+                    lvalue.data = nullptr;
+                    lvalue.use = false;
+                    lvalue.index = i;
+                    return true;
+                }
+                return false;
+            }
 
-			size_t get_using_count() const
-			{
-				return this->size;
-			}
+            std::vector< pool_obj<T> >* get_data()
+            {
+                return &this->objects;
+            }
 
-			size_t get_capacity() const
-			{
-				return this->capacity;
-			}
+            std::vector< T >* get_raw_data()
+            {
+                return &this->objs_data;
+            }
 
-		private:
-			std::vector< pool_obj<T> > objects;
-			std::vector< T > objs_data;
-			T init;
-			size_t capacity;
-			size_t size;
-		};
-	}
+            size_t get_using_count() const
+            {
+                return this->size;
+            }
+
+            size_t get_capacity() const
+            {
+                return this->capacity;
+            }
+
+        private:
+            std::vector< pool_obj<T> > objects;
+            std::vector< T > objs_data;
+            T init;
+            size_t capacity;
+            size_t size;
+        };
+    }
 }
