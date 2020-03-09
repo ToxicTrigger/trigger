@@ -14,7 +14,7 @@ namespace trigger
             //access private member
             friend class pool<T>;
 
-        private:
+        public:
             bool use;
             T* data;
             pool<T>* p_ptr;
